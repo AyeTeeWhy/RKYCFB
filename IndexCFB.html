@@ -1,0 +1,5896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFBIndex — CFB 27 Dynasty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1F17;
+    --turf:#0F2E22;
+    --turf-2:#153A2B;
+    --turf-3:#1E4D37;
+    --line: rgba(237,232,218,0.10);
+    --line-2: rgba(237,232,218,0.18);
+    --chalk:#EDE8DA;
+    --chalk-dim:#A9B8AE;
+    --chalk-dimmer:#7C8C82;
+    --gold:#E7A33E;
+    --gold-bright:#F5C56B;
+    --alert:#D2553B;
+    --alert-dim:#8A5045;
+    --win:#5CAE7E;
+    --win-dim:#3F6E52;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(231,163,62,0.08), transparent 60%),
+      radial-gradient(1000px 800px at 110% 10%, rgba(92,174,126,0.07), transparent 55%),
+      var(--ink);
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:'Anton',sans-serif; font-weight:400; letter-spacing:0.01em; text-transform:uppercase;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+
+  ::selection{ background:var(--gold); color:var(--ink); }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,31,23,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:1180px; margin:0 auto; padding:16px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:10px; }
+  .wordmark .display{ font-size:22px; letter-spacing:0.02em; color:var(--chalk); }
+  .wordmark .display span{ color:var(--gold); }
+  .wordmark .sub{ font-size:11px; color:var(--chalk-dimmer); letter-spacing:0.08em; text-transform:uppercase; }
+  nav.tabs{ display:flex; gap:4px; flex-wrap:wrap; }
+  nav.tabs button{
+    background:none; border:1px solid transparent; color:var(--chalk-dim);
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+    letter-spacing:0.03em; padding:8px 14px; border-radius:7px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  nav.tabs button:hover{ color:var(--chalk); background:var(--turf-2); }
+  nav.tabs button.active{ color:var(--ink); background:var(--gold); }
+
+  /* ---------- Hero ---------- */
+  .hero{ max-width:1180px; margin:0 auto; padding:56px 24px 28px; }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.08em;
+    color:var(--gold); text-transform:uppercase; margin-bottom:18px;
+  }
+  .hero-eyebrow::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--win); box-shadow:0 0 0 4px rgba(92,174,126,0.18); }
+  h1.hero-title{
+    font-size:clamp(38px, 6vw, 68px); line-height:0.98; margin:0 0 20px; max-width:16ch;
+    color:var(--chalk);
+  }
+  h1.hero-title em{ font-style:normal; color:var(--gold); }
+  .hero-sub{ font-size:16px; line-height:1.6; color:var(--chalk-dim); max-width:56ch; margin:0 0 32px; }
+  .hero-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .hero-stat{ background:var(--turf); padding:18px 20px; }
+  .hero-stat .num{ font-family:'Anton',sans-serif; font-size:30px; color:var(--gold); line-height:1; }
+  .hero-stat .lbl{ font-size:11px; color:var(--chalk-dimmer); text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; }
+
+  /* ---------- Ticker ---------- */
+  .ticker-wrap{
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    background:var(--turf-2); overflow:hidden; position:relative;
+  }
+  .ticker-label{
+    position:absolute; left:0; top:0; bottom:0; z-index:2; display:flex; align-items:center;
+    padding:0 16px; background:var(--gold); color:var(--ink);
+    font-family:'Anton',sans-serif; font-size:13px; letter-spacing:0.05em;
+  }
+  .ticker-label::after{ content:''; position:absolute; right:-16px; top:0; bottom:0; width:16px;
+    background:linear-gradient(90deg, var(--gold), transparent); }
+  .ticker-track{ display:flex; gap:0; white-space:nowrap; animation:scroll 55s linear infinite; padding-left:150px; }
+  .ticker-wrap:hover .ticker-track{ animation-play-state:paused; }
+  @keyframes scroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+  .tick{ display:inline-flex; align-items:center; gap:10px; padding:11px 26px; font-size:13px; border-right:1px solid var(--line); }
+  .tick .win{ color:var(--win); font-weight:700; }
+  .tick .lose{ color:var(--chalk-dimmer); }
+  .tick .score{ font-family:'JetBrains Mono',monospace; color:var(--gold-bright); }
+  .tick .wk{ color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; font-size:11px; }
+
+  /* ---------- Main / sections ---------- */
+  main{ max-width:1180px; margin:0 auto; padding:52px 24px 100px; }
+  .page{ display:none; }
+  .page.active{ display:block; animation:fadein .3s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .section-head{ margin-bottom:28px; }
+  .section-eyebrow{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; }
+  h2.section-title{ font-size:clamp(28px,4vw,40px); margin:6px 0 8px; color:var(--chalk); }
+  .section-desc{ color:var(--chalk-dim); font-size:14.5px; max-width:62ch; line-height:1.6; }
+
+  .card{ background:var(--turf); border:1px solid var(--line); border-radius:14px; }
+
+  /* Power poll */
+  .poll-row{
+    display:grid; grid-template-columns:52px 1fr auto auto; gap:16px; align-items:center;
+    padding:16px 20px; border-bottom:1px solid var(--line);
+  }
+  .poll-row:last-child{ border-bottom:none; }
+  .poll-row:hover{ background:var(--turf-2); }
+  .poll-rank{ font-family:'Anton',sans-serif; font-size:26px; color:var(--chalk-dimmer); }
+  .poll-row.top3 .poll-rank{ color:var(--gold); }
+  .poll-team{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .poll-team .name{ font-weight:700; font-size:15.5px; }
+  .poll-team .meta{ font-size:12.5px; color:var(--chalk-dim); }
+  .poll-team .meta .conf{ color:var(--chalk-dimmer); }
+  .poll-why{ font-size:12.5px; color:var(--chalk-dimmer); grid-column:2; margin-top:2px; }
+  .poll-record{ text-align:right; }
+  .poll-record .rec{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; }
+  .poll-record .diff{ font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:2px; }
+  .diff.pos{ color:var(--win); } .diff.neg{ color:var(--alert); }
+  .streak-badge{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; padding:4px 9px;
+    border-radius:20px; white-space:nowrap;
+  }
+  .streak-badge.w{ background:rgba(92,174,126,0.15); color:var(--win); }
+  .streak-badge.l{ background:rgba(210,85,59,0.15); color:var(--alert); }
+  .formula-note{ font-size:12.5px; color:var(--chalk-dimmer); margin-bottom:18px; padding:12px 16px; background:var(--turf-2); border-radius:10px; border:1px solid var(--line);}
+  .formula-note .mono{ color:var(--gold-bright); }
+
+  /* Standings by conference */
+  .conf-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
+  .conf-card{ padding:0; overflow:hidden; }
+  .conf-card-head{
+    padding:16px 20px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg, var(--turf-3), var(--turf-2));
+  }
+  .conf-card-head .cname{ font-family:'Anton',sans-serif; font-size:19px; letter-spacing:0.02em; }
+  .conf-card-head .ccount{ font-size:11px; color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; }
+  table.standings{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.standings th{ text-align:left; padding:9px 20px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--chalk-dimmer); font-weight:600; border-bottom:1px solid var(--line); }
+  table.standings td{ padding:10px 20px; border-bottom:1px solid var(--line); }
+  table.standings tr:last-child td{ border-bottom:none; }
+  table.standings td.rec{ font-family:'JetBrains Mono',monospace; font-weight:700; text-align:right; }
+  table.standings td.rk{ color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; font-size:11.5px; text-align:right; }
+  .team-cell .t{ font-weight:600; } .team-cell .u{ color:var(--chalk-dimmer); font-size:11.5px; }
+
+  /* This week */
+  .matchup-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:36px; }
+  .matchup-card{ padding:18px 20px; position:relative; overflow:hidden; }
+  .matchup-card::before{ content:'GRUDGE MATCH'; position:absolute; top:12px; right:-32px; transform:rotate(35deg);
+    background:var(--gold); color:var(--ink); font-family:'Anton',sans-serif; font-size:10px; padding:3px 34px; letter-spacing:0.05em; }
+  .matchup-teams{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; }
+  .matchup-side{ flex:1; min-width:0; }
+  .matchup-side .u{ font-weight:700; font-size:15px; }
+  .matchup-side .t{ font-size:12px; color:var(--chalk-dim); }
+  .matchup-side.away{ text-align:right; }
+  .matchup-vs{ font-family:'Anton',sans-serif; color:var(--chalk-dimmer); font-size:13px; padding:0 6px; }
+  .matchup-meta{ margin-top:14px; font-size:11.5px; color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; display:flex; justify-content:space-between; }
+
+  .week-list{ display:flex; flex-direction:column; }
+  .week-row{ display:grid; grid-template-columns:1fr auto auto; gap:14px; align-items:center; padding:12px 20px; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .week-row:last-child{border-bottom:none;}
+  .week-row .matchline{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .week-row .who{ font-weight:600; }
+  .week-row .rankpill{ font-family:'JetBrains Mono',monospace; font-size:10.5px; background:var(--turf-2); color:var(--gold-bright); padding:1px 6px; border-radius:5px; }
+  .week-row .h2htag{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); border:1px solid var(--gold); border-radius:5px; padding:1px 5px; letter-spacing:0.04em; }
+  .week-row .time{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--chalk-dimmer); }
+
+  /* record book */
+  .rb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+  .rb-list{ display:flex; flex-direction:column; }
+  .rb-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 20px; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .rb-row:last-child{ border-bottom:none; }
+  .rb-row .m{ font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--gold-bright); font-size:12px; min-width:34px; }
+  .streak-list .rb-row .m{ color:inherit; }
+
+  /* recruiting */
+  .rec-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start; }
+  table.datatable{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.datatable th{ text-align:left; padding:10px 18px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--chalk-dimmer); border-bottom:1px solid var(--line); }
+  table.datatable td{ padding:9px 18px; border-bottom:1px solid var(--line); }
+  table.datatable tr:last-child td{ border-bottom:none; }
+  table.datatable td.num{ font-family:'JetBrains Mono',monospace; text-align:right; }
+  table.datatable tr:hover{ background:var(--turf-2); }
+
+  /* rosters */
+  .roster-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
+  .roster-card{ padding:16px 18px; }
+  .roster-card .u{ font-weight:700; font-size:15px; }
+  .roster-card .t{ font-size:13px; color:var(--gold-bright); margin-top:2px; }
+  .roster-card .g{ font-size:11.5px; color:var(--chalk-dimmer); margin-top:8px; font-family:'JetBrains Mono',monospace; }
+
+  /* potw */
+  .potw-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:36px; }
+  .potw-card{ padding:16px 18px; }
+  .potw-card .wk{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:0.05em; }
+  .potw-card .pn{ font-weight:700; font-size:15px; margin-top:6px; }
+  .potw-card .pt{ font-size:12px; color:var(--chalk-dim); margin-top:2px; }
+  .potw-card .pd{ font-size:12px; color:var(--chalk-dimmer); margin-top:10px; line-height:1.5; }
+
+  .tag{ display:inline-block; font-size:10.5px; font-family:'JetBrains Mono',monospace; padding:2px 8px; border-radius:20px; letter-spacing:0.03em; }
+  .tag.acc{ background:rgba(231,163,62,0.15); color:var(--gold-bright); }
+  .tag.mwc{ background:rgba(92,174,126,0.15); color:var(--win); }
+  .tag.big12{ background:rgba(210,85,59,0.15); color:#e8836d; }
+  .tag.sec{ background:rgba(163,140,231,0.15); color:#b6a3ec; }
+  .tag.bigten{ background:rgba(120,170,231,0.15); color:#8fbaec; }
+
+  /* history */
+  .hof-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+  .hof-card{ padding:20px; position:relative; }
+  .hof-card .rank{ position:absolute; top:16px; right:18px; font-family:'Anton',sans-serif; color:var(--line-2); font-size:34px; }
+  .hof-card .name{ font-weight:700; font-size:17px; }
+  .hof-card .team{ font-size:12px; color:var(--gold-bright); margin-top:2px; }
+  .hof-card .tally{ display:flex; gap:14px; margin-top:14px; }
+  .hof-stat{ display:flex; flex-direction:column; }
+  .hof-stat .n{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:19px; color:var(--chalk); }
+  .hof-stat .l{ font-size:9.5px; color:var(--chalk-dimmer); text-transform:uppercase; letter-spacing:0.05em; }
+  .hof-card.champ{ border-color:rgba(231,163,62,0.4); background:linear-gradient(160deg, rgba(231,163,62,0.09), var(--turf)); }
+  .hof-card .blurb{ margin-top:12px; font-size:11.5px; color:var(--chalk-dimmer); line-height:1.5; font-style:italic; }
+
+  .era-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
+  .era-card{ overflow:hidden; }
+  .season-row{ padding:14px 20px; border-bottom:1px solid var(--line); }
+  .season-row:last-child{ border-bottom:none; }
+  .season-row .sn{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:0.06em; }
+  .season-row .champ-line{ font-size:14.5px; margin-top:4px; }
+  .season-row .champ-line b{ color:var(--chalk); }
+  .season-row .sub-line{ font-size:12px; color:var(--chalk-dimmer); margin-top:3px; }
+  .season-row.in-progress{ background:linear-gradient(90deg, rgba(231,163,62,0.06), transparent); }
+
+  .tag.retired{ background:rgba(169,184,174,0.12); color:var(--chalk-dimmer); }
+  .tag.active-team{ background:rgba(92,174,126,0.15); color:var(--win); }
+
+  /* awards */
+  .award-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .award-card{ padding:20px; }
+  .award-card .icon{ font-size:26px; }
+  .award-card .title{ font-family:'Anton',sans-serif; font-size:16px; color:var(--gold-bright); margin-top:10px; letter-spacing:0.02em; }
+  .award-card .winner{ font-weight:700; font-size:18px; margin-top:6px; }
+  .award-card .winner .team{ color:var(--chalk-dimmer); font-weight:400; font-size:13px; }
+  .award-card .reason{ font-size:12.5px; color:var(--chalk-dim); margin-top:8px; line-height:1.5; }
+
+  /* head to head */
+  .h2h-controls{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .h2h-controls select{
+    background:var(--turf-2); color:var(--chalk); border:1px solid var(--line-2); border-radius:8px;
+    padding:10px 14px; font-family:'Inter',sans-serif; font-weight:600; font-size:14px; min-width:180px;
+  }
+  .h2h-vs{ font-family:'Anton',sans-serif; color:var(--gold); font-size:18px; }
+  .h2h-result{ min-height:60px; }
+  .h2h-meeting{ padding:16px 20px; border-bottom:1px solid var(--line); font-size:14px; }
+  .h2h-meeting:last-child{ border-bottom:none; }
+  .h2h-compare{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:16px; }
+  .h2h-col{ background:var(--turf); padding:18px 20px; }
+  .h2h-col .who{ font-weight:700; font-size:16px; }
+  .h2h-col .team{ font-size:12px; color:var(--gold-bright); margin-bottom:12px; }
+  .h2h-stat-line{ display:flex; justify-content:space-between; font-size:13px; padding:5px 0; color:var(--chalk-dim); }
+  .h2h-stat-line b{ color:var(--chalk); font-family:'JetBrains Mono',monospace; }
+  .h2h-empty{ padding:24px 20px; color:var(--chalk-dimmer); font-size:13.5px; text-align:center; }
+
+  /* drought clock */
+  .drought-row{ display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center; padding:13px 20px; border-bottom:1px solid var(--line); }
+  .drought-row:last-child{ border-bottom:none; }
+  .drought-row .who{ font-weight:600; font-size:14px; }
+  .drought-row .team{ color:var(--chalk-dimmer); font-size:12px; }
+  .drought-badge{ font-family:'JetBrains Mono',monospace; font-size:12px; padding:5px 12px; border-radius:20px; white-space:nowrap; text-align:center; min-width:110px; }
+  .drought-badge.zero{ background:rgba(231,163,62,0.18); color:var(--gold-bright); }
+  .drought-badge.some{ background:rgba(92,174,126,0.12); color:var(--win); }
+  .drought-badge.never{ background:rgba(210,85,59,0.1); color:var(--alert-dim); }
+  .drought-badge.new{ background:rgba(169,184,174,0.1); color:var(--chalk-dimmer); }
+
+  /* trajectory */
+  .traj-row{ display:grid; grid-template-columns:150px 1fr 70px; gap:14px; align-items:center; padding:10px 20px; border-bottom:1px solid var(--line); }
+  .traj-row:last-child{ border-bottom:none; }
+  .traj-row .who{ font-size:13px; font-weight:600; }
+  .traj-row .who .t{ display:block; font-size:10.5px; color:var(--chalk-dimmer); font-weight:400; }
+  .traj-bar-track{ position:relative; height:20px; background:var(--turf-2); border-radius:5px; overflow:hidden; }
+  .traj-bar-mid{ position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line-2); }
+  .traj-bar{ position:absolute; top:2px; bottom:2px; border-radius:4px; }
+  .traj-bar.pos{ background:var(--win); left:50%; }
+  .traj-bar.neg{ background:var(--alert); right:50%; }
+  .traj-delta{ font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; text-align:right; }
+  .traj-delta.pos{ color:var(--win); } .traj-delta.neg{ color:var(--alert); }
+
+  footer{ border-top:1px solid var(--line); padding:36px 24px 60px; }
+  footer .inner{ max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; color:var(--chalk-dimmer); font-size:12.5px; line-height:1.7; }
+
+  @media (max-width:760px){
+    .hero-stats{ grid-template-columns:repeat(2,1fr); }
+    .rb-grid, .rec-grid{ grid-template-columns:1fr; }
+    nav.tabs{ overflow-x:auto; padding-bottom:2px; }
+    .poll-row{ grid-template-columns:36px 1fr; row-gap:8px; }
+    .poll-record{ grid-column:2; text-align:left; display:flex; gap:10px; align-items:center; }
+    .poll-why{ grid-column:1/-1; }
+    .topbar-inner{ flex-wrap:wrap; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticker-track{ animation:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="wordmark">
+      <div class="display">CFB<span>Index</span></div>
+      <div class="sub">CFB 27 Dynasty</div>
+    </div>
+    <nav class="tabs" id="tabnav"></nav>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow" id="heroEyebrow">WEEK 6 COMPLETE</div>
+  <h1 class="hero-title display" id="heroTitle">23 coaches.<br>One league.<br><em>Zero mercy.</em></h1>
+  <p class="hero-sub" id="heroSub"></p>
+  <div class="hero-stats" id="heroStats"></div>
+</div>
+
+<div class="ticker-wrap">
+  <div class="ticker-label">RECENT RESULTS</div>
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<main>
+
+  <section class="page active" id="page-power">
+    <div class="section-head">
+      <div class="section-eyebrow">01 — Power Poll</div>
+      <h2 class="section-title display">Who's actually good</h2>
+      <p class="section-desc">Ranked by record, then adjusted for how convincingly it was earned. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
+    </div>
+    <div class="formula-note">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4)</span>. Rewards winning, punishes losing, and gives style points for blowouts.</div>
+    <div class="card" id="powerList"></div>
+  </section>
+
+  <section class="page" id="page-standings">
+    <div class="section-head">
+      <div class="section-eyebrow">02 — Standings</div>
+      <h2 class="section-title display">The five conferences</h2>
+      <p class="section-desc">Whatever algorithm EA used to realign these conferences, it was not sober. Duke plays in the Big Ten now. Michigan's in the Big 12. Nobody asked questions.</p>
+    </div>
+    <div class="conf-grid" id="confGrid"></div>
+  </section>
+
+  <section class="page" id="page-week">
+    <div class="section-head">
+      <div class="section-eyebrow">03 — This Week</div>
+      <h2 class="section-title display">Week 7 on deck</h2>
+      <p class="section-desc">Marquee grudge matches up top — the rest of the slate below.</p>
+    </div>
+    <div class="matchup-grid" id="marqueeGrid"></div>
+    <div class="card">
+      <div class="week-list" id="weekList"></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-record">
+    <div class="section-head">
+      <div class="section-eyebrow">04 — Record Book</div>
+      <h2 class="section-title display">Blowouts, nail-biters &amp; streaks</h2>
+      <p class="section-desc">The extremes of the season so far — all games shown are between two actual coaches.</p>
+    </div>
+    <div class="rb-grid">
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Biggest Blowouts</span></div>
+        <div class="rb-list" id="blowoutList"></div>
+      </div>
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Nail-Biters</span></div>
+        <div class="rb-list" id="closeList"></div>
+      </div>
+    </div>
+    <div class="rb-grid">
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">On a Heater</span></div>
+        <div class="rb-list streak-list" id="hotList"></div>
+      </div>
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">In a Skid</span></div>
+        <div class="rb-list streak-list" id="coldList"></div>
+      </div>
+    </div>
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Players of the Week</div>
+      <h2 class="section-title display" style="font-size:26px;">National honors</h2>
+    </div>
+    <div class="potw-grid" id="potwGrid"></div>
+  </section>
+
+  <section class="page" id="page-recruiting">
+    <div class="section-head">
+      <div class="section-eyebrow">05 — Recruiting</div>
+      <h2 class="section-title display">Building for later</h2>
+      <p class="section-desc">Class rankings and total NIL spend, for whoever's playing the long game.</p>
+    </div>
+    <div class="rec-grid">
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Recruiting Class Rank</span></div>
+        <table class="datatable" id="classTable"></table>
+      </div>
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">NIL Spend</span></div>
+        <table class="datatable" id="nilTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-rosters">
+    <div class="section-head">
+      <div class="section-eyebrow">06 — Rosters</div>
+      <h2 class="section-title display">The 23</h2>
+      <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
+    </div>
+    <div class="roster-grid" id="rosterGrid"></div>
+  </section>
+
+  <section class="page" id="page-history">
+    <div class="section-head">
+      <div class="section-eyebrow">07 — History</div>
+      <h2 class="section-title display">Before Week 1</h2>
+      <p class="section-desc" id="historyIntro"></p>
+    </div>
+
+    <div class="section-eyebrow" style="margin-bottom:6px;">All-Time Power Poll</div>
+    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 15) + (runner-ups × 7) + (Final Fours × 3)</span>. Same spirit as the current Power Poll, but built for a career instead of a week — hardware counts for a lot more than a good record.</div>
+    <div class="card" id="histPowerList"></div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Superlatives</div>
+      <h2 class="section-title display" style="font-size:26px;">The awards nobody asked for</h2>
+    </div>
+    <div class="award-grid" id="awardGrid"></div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Grudge Lookup</div>
+      <h2 class="section-title display" style="font-size:26px;">Head-to-head</h2>
+      <p class="section-desc">Pick two coaches. See who actually has who's number.</p>
+    </div>
+    <div class="h2h-controls">
+      <select id="h2hA"></select>
+      <span class="h2h-vs">VS</span>
+      <select id="h2hB"></select>
+    </div>
+    <div class="card h2h-result" id="h2hResult"></div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Championship Era</div>
+      <h2 class="section-title display" style="font-size:26px;">Every title game</h2>
+    </div>
+    <div class="era-grid">
+      <div class="card era-card">
+        <div class="conf-card-head"><span class="cname">CFB 25</span><span class="ccount">Seasons 1–6</span></div>
+        <div id="cfb25List"></div>
+      </div>
+      <div class="card era-card">
+        <div class="conf-card-head"><span class="cname">CFB 26</span><span class="ccount">Seasons 1–4</span></div>
+        <div id="cfb26List"></div>
+      </div>
+      <div class="card era-card">
+        <div class="conf-card-head"><span class="cname">CFB 27</span><span class="ccount">Season 1</span></div>
+        <div id="cfb27List"></div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Title Drought Clock</div>
+      <h2 class="section-title display" style="font-size:26px;">Who's actually won it</h2>
+      <p class="section-desc" id="droughtIntro"></p>
+    </div>
+    <div class="card">
+      <div id="droughtList"></div>
+    </div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Then vs Now</div>
+      <h2 class="section-title display" style="font-size:26px;">Career average vs this season</h2>
+      <p class="section-desc">Green means playing above their career norm right now. Red means the opposite. Only shown for coaches with both a career record and games logged this season.</p>
+    </div>
+    <div class="card">
+      <div id="trajList"></div>
+    </div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Career Records</div>
+      <h2 class="section-title display" style="font-size:26px;">All-time win %, CFB 25 &amp; 26</h2>
+      <p class="section-desc">Every coach who's ever drafted a team in this league — active roster and retired alike, ranked by lifetime win percentage. A completely new player-to-team draft happened between CFB 25 and CFB 26, but this tracks the person, not the jersey.</p>
+    </div>
+    <div class="card">
+      <table class="datatable" id="allTimeTable"></table>
+    </div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Strength-Adjusted</div>
+      <h2 class="section-title display" style="font-size:26px;">Weighted win %, CFB 26</h2>
+      <p class="section-desc">Same idea, but wins over strong opponents count for more than wins over weak ones. CFB 26 only — no CFB 25 or CFB 27 data has been run through this one yet.</p>
+    </div>
+    <div class="card">
+      <table class="datatable" id="weightedTable"></table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="inner">
+    <div>Built from CFB 27 dynasty screenshots — standings, schedules, and stats logged as they hit the screen. If a number looks off, it's an OCR's fault, not the coach's.</div>
+    <div id="footNote">Snapshot: Week 6 final / Week 7 on deck</div>
+  </div>
+</footer>
+
+<script id="dataBlob" type="application/json">
+{
+  "meta": {
+    "week": 6,
+    "nextWeek": 7,
+    "totalGames": 86,
+    "totalTeams": 23,
+    "conferences": [
+      "ACC",
+      "Big 12",
+      "Big Ten",
+      "MWC",
+      "SEC"
+    ]
+  },
+  "power": [
+    {
+      "team": "LSU",
+      "user": "Jay",
+      "record": "6-0",
+      "conf": "SEC",
+      "natlRank": 3,
+      "diff": 108,
+      "pf": 153,
+      "pa": 45,
+      "score": 61.2,
+      "streak": "W6",
+      "signatureWin": "#13 Penn State (34-8)",
+      "ovr": 91,
+      "rank": 1
+    },
+    {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "record": "5-0",
+      "conf": "Big 12",
+      "natlRank": null,
+      "diff": 108,
+      "pf": 205,
+      "pa": 97,
+      "score": 58.2,
+      "streak": "W5",
+      "signatureWin": "Nebraska (56-21)",
+      "ovr": null,
+      "rank": 2
+    },
+    {
+      "team": "Michigan",
+      "user": "Justin",
+      "record": "5-0",
+      "conf": "Big 12",
+      "natlRank": 6,
+      "diff": 106,
+      "pf": 160,
+      "pa": 54,
+      "score": 57.4,
+      "streak": "W5",
+      "signatureWin": "#4 Miami (38-21)",
+      "ovr": 89,
+      "rank": 3
+    },
+    {
+      "team": "Texas A&M",
+      "user": "Cory",
+      "record": "5-0",
+      "conf": "MWC",
+      "natlRank": 5,
+      "diff": 82,
+      "pf": 185,
+      "pa": 103,
+      "score": 47.8,
+      "streak": "W5",
+      "signatureWin": "UL Monroe (35-14)",
+      "ovr": 91,
+      "rank": 4
+    },
+    {
+      "team": "Penn State",
+      "user": "Tipton",
+      "record": "4-1",
+      "conf": "Big 12",
+      "natlRank": 18,
+      "diff": 74,
+      "pf": 136,
+      "pa": 62,
+      "score": 40.6,
+      "streak": "W4",
+      "signatureWin": "Akron (41-0)",
+      "ovr": 84,
+      "rank": 5
+    },
+    {
+      "team": "Arizona State",
+      "user": "Nick",
+      "record": "5-0",
+      "conf": "ACC",
+      "natlRank": 20,
+      "diff": 60,
+      "pf": 158,
+      "pa": 98,
+      "score": 39.0,
+      "streak": "W5",
+      "signatureWin": "Texas (42-16)",
+      "ovr": 79,
+      "rank": 6
+    },
+    {
+      "team": "USC",
+      "user": "Coltrain",
+      "record": "4-2",
+      "conf": "MWC",
+      "natlRank": 17,
+      "diff": 68,
+      "pf": 144,
+      "pa": 76,
+      "score": 37.2,
+      "streak": "W1",
+      "signatureWin": "#13 Oklahoma (21-0)",
+      "ovr": 87,
+      "rank": 7
+    },
+    {
+      "team": "Clemson",
+      "user": "Logan",
+      "record": "3-1",
+      "conf": "Big Ten",
+      "natlRank": 23,
+      "diff": 73,
+      "pf": 116,
+      "pa": 43,
+      "score": 37.2,
+      "streak": "W3",
+      "signatureWin": "Georgia Southern (41-7)",
+      "ovr": 84,
+      "rank": 8
+    },
+    {
+      "team": "South Carolina",
+      "user": "Bruce",
+      "record": "4-1",
+      "conf": "Big Ten",
+      "natlRank": 19,
+      "diff": 55,
+      "pf": 130,
+      "pa": 75,
+      "score": 33.0,
+      "streak": "L1",
+      "signatureWin": "#8 Georgia (51-17)",
+      "ovr": 86,
+      "rank": 9
+    },
+    {
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "record": "3-2",
+      "conf": "SEC",
+      "natlRank": 13,
+      "diff": 49,
+      "pf": 114,
+      "pa": 65,
+      "score": 26.6,
+      "streak": "L1",
+      "signatureWin": "Tulane (35-3)",
+      "ovr": null,
+      "rank": 10
+    },
+    {
+      "team": "Miami",
+      "user": "Austin",
+      "record": "4-1",
+      "conf": "Big 12",
+      "natlRank": 4,
+      "diff": 38,
+      "pf": 113,
+      "pa": 75,
+      "score": 26.2,
+      "streak": "L1",
+      "signatureWin": "#23 Clemson (21-14)",
+      "ovr": 89,
+      "rank": 11
+    },
+    {
+      "team": "Duke",
+      "user": "Ben",
+      "record": "4-1",
+      "conf": "Big Ten",
+      "natlRank": null,
+      "diff": 34,
+      "pf": 99,
+      "pa": 65,
+      "score": 24.6,
+      "streak": "L1",
+      "signatureWin": "Buffalo (31-7)",
+      "ovr": null,
+      "rank": 12
+    },
+    {
+      "team": "Baylor",
+      "user": "Dom",
+      "record": "4-1",
+      "conf": "MWC",
+      "natlRank": null,
+      "diff": 27,
+      "pf": 85,
+      "pa": 58,
+      "score": 21.8,
+      "streak": "W3",
+      "signatureWin": "#14 BYU (7-0)",
+      "ovr": 81,
+      "rank": 13
+    },
+    {
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "record": "2-3",
+      "conf": "SEC",
+      "natlRank": null,
+      "diff": 46,
+      "pf": 128,
+      "pa": 82,
+      "score": 21.4,
+      "streak": "L2",
+      "signatureWin": "Eastern Michigan (49-7)",
+      "ovr": 80,
+      "rank": 14
+    },
+    {
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "record": "4-1",
+      "conf": "SEC",
+      "natlRank": null,
+      "diff": 24,
+      "pf": 92,
+      "pa": 68,
+      "score": 20.6,
+      "streak": "W4",
+      "signatureWin": "Georgia Tech (31-7)",
+      "ovr": 77,
+      "rank": 15
+    },
+    {
+      "team": "Texas",
+      "user": "Pat",
+      "record": "4-2",
+      "conf": "ACC",
+      "natlRank": null,
+      "diff": 19,
+      "pf": 158,
+      "pa": 139,
+      "score": 17.6,
+      "streak": "W1",
+      "signatureWin": "#13 Oklahoma (28-24)",
+      "ovr": 91,
+      "rank": 16
+    },
+    {
+      "team": "NC State",
+      "user": "Vince",
+      "record": "3-1",
+      "conf": "Big Ten",
+      "natlRank": null,
+      "diff": 9,
+      "pf": 116,
+      "pa": 107,
+      "score": 11.6,
+      "streak": "W1",
+      "signatureWin": "Jacksonville State (28-10)",
+      "ovr": 79,
+      "rank": 17
+    },
+    {
+      "team": "Michigan State",
+      "user": "Harmon",
+      "record": "3-2",
+      "conf": "Big 12",
+      "natlRank": null,
+      "diff": -3,
+      "pf": 72,
+      "pa": 75,
+      "score": 5.8,
+      "streak": "L1",
+      "signatureWin": "Eastern Michigan (29-16)",
+      "ovr": 80,
+      "rank": 18
+    },
+    {
+      "team": "Tulane",
+      "user": "Adam",
+      "record": "3-3",
+      "conf": "SEC",
+      "natlRank": null,
+      "diff": -8,
+      "pf": 116,
+      "pa": 124,
+      "score": 2.8,
+      "streak": "W1",
+      "signatureWin": "Wisconsin (21-7)",
+      "ovr": 72,
+      "rank": 19
+    },
+    {
+      "team": "Iowa",
+      "user": "Tim",
+      "record": "2-3",
+      "conf": "ACC",
+      "natlRank": null,
+      "diff": -2,
+      "pf": 109,
+      "pa": 111,
+      "score": 2.2,
+      "streak": "W1",
+      "signatureWin": "Iowa State (35-7)",
+      "ovr": 82,
+      "rank": 20
+    },
+    {
+      "team": "SMU",
+      "user": "JoJo",
+      "record": "2-3",
+      "conf": "ACC",
+      "natlRank": null,
+      "diff": -24,
+      "pf": 85,
+      "pa": 109,
+      "score": -6.6,
+      "streak": "W1",
+      "signatureWin": "Arkansas State (18-10)",
+      "ovr": null,
+      "rank": 21
+    },
+    {
+      "team": "Tennessee",
+      "user": "Kurt",
+      "record": "2-3",
+      "conf": "Big Ten",
+      "natlRank": null,
+      "diff": -30,
+      "pf": 70,
+      "pa": 100,
+      "score": -12.0,
+      "streak": "L3",
+      "signatureWin": "Louisville (24-20)",
+      "ovr": null,
+      "rank": 22
+    },
+    {
+      "team": "Rutgers",
+      "user": "Jared",
+      "record": "1-5",
+      "conf": "MWC",
+      "natlRank": null,
+      "diff": -28,
+      "pf": 125,
+      "pa": 153,
+      "score": -13.2,
+      "streak": "L4",
+      "signatureWin": "Boston College (31-14)",
+      "ovr": 80,
+      "rank": 23
+    }
+  ],
+  "standingsByConf": {
+    "ACC": [
+      {
+        "team": "Arizona State",
+        "user": "Nick",
+        "record": "5-0",
+        "confRecord": "1-0",
+        "confStanding": "2nd",
+        "natlRank": 20,
+        "ovr": 79,
+        "diff": 60
+      },
+      {
+        "team": "Texas",
+        "user": "Pat",
+        "record": "4-2",
+        "confRecord": "2-1",
+        "confStanding": "3rd",
+        "natlRank": null,
+        "ovr": 91,
+        "diff": 19
+      },
+      {
+        "team": "Iowa",
+        "user": "Tim",
+        "record": "2-3",
+        "confRecord": "0-1",
+        "confStanding": "7th",
+        "natlRank": null,
+        "ovr": 82,
+        "diff": -2
+      },
+      {
+        "team": "SMU",
+        "user": "JoJo",
+        "record": "2-3",
+        "confRecord": null,
+        "confStanding": null,
+        "natlRank": null,
+        "ovr": null,
+        "diff": -24
+      }
+    ],
+    "MWC": [
+      {
+        "team": "Texas A&M",
+        "user": "Cory",
+        "record": "5-0",
+        "confRecord": "1-0",
+        "confStanding": "6th",
+        "natlRank": 5,
+        "ovr": 91,
+        "diff": 82
+      },
+      {
+        "team": "Baylor",
+        "user": "Dom",
+        "record": "4-1",
+        "confRecord": "1-0",
+        "confStanding": "2nd",
+        "natlRank": null,
+        "ovr": 81,
+        "diff": 27
+      },
+      {
+        "team": "USC",
+        "user": "Coltrain",
+        "record": "4-2",
+        "confRecord": "2-0",
+        "confStanding": "1st",
+        "natlRank": 17,
+        "ovr": 87,
+        "diff": 68
+      },
+      {
+        "team": "Rutgers",
+        "user": "Jared",
+        "record": "1-5",
+        "confRecord": "0-3",
+        "confStanding": "9th",
+        "natlRank": null,
+        "ovr": 80,
+        "diff": -28
+      }
+    ],
+    "Big 12": [
+      {
+        "team": "Michigan",
+        "user": "Justin",
+        "record": "5-0",
+        "confRecord": "1-0",
+        "confStanding": "5th",
+        "natlRank": 6,
+        "ovr": 89,
+        "diff": 106
+      },
+      {
+        "team": "Fresno State",
+        "user": "Jhump",
+        "record": "5-0",
+        "confRecord": null,
+        "confStanding": null,
+        "natlRank": null,
+        "ovr": null,
+        "diff": 108
+      },
+      {
+        "team": "Miami",
+        "user": "Austin",
+        "record": "4-1",
+        "confRecord": "0-1",
+        "confStanding": "7th",
+        "natlRank": 4,
+        "ovr": 89,
+        "diff": 38
+      },
+      {
+        "team": "Penn State",
+        "user": "Tipton",
+        "record": "4-1",
+        "confRecord": "1-0",
+        "confStanding": "4th",
+        "natlRank": 18,
+        "ovr": 84,
+        "diff": 74
+      },
+      {
+        "team": "Michigan State",
+        "user": "Harmon",
+        "record": "3-2",
+        "confRecord": "0-1",
+        "confStanding": "6th",
+        "natlRank": null,
+        "ovr": 80,
+        "diff": -3
+      }
+    ],
+    "SEC": [
+      {
+        "team": "LSU",
+        "user": "Jay",
+        "record": "6-0",
+        "confRecord": "2-0",
+        "confStanding": "2nd",
+        "natlRank": 3,
+        "ovr": 91,
+        "diff": 108
+      },
+      {
+        "team": "Wake Forest",
+        "user": "Wemple",
+        "record": "4-1",
+        "confRecord": "0-0",
+        "confStanding": "4th",
+        "natlRank": null,
+        "ovr": 77,
+        "diff": 24
+      },
+      {
+        "team": "Oklahoma",
+        "user": "Derrick",
+        "record": "3-2",
+        "confRecord": "1-0",
+        "confStanding": "1st",
+        "natlRank": 13,
+        "ovr": null,
+        "diff": 49
+      },
+      {
+        "team": "Tulane",
+        "user": "Adam",
+        "record": "3-3",
+        "confRecord": "1-1",
+        "confStanding": "8th",
+        "natlRank": null,
+        "ovr": 72,
+        "diff": -8
+      },
+      {
+        "team": "Wisconsin",
+        "user": "Ceseque",
+        "record": "2-3",
+        "confRecord": "0-1",
+        "confStanding": null,
+        "natlRank": null,
+        "ovr": 80,
+        "diff": 46
+      }
+    ],
+    "Big Ten": [
+      {
+        "team": "South Carolina",
+        "user": "Bruce",
+        "record": "4-1",
+        "confRecord": null,
+        "confStanding": "4th",
+        "natlRank": 19,
+        "ovr": 86,
+        "diff": 55
+      },
+      {
+        "team": "Duke",
+        "user": "Ben",
+        "record": "4-1",
+        "confRecord": null,
+        "confStanding": "3rd",
+        "natlRank": null,
+        "ovr": null,
+        "diff": 34
+      },
+      {
+        "team": "NC State",
+        "user": "Vince",
+        "record": "3-1",
+        "confRecord": null,
+        "confStanding": null,
+        "natlRank": null,
+        "ovr": 79,
+        "diff": 9
+      },
+      {
+        "team": "Clemson",
+        "user": "Logan",
+        "record": "3-1",
+        "confRecord": null,
+        "confStanding": null,
+        "natlRank": 23,
+        "ovr": 84,
+        "diff": 73
+      },
+      {
+        "team": "Tennessee",
+        "user": "Kurt",
+        "record": "2-3",
+        "confRecord": null,
+        "confStanding": null,
+        "natlRank": null,
+        "ovr": null,
+        "diff": -30
+      }
+    ]
+  },
+  "gameLog": [
+    {
+      "week": 0,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "Michigan State",
+      "oppUser": "Harmon",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 17,
+      "oppPts": 3,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 14
+    },
+    {
+      "week": 0,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Iowa",
+      "oppUser": "Tim",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 14
+    },
+    {
+      "week": 0,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Florida",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 0,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Virginia Tech",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 23,
+      "oppPts": 25,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 2
+    },
+    {
+      "week": 1,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 23,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 5
+    },
+    {
+      "week": 1,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "Nebraska",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 27,
+      "oppPts": 10,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 17
+    },
+    {
+      "week": 1,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "NC State",
+      "oppUser": "Vince",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 42,
+      "oppPts": 34,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 8
+    },
+    {
+      "week": 1,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 34,
+      "oppPts": 8,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 26
+    },
+    {
+      "week": 1,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Clemson",
+      "oppUser": "Logan",
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 14,
+      "oppRank": 23,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 1,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Texas A&M",
+      "oppUser": "Cory",
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 17,
+      "oppPts": 37,
+      "oppRank": 5,
+      "isH2H": true,
+      "margin": 20
+    },
+    {
+      "week": 1,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Baylor",
+      "oppUser": "Dom",
+      "homeAway": "?",
+      "result": "L",
+      "teamPts": 20,
+      "oppPts": 30,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 10
+    },
+    {
+      "week": 1,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Rutgers",
+      "oppUser": "Jared",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 10
+    },
+    {
+      "week": 1,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 0,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 21
+    },
+    {
+      "week": 1,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "?",
+      "result": "L",
+      "teamPts": 3,
+      "oppPts": 24,
+      "oppRank": 19,
+      "isH2H": true,
+      "margin": 21
+    },
+    {
+      "week": 2,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Oklahoma State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 32,
+      "oppPts": 31,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 1
+    },
+    {
+      "week": 2,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "Georgia Southern",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 41,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 34
+    },
+    {
+      "week": 2,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "Illinois",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 17,
+      "oppPts": 10,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 2,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Colorado State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 38,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 31
+    },
+    {
+      "week": 2,
+      "team": "Iowa",
+      "user": "Tim",
+      "opponent": "Iowa State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 28
+    },
+    {
+      "week": 2,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Arkansas",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 10,
+      "oppPts": 3,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 2,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Toledo",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 42,
+      "oppPts": 12,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 30
+    },
+    {
+      "week": 2,
+      "team": "Michigan State",
+      "user": "Harmon",
+      "opponent": "Oregon",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 12,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 5
+    },
+    {
+      "week": 2,
+      "team": "NC State",
+      "user": "Vince",
+      "opponent": "Jacksonville State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 10,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 18
+    },
+    {
+      "week": 2,
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "opponent": "UAB",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 27,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 27
+    },
+    {
+      "week": 2,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Baylor",
+      "oppUser": "Dom",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 21
+    },
+    {
+      "week": 2,
+      "team": "Rutgers",
+      "user": "Jared",
+      "opponent": "Boston College",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 17
+    },
+    {
+      "week": 2,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Arkansas State",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 18,
+      "oppPts": 10,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 8
+    },
+    {
+      "week": 2,
+      "team": "Tennessee",
+      "user": "Kurt",
+      "opponent": "Louisville",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 20,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 4
+    },
+    {
+      "week": 2,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Utah State",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 29,
+      "oppPts": 6,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 23
+    },
+    {
+      "week": 2,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "UL Monroe",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 21
+    },
+    {
+      "week": 2,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Colorado",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 31,
+      "oppPts": 35,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 4
+    },
+    {
+      "week": 2,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Louisiana",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 24
+    },
+    {
+      "week": 2,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Washington",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 10,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 10
+    },
+    {
+      "week": 2,
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "opponent": "Coastal Carolina",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 35
+    },
+    {
+      "week": 3,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "UNLV",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 3,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "Iowa",
+      "oppUser": "Tim",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 38,
+      "oppPts": 15,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 23
+    },
+    {
+      "week": 3,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "Buffalo",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 24
+    },
+    {
+      "week": 3,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Nebraska",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 56,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 35
+    },
+    {
+      "week": 3,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 11,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 10
+    },
+    {
+      "week": 3,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Charlotte",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 34,
+      "oppPts": 6,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 28
+    },
+    {
+      "week": 3,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Air Force",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 35
+    },
+    {
+      "week": 3,
+      "team": "Michigan State",
+      "user": "Harmon",
+      "opponent": "Eastern Michigan",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 29,
+      "oppPts": 16,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 13
+    },
+    {
+      "week": 3,
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "opponent": "Western Kentucky",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 13,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 15
+    },
+    {
+      "week": 3,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Louisville",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "L",
+      "teamPts": 19,
+      "oppPts": 31,
+      "oppRank": 24,
+      "isH2H": false,
+      "margin": 12
+    },
+    {
+      "week": 3,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Georgia",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 51,
+      "oppPts": 17,
+      "oppRank": 8,
+      "isH2H": false,
+      "margin": 34
+    },
+    {
+      "week": 3,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Virginia Tech",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 34,
+      "oppPts": 20,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 14
+    },
+    {
+      "week": 3,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "Missouri State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 43,
+      "oppPts": 30,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 13
+    },
+    {
+      "week": 3,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Southern Miss",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 20,
+      "oppPts": 13,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 3,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Rutgers",
+      "oppUser": "Jared",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 3,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Arizona",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 29,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 8
+    },
+    {
+      "week": 4,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 21
+    },
+    {
+      "week": 4,
+      "team": "Baylor",
+      "user": "Dom",
+      "opponent": "Texas Tech",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 24
+    },
+    {
+      "week": 4,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "Alabama",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 23,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 23
+    },
+    {
+      "week": 4,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Louisiana Tech",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 41,
+      "oppPts": 3,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 38
+    },
+    {
+      "week": 4,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Arkansas",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 24
+    },
+    {
+      "week": 4,
+      "team": "Rutgers",
+      "user": "Jared",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 8,
+      "oppPts": 21,
+      "oppRank": 19,
+      "isH2H": true,
+      "margin": 13
+    },
+    {
+      "week": 4,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Michigan State",
+      "oppUser": "Harmon",
+      "homeAway": "?",
+      "result": "L",
+      "teamPts": 7,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 4,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Iowa",
+      "oppUser": "Tim",
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 17,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 14
+    },
+    {
+      "week": 4,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "NC State",
+      "oppUser": "Vince",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 15,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 20
+    },
+    {
+      "week": 4,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Miami",
+      "oppUser": "Austin",
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 10,
+      "oppPts": 13,
+      "oppRank": 4,
+      "isH2H": true,
+      "margin": 3
+    },
+    {
+      "week": 4,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Indiana",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 10,
+      "oppPts": 13,
+      "oppRank": 11,
+      "isH2H": false,
+      "margin": 3
+    },
+    {
+      "week": 4,
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "opponent": "Eastern Michigan",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 49,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 42
+    },
+    {
+      "week": 5,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Texas",
+      "oppUser": "Pat",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 42,
+      "oppPts": 16,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 26
+    },
+    {
+      "week": 5,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "Oregon",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 7,
+      "oppPts": 35,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 28
+    },
+    {
+      "week": 5,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Colorado",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 38,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 31
+    },
+    {
+      "week": 5,
+      "team": "Iowa",
+      "user": "Tim",
+      "opponent": "Boston College",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 21
+    },
+    {
+      "week": 5,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": null,
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 26,
+      "oppPts": 3,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 23
+    },
+    {
+      "week": 5,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Virginia Tech",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 17
+    },
+    {
+      "week": 5,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 10
+    },
+    {
+      "week": 5,
+      "team": "NC State",
+      "user": "Vince",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 3
+    },
+    {
+      "week": 5,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Akron",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 41,
+      "oppPts": 0,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 41
+    },
+    {
+      "week": 5,
+      "team": "Rutgers",
+      "user": "Jared",
+      "opponent": "Baylor",
+      "oppUser": "Dom",
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 10,
+      "oppPts": 17,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 5,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "UConn",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 24,
+      "oppPts": 17,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 5,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Kentucky",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 6,
+      "oppPts": 26,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 20
+    },
+    {
+      "week": 5,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 3,
+      "oppPts": 35,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 32
+    },
+    {
+      "week": 5,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Georgia Tech",
+      "oppUser": null,
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 24
+    },
+    {
+      "week": 6,
+      "team": "Baylor",
+      "user": "Dom",
+      "opponent": "BYU",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 7,
+      "oppPts": 0,
+      "oppRank": 14,
+      "isH2H": false,
+      "margin": 7
+    },
+    {
+      "week": 6,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "California",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 3
+    },
+    {
+      "week": 6,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Kentucky",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 17,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 4
+    },
+    {
+      "week": 6,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Michigan",
+      "oppUser": "Justin",
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 21,
+      "oppPts": 38,
+      "oppRank": 6,
+      "isH2H": true,
+      "margin": 17
+    },
+    {
+      "week": 6,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Michigan State",
+      "oppUser": "Harmon",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 14
+    },
+    {
+      "week": 6,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 24,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 4
+    },
+    {
+      "week": 6,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "Rutgers",
+      "oppUser": "Jared",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 27,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 8
+    },
+    {
+      "week": 6,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 7,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 14
+    },
+    {
+      "week": 6,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Virginia",
+      "oppUser": null,
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 10,
+      "oppRank": 16,
+      "isH2H": false,
+      "margin": 21
+    },
+    {
+      "week": 6,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Virginia Tech",
+      "oppUser": null,
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 19,
+      "oppPts": 16,
+      "oppRank": null,
+      "isH2H": false,
+      "margin": 3
+    }
+  ],
+  "closestGames": [
+    {
+      "week": 4,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Miami",
+      "oppUser": "Austin",
+      "homeAway": "Home",
+      "result": "L",
+      "teamPts": 10,
+      "oppPts": 13,
+      "oppRank": 4,
+      "isH2H": true,
+      "margin": 3
+    },
+    {
+      "week": 5,
+      "team": "NC State",
+      "user": "Vince",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 3
+    },
+    {
+      "week": 6,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 24,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 4
+    },
+    {
+      "week": 1,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 23,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 5
+    },
+    {
+      "week": 1,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Clemson",
+      "oppUser": "Logan",
+      "homeAway": "?",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 14,
+      "oppRank": 23,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 3,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Rutgers",
+      "oppUser": "Jared",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 7
+    }
+  ],
+  "blowouts": [
+    {
+      "week": 5,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "L",
+      "teamPts": 3,
+      "oppPts": 35,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 32
+    },
+    {
+      "week": 1,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 34,
+      "oppPts": 8,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 26
+    },
+    {
+      "week": 5,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Texas",
+      "oppUser": "Pat",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 42,
+      "oppPts": 16,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 26
+    },
+    {
+      "week": 3,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "Iowa",
+      "oppUser": "Tim",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 38,
+      "oppPts": 15,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 23
+    },
+    {
+      "week": 1,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 0,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 21
+    },
+    {
+      "week": 1,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "?",
+      "result": "L",
+      "teamPts": 3,
+      "oppPts": 24,
+      "oppRank": 19,
+      "isH2H": true,
+      "margin": 21
+    }
+  ],
+  "upcomingWeek7": [
+    {
+      "week": 7,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "Louisville",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "4:00 PM",
+      "oppRank": 24,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Baylor",
+      "user": "Dom",
+      "opponent": "Virginia",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "5:00 PM",
+      "oppRank": 16,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "Georgia Tech",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "5:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "Away",
+      "time": "8:00 PM",
+      "oppRank": 19,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Washington",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "3:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Iowa",
+      "user": "Tim",
+      "opponent": "Virginia Tech",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "1:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "LSU",
+      "user": "Jay",
+      "opponent": "Oregon State",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "3:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Boston College",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": "5:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Away",
+      "time": "8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Michigan State",
+      "user": "Harmon",
+      "opponent": "California",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "2:15 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "NC State",
+      "user": "Vince",
+      "opponent": "Illinois",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "1:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "opponent": "Kentucky",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "3:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Michigan",
+      "oppUser": "Justin",
+      "homeAway": "Home",
+      "time": "8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Rutgers",
+      "user": "Jared",
+      "opponent": "Notre Dame",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "7:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Stanford",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": "10:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Duke",
+      "oppUser": "Ben",
+      "homeAway": "Away",
+      "time": "8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Tennessee",
+      "user": "Kurt",
+      "opponent": "Houston",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": null,
+      "oppRank": 9,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Air Force",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": "7:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "Buffalo",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "3:30 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Tulane",
+      "user": "Adam",
+      "opponent": "TCU",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "6:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Nebraska",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "7:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "BYU",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": "4:00 PM",
+      "oppRank": 14,
+      "isH2H": false
+    },
+    {
+      "week": 7,
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "opponent": "Alabama",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "12:30 PM",
+      "oppRank": 15,
+      "isH2H": false
+    }
+  ],
+  "upcomingWeek8": [
+    {
+      "week": 8,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "SMU",
+      "oppUser": "JoJo",
+      "homeAway": "Away",
+      "time": "Thu, 8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Baylor",
+      "user": "Dom",
+      "opponent": "Stanford",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "9:15 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Home",
+      "time": "5:45 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Iowa",
+      "user": "Tim",
+      "opponent": "Louisville",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "6:45 PM",
+      "oppRank": 24,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Michigan State",
+      "oppUser": "Harmon",
+      "homeAway": "?",
+      "time": "3:15 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "California",
+      "oppUser": null,
+      "homeAway": "Away",
+      "time": "9:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "Michigan State",
+      "user": "Harmon",
+      "opponent": "Miami",
+      "oppUser": "Austin",
+      "homeAway": "Home",
+      "time": "3:15 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Penn State",
+      "user": "Tipton",
+      "opponent": "Fresno State",
+      "oppUser": "Jhump",
+      "homeAway": "Away",
+      "time": "5:45 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Rutgers",
+      "user": "Jared",
+      "opponent": "FCS East",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "12:00 PM",
+      "oppRank": null,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "SMU",
+      "user": "JoJo",
+      "opponent": "Arizona State",
+      "oppUser": "Nick",
+      "homeAway": "Home",
+      "time": "Thu, 8:00 PM",
+      "oppRank": 20,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Away",
+      "time": "7:30 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Texas",
+      "user": "Pat",
+      "opponent": "Indiana",
+      "oppUser": null,
+      "homeAway": "?",
+      "time": "2:30 PM",
+      "oppRank": 11,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "Texas A&M",
+      "user": "Cory",
+      "opponent": "Virginia",
+      "oppUser": null,
+      "homeAway": "Home",
+      "time": "Thu, 9:00 PM",
+      "oppRank": 16,
+      "isH2H": false
+    },
+    {
+      "week": 8,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "?",
+      "time": "6:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    }
+  ],
+  "h2hUpcoming": [
+    {
+      "week": 6,
+      "team": "Clemson",
+      "user": "Logan",
+      "opponent": "NC State",
+      "oppUser": "Vince",
+      "homeAway": "Away",
+      "time": null,
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "Away",
+      "time": "8:00 PM",
+      "oppRank": 19,
+      "isH2H": true
+    },
+    {
+      "week": 7,
+      "team": "Michigan",
+      "user": "Justin",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Away",
+      "time": "8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "SMU",
+      "oppUser": "JoJo",
+      "homeAway": "Away",
+      "time": "Thu, 8:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Penn State",
+      "oppUser": "Tipton",
+      "homeAway": "Home",
+      "time": "5:45 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Miami",
+      "user": "Austin",
+      "opponent": "Michigan State",
+      "oppUser": "Harmon",
+      "homeAway": "?",
+      "time": "3:15 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "South Carolina",
+      "user": "Bruce",
+      "opponent": "Tennessee",
+      "oppUser": "Kurt",
+      "homeAway": "Away",
+      "time": "7:30 PM",
+      "oppRank": null,
+      "isH2H": true
+    },
+    {
+      "week": 8,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "?",
+      "time": "6:00 PM",
+      "oppRank": null,
+      "isH2H": true
+    }
+  ],
+  "recruitingClass": [
+    {
+      "team": "Arizona State",
+      "user": "Nick",
+      "classRank": 2,
+      "commits": 10,
+      "nil": 1135,
+      "fiveStar": 0,
+      "fourStar": 5,
+      "points": 151.8
+    },
+    {
+      "team": "Miami",
+      "user": "Austin",
+      "classRank": 3,
+      "commits": 8,
+      "nil": 1150,
+      "fiveStar": 1,
+      "fourStar": 7,
+      "points": 149.6
+    },
+    {
+      "team": "LSU",
+      "user": "Jay",
+      "classRank": 6,
+      "commits": 7,
+      "nil": 590,
+      "fiveStar": 0,
+      "fourStar": 3,
+      "points": 112.2
+    },
+    {
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "classRank": 13,
+      "commits": 4,
+      "nil": 225,
+      "fiveStar": 0,
+      "fourStar": 3,
+      "points": 73.65
+    },
+    {
+      "team": "Michigan",
+      "user": "Justin",
+      "classRank": 18,
+      "commits": 3,
+      "nil": 540,
+      "fiveStar": 1,
+      "fourStar": 2,
+      "points": 64.4
+    },
+    {
+      "team": "Texas",
+      "user": "Pat",
+      "classRank": 20,
+      "commits": 3,
+      "nil": 245,
+      "fiveStar": 0,
+      "fourStar": 3,
+      "points": 59.4
+    },
+    {
+      "team": "Iowa",
+      "user": "Tim",
+      "classRank": 35,
+      "commits": 2,
+      "nil": 305,
+      "fiveStar": 1,
+      "fourStar": 1,
+      "points": 44.8
+    },
+    {
+      "team": "Baylor",
+      "user": "Dom",
+      "classRank": 41,
+      "commits": 3,
+      "nil": 240,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 44.55
+    },
+    {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "classRank": 56,
+      "commits": 4,
+      "nil": 35,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 34.45
+    },
+    {
+      "team": "Rutgers",
+      "user": "Jared",
+      "classRank": 85,
+      "commits": 1,
+      "nil": 10,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 15
+    },
+    {
+      "team": "SMU",
+      "user": "JoJo",
+      "classRank": 91,
+      "commits": 1,
+      "nil": 90,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 15
+    },
+    {
+      "team": "Tulane",
+      "user": "Adam",
+      "classRank": 92,
+      "commits": 1,
+      "nil": 80,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 15
+    },
+    {
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "classRank": 101,
+      "commits": 1,
+      "nil": 10,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 10
+    },
+    {
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "classRank": 122,
+      "commits": 0,
+      "nil": 0,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 0
+    },
+    {
+      "team": "Michigan State",
+      "user": "Harmon",
+      "classRank": 133,
+      "commits": 0,
+      "nil": 0,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 0
+    },
+    {
+      "team": "Texas A&M",
+      "user": "Cory",
+      "classRank": 136,
+      "commits": 0,
+      "nil": 0,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 0
+    },
+    {
+      "team": "Penn State",
+      "user": "Tipton",
+      "classRank": 137,
+      "commits": 0,
+      "nil": 0,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 0
+    },
+    {
+      "team": "USC",
+      "user": "Coltrain",
+      "classRank": 138,
+      "commits": 0,
+      "nil": 0,
+      "fiveStar": 0,
+      "fourStar": 0,
+      "points": 0
+    }
+  ],
+  "nilSpend": [
+    {
+      "team": "Texas",
+      "user": "Pat",
+      "nilTotal": 4560
+    },
+    {
+      "team": "Miami",
+      "user": "Austin",
+      "nilTotal": 4110
+    },
+    {
+      "team": "LSU",
+      "user": "Jay",
+      "nilTotal": 4110
+    },
+    {
+      "team": "Texas A&M",
+      "user": "Cory",
+      "nilTotal": 3380
+    },
+    {
+      "team": "Oklahoma",
+      "user": "Derrick",
+      "nilTotal": 3340
+    },
+    {
+      "team": "USC",
+      "user": "Coltrain",
+      "nilTotal": 2670
+    },
+    {
+      "team": "Tennessee",
+      "user": "Kurt",
+      "nilTotal": 2570
+    },
+    {
+      "team": "Clemson",
+      "user": "Logan",
+      "nilTotal": 2310
+    },
+    {
+      "team": "Michigan",
+      "user": "Justin",
+      "nilTotal": 2145
+    },
+    {
+      "team": "Penn State",
+      "user": "Tipton",
+      "nilTotal": 2135
+    },
+    {
+      "team": "South Carolina",
+      "user": "Bruce",
+      "nilTotal": 1990
+    },
+    {
+      "team": "SMU",
+      "user": "JoJo",
+      "nilTotal": 1955
+    },
+    {
+      "team": "Iowa",
+      "user": "Tim",
+      "nilTotal": 1690
+    },
+    {
+      "team": "Arizona State",
+      "user": "Nick",
+      "nilTotal": 1575
+    },
+    {
+      "team": "Michigan State",
+      "user": "Harmon",
+      "nilTotal": 1130
+    },
+    {
+      "team": "Rutgers",
+      "user": "Jared",
+      "nilTotal": 1100
+    },
+    {
+      "team": "NC State",
+      "user": "Vince",
+      "nilTotal": 1080
+    },
+    {
+      "team": "Duke",
+      "user": "Ben",
+      "nilTotal": 1060
+    },
+    {
+      "team": "Baylor",
+      "user": "Dom",
+      "nilTotal": 1055
+    },
+    {
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "nilTotal": 960
+    },
+    {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "nilTotal": 820
+    },
+    {
+      "team": "Wisconsin",
+      "user": "Ceseque",
+      "nilTotal": 805
+    },
+    {
+      "team": "Tulane",
+      "user": "Adam",
+      "nilTotal": 450
+    }
+  ],
+  "potw": [
+    {
+      "player": "Devin Hightower",
+      "team": "Tulsa",
+      "user": "(CPU)",
+      "pos": "MIKE",
+      "no": "#24",
+      "week": 0,
+      "game": "vs FCS Midwest (W 35-7)",
+      "notes": "Defensive POTW - CPU team; 6 TKL, 1 TFL, 1 INT, 2 PBU, 1 TD",
+      "isUserTeam": false
+    },
+    {
+      "player": "AJ Wilson",
+      "team": "Unclear (CPU)",
+      "user": "(CPU)",
+      "pos": "WR",
+      "no": "#84",
+      "week": 0,
+      "game": "vs Colorado State (W 25-24)",
+      "notes": "Offensive POTW - CPU team, school not clearly legible on screenshot",
+      "isUserTeam": false
+    },
+    {
+      "player": "Dashawn Spears",
+      "team": "LSU",
+      "user": "Jay",
+      "pos": "FS",
+      "no": "#10",
+      "week": 1,
+      "game": "vs 18 Penn State (W 34-8)",
+      "notes": "Defensive Player of the Week (National, Wk 1); 5 TKL, 1 TFL, 2 INT, 1 TD",
+      "isUserTeam": true
+    },
+    {
+      "player": "Jamauri McClure",
+      "team": "Tulane",
+      "user": "Adam",
+      "pos": "HB",
+      "no": "#25",
+      "week": 2,
+      "game": "vs Colorado (L 31-35)",
+      "notes": "Offensive Player of the Week (National, Wk 2) - matches Tulane's own Week 2 loss to Colorado",
+      "isUserTeam": true
+    },
+    {
+      "player": "Tayon Holloway",
+      "team": "Louisville",
+      "user": "(CPU)",
+      "pos": "CB",
+      "no": "#1",
+      "week": 2,
+      "game": "at Tennessee (L 20-24)",
+      "notes": "Defensive POTW - CPU team; 3 TKL, 1 INT, 3 PBU, 1 TD. Reveals Tennessee (Kurt) home win 24-20 vs Louisville, not previously captured (team ID from logo/conference, moderate confidence)",
+      "isUserTeam": false
+    },
+    {
+      "player": "Bryson Donelson",
+      "team": "Fresno State",
+      "user": "Jhump",
+      "pos": "HB",
+      "no": "#6",
+      "week": 3,
+      "game": "at Nebraska (W 56-21)",
+      "notes": "Offensive Player of the Week (National, Wk 3)",
+      "isUserTeam": true
+    },
+    {
+      "player": "Jerry Mixon",
+      "team": "Oregon",
+      "user": "(CPU)",
+      "pos": "MIKE",
+      "no": "#6",
+      "week": 3,
+      "game": "at Oregon State (W 30-10)",
+      "notes": "Defensive POTW - CPU team; 1 TKL, 1 INT, 4 PBU",
+      "isUserTeam": false
+    },
+    {
+      "player": "Dylan Dixson",
+      "team": "Unclear (CPU)",
+      "user": "(CPU)",
+      "pos": "CB",
+      "no": "#9",
+      "week": 4,
+      "game": "at Middle Tennessee (W 45-10)",
+      "notes": "Defensive POTW - CPU team, school not clearly legible; 4 TKL, 2 INT, 2 PBU",
+      "isUserTeam": false
+    },
+    {
+      "player": "Jaylen Raynor",
+      "team": "Unclear (CPU, jersey reads \"STATE\")",
+      "user": "(CPU)",
+      "pos": "QB",
+      "no": "#1",
+      "week": 4,
+      "game": "at Florida International (W 45-16)",
+      "notes": "Offensive POTW - CPU team, school not clearly legible; 24/30, 295 pass yds, 9.8 YPA, 2 pass TD",
+      "isUserTeam": false
+    },
+    {
+      "player": "Nylan Brown",
+      "team": "Unclear (CPU)",
+      "user": "(CPU)",
+      "pos": "MIKE",
+      "no": "#8",
+      "week": 5,
+      "game": "at Hawai'i (L 27-35)",
+      "notes": "Defensive POTW - CPU team, school not clearly legible; TKL count unclear, 1 TFL, 5 PBU",
+      "isUserTeam": false
+    },
+    {
+      "player": "Kamari Moulton",
+      "team": "Unclear (CPU)",
+      "user": "(CPU)",
+      "pos": "HB",
+      "no": "#28",
+      "week": 5,
+      "game": "vs Boston College (W 35-14)",
+      "notes": "Offensive POTW - CPU team, school not clearly legible",
+      "isUserTeam": false
+    }
+  ],
+  "roster": [
+    {
+      "user": "Ben",
+      "team": "Duke",
+      "gamertag": "drrrrr28"
+    },
+    {
+      "user": "Jhump",
+      "team": "Fresno State",
+      "gamertag": "WhereIsBooski"
+    },
+    {
+      "user": "Jared",
+      "team": "Rutgers",
+      "gamertag": "TacoChest"
+    },
+    {
+      "user": "Adam",
+      "team": "Tulane",
+      "gamertag": "Aye Tee Why (active profile on screens)"
+    },
+    {
+      "user": "Nick",
+      "team": "Arizona State",
+      "gamertag": "iiKnickerbocker"
+    },
+    {
+      "user": "Vince",
+      "team": "NC State",
+      "gamertag": "Vensanity2410"
+    },
+    {
+      "user": "Harmon",
+      "team": "Michigan State",
+      "gamertag": "IIxHARMONzII (approximate reading, Members screen)"
+    },
+    {
+      "user": "Dom",
+      "team": "Baylor",
+      "gamertag": "CoolCorn9"
+    },
+    {
+      "user": "Wemple",
+      "team": "Wake Forest",
+      "gamertag": "KANYE SHRUGZ"
+    },
+    {
+      "user": "Tim",
+      "team": "Iowa",
+      "gamertag": "El Tabasco Tim"
+    },
+    {
+      "user": "Bruce",
+      "team": "South Carolina",
+      "gamertag": "Bruceleroy24227"
+    },
+    {
+      "user": "Tipton",
+      "team": "Penn State",
+      "gamertag": "TiptonsHyper"
+    },
+    {
+      "user": "Coltrain",
+      "team": "USC",
+      "gamertag": "Chump Dumplin"
+    },
+    {
+      "user": "Ceseque",
+      "team": "Wisconsin",
+      "gamertag": "csesque"
+    },
+    {
+      "user": "JoJo",
+      "team": "SMU",
+      "gamertag": "BAD APE9825"
+    },
+    {
+      "user": "Logan",
+      "team": "Clemson",
+      "gamertag": "Mr Logo"
+    },
+    {
+      "user": "Austin",
+      "team": "Miami",
+      "gamertag": "AustinMC20"
+    },
+    {
+      "user": "Jay",
+      "team": "LSU",
+      "gamertag": "LampxLighter"
+    },
+    {
+      "user": "Pat",
+      "team": "Texas",
+      "gamertag": "PGarrett6"
+    },
+    {
+      "user": "Kurt",
+      "team": "Tennessee",
+      "gamertag": "MrMasterMister"
+    },
+    {
+      "user": "Justin",
+      "team": "Michigan",
+      "gamertag": "Sushi Roll7026"
+    },
+    {
+      "user": "Cory",
+      "team": "Texas A&M",
+      "gamertag": "Gillesabias"
+    },
+    {
+      "user": "Derrick",
+      "team": "Oklahoma",
+      "gamertag": "SugarBottoms23"
+    }
+  ],
+  "hotStreaks": [
+    {
+      "team": "LSU",
+      "user": "Jay",
+      "record": "6-0",
+      "conf": "SEC",
+      "natlRank": 3,
+      "diff": 108,
+      "pf": 153,
+      "pa": 45,
+      "score": 61.2,
+      "streak": "W6",
+      "signatureWin": "#13 Penn State (34-8)",
+      "ovr": 91,
+      "rank": 1
+    },
+    {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "record": "5-0",
+      "conf": "Big 12",
+      "natlRank": null,
+      "diff": 108,
+      "pf": 205,
+      "pa": 97,
+      "score": 58.2,
+      "streak": "W5",
+      "signatureWin": "Nebraska (56-21)",
+      "ovr": null,
+      "rank": 2
+    },
+    {
+      "team": "Michigan",
+      "user": "Justin",
+      "record": "5-0",
+      "conf": "Big 12",
+      "natlRank": 6,
+      "diff": 106,
+      "pf": 160,
+      "pa": 54,
+      "score": 57.4,
+      "streak": "W5",
+      "signatureWin": "#4 Miami (38-21)",
+      "ovr": 89,
+      "rank": 3
+    },
+    {
+      "team": "Texas A&M",
+      "user": "Cory",
+      "record": "5-0",
+      "conf": "MWC",
+      "natlRank": 5,
+      "diff": 82,
+      "pf": 185,
+      "pa": 103,
+      "score": 47.8,
+      "streak": "W5",
+      "signatureWin": "UL Monroe (35-14)",
+      "ovr": 91,
+      "rank": 4
+    },
+    {
+      "team": "Arizona State",
+      "user": "Nick",
+      "record": "5-0",
+      "conf": "ACC",
+      "natlRank": 20,
+      "diff": 60,
+      "pf": 158,
+      "pa": 98,
+      "score": 39.0,
+      "streak": "W5",
+      "signatureWin": "Texas (42-16)",
+      "ovr": 79,
+      "rank": 6
+    },
+    {
+      "team": "Penn State",
+      "user": "Tipton",
+      "record": "4-1",
+      "conf": "Big 12",
+      "natlRank": 18,
+      "diff": 74,
+      "pf": 136,
+      "pa": 62,
+      "score": 40.6,
+      "streak": "W4",
+      "signatureWin": "Akron (41-0)",
+      "ovr": 84,
+      "rank": 5
+    },
+    {
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "record": "4-1",
+      "conf": "SEC",
+      "natlRank": null,
+      "diff": 24,
+      "pf": 92,
+      "pa": 68,
+      "score": 20.6,
+      "streak": "W4",
+      "signatureWin": "Georgia Tech (31-7)",
+      "ovr": 77,
+      "rank": 15
+    },
+    {
+      "team": "Clemson",
+      "user": "Logan",
+      "record": "3-1",
+      "conf": "Big Ten",
+      "natlRank": 23,
+      "diff": 73,
+      "pf": 116,
+      "pa": 43,
+      "score": 37.2,
+      "streak": "W3",
+      "signatureWin": "Georgia Southern (41-7)",
+      "ovr": 84,
+      "rank": 8
+    },
+    {
+      "team": "Baylor",
+      "user": "Dom",
+      "record": "4-1",
+      "conf": "MWC",
+      "natlRank": null,
+      "diff": 27,
+      "pf": 85,
+      "pa": 58,
+      "score": 21.8,
+      "streak": "W3",
+      "signatureWin": "#14 BYU (7-0)",
+      "ovr": 81,
+      "rank": 13
+    }
+  ],
+  "coldStreaks": [
+    {
+      "team": "Rutgers",
+      "user": "Jared",
+      "record": "1-5",
+      "conf": "MWC",
+      "natlRank": null,
+      "diff": -28,
+      "pf": 125,
+      "pa": 153,
+      "score": -13.2,
+      "streak": "L4",
+      "signatureWin": "Boston College (31-14)",
+      "ovr": 80,
+      "rank": 23
+    },
+    {
+      "team": "Tennessee",
+      "user": "Kurt",
+      "record": "2-3",
+      "conf": "Big Ten",
+      "natlRank": null,
+      "diff": -30,
+      "pf": 70,
+      "pa": 100,
+      "score": -12.0,
+      "streak": "L3",
+      "signatureWin": "Louisville (24-20)",
+      "ovr": null,
+      "rank": 22
+    }
+  ],
+  "historical": {
+    "allTime": [
+      {
+        "name": "Jhump",
+        "displayName": "Booski",
+        "tier": "T1",
+        "retired": false,
+        "win": 24,
+        "loss": 6,
+        "total": 30,
+        "pct": 80.0,
+        "currentTeam": "Fresno State"
+      },
+      {
+        "name": "Adam",
+        "displayName": "Adam",
+        "tier": "T1",
+        "retired": false,
+        "win": 52,
+        "loss": 16,
+        "total": 68,
+        "pct": 76.5,
+        "currentTeam": "Tulane"
+      },
+      {
+        "name": "AJ",
+        "displayName": "AJ",
+        "tier": "T2",
+        "retired": false,
+        "win": 15,
+        "loss": 5,
+        "total": 20,
+        "pct": 75.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Jared",
+        "displayName": "Jared",
+        "tier": "T1",
+        "retired": false,
+        "win": 49,
+        "loss": 22,
+        "total": 71,
+        "pct": 69.0,
+        "currentTeam": "Rutgers"
+      },
+      {
+        "name": "Isiah",
+        "displayName": "Isiah",
+        "tier": null,
+        "retired": true,
+        "win": 12,
+        "loss": 6,
+        "total": 18,
+        "pct": 66.7,
+        "currentTeam": null
+      },
+      {
+        "name": "Brandon",
+        "displayName": "Brandon",
+        "tier": null,
+        "retired": true,
+        "win": 19,
+        "loss": 10,
+        "total": 29,
+        "pct": 65.5,
+        "currentTeam": null
+      },
+      {
+        "name": "Vince",
+        "displayName": "Vince",
+        "tier": "T2",
+        "retired": false,
+        "win": 30,
+        "loss": 18,
+        "total": 48,
+        "pct": 62.5,
+        "currentTeam": "NC State"
+      },
+      {
+        "name": "Ben",
+        "displayName": "Ben",
+        "tier": "T1",
+        "retired": false,
+        "win": 28,
+        "loss": 18,
+        "total": 46,
+        "pct": 60.9,
+        "currentTeam": "Duke"
+      },
+      {
+        "name": "Dom",
+        "displayName": "Dom",
+        "tier": "T2",
+        "retired": false,
+        "win": 29,
+        "loss": 19,
+        "total": 48,
+        "pct": 60.4,
+        "currentTeam": "Baylor"
+      },
+      {
+        "name": "Tyler",
+        "displayName": "Tyler",
+        "tier": null,
+        "retired": true,
+        "win": 26,
+        "loss": 20,
+        "total": 46,
+        "pct": 56.5,
+        "currentTeam": null
+      },
+      {
+        "name": "Jeremy",
+        "displayName": "Jeremy",
+        "tier": "T4",
+        "retired": false,
+        "win": 11,
+        "loss": 9,
+        "total": 20,
+        "pct": 55.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Tipton",
+        "displayName": "Tipton",
+        "tier": "T2",
+        "retired": false,
+        "win": 26,
+        "loss": 23,
+        "total": 49,
+        "pct": 53.1,
+        "currentTeam": "Penn State"
+      },
+      {
+        "name": "Ceseque",
+        "displayName": "Cesq",
+        "tier": "T5",
+        "retired": false,
+        "win": 4,
+        "loss": 4,
+        "total": 8,
+        "pct": 50.0,
+        "currentTeam": "Wisconsin"
+      },
+      {
+        "name": "Dguy",
+        "displayName": "Dguy",
+        "tier": "T2",
+        "retired": false,
+        "win": 4,
+        "loss": 4,
+        "total": 8,
+        "pct": 50.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Nick",
+        "displayName": "Nick",
+        "tier": "T3",
+        "retired": false,
+        "win": 27,
+        "loss": 29,
+        "total": 56,
+        "pct": 48.2,
+        "currentTeam": "Arizona State"
+      },
+      {
+        "name": "Shawn",
+        "displayName": "Shawn",
+        "tier": "T4",
+        "retired": false,
+        "win": 12,
+        "loss": 13,
+        "total": 25,
+        "pct": 48.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Tim",
+        "displayName": "Tim",
+        "tier": "T3",
+        "retired": false,
+        "win": 26,
+        "loss": 30,
+        "total": 56,
+        "pct": 46.4,
+        "currentTeam": "Iowa"
+      },
+      {
+        "name": "Jake",
+        "displayName": "Jake",
+        "tier": null,
+        "retired": true,
+        "win": 10,
+        "loss": 12,
+        "total": 22,
+        "pct": 45.5,
+        "currentTeam": null
+      },
+      {
+        "name": "Justin",
+        "displayName": "Justin",
+        "tier": "T4",
+        "retired": false,
+        "win": 21,
+        "loss": 28,
+        "total": 49,
+        "pct": 42.9,
+        "currentTeam": "Michigan"
+      },
+      {
+        "name": "Logan",
+        "displayName": "Logan",
+        "tier": "T3",
+        "retired": false,
+        "win": 20,
+        "loss": 27,
+        "total": 47,
+        "pct": 42.6,
+        "currentTeam": "Clemson"
+      },
+      {
+        "name": "JoJo",
+        "displayName": "Jojo",
+        "tier": "T5",
+        "retired": false,
+        "win": 18,
+        "loss": 27,
+        "total": 45,
+        "pct": 40.0,
+        "currentTeam": "SMU"
+      },
+      {
+        "name": "Phil",
+        "displayName": "Phil",
+        "tier": null,
+        "retired": true,
+        "win": 2,
+        "loss": 3,
+        "total": 5,
+        "pct": 40.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Bruce",
+        "displayName": "Bruce",
+        "tier": "T4",
+        "retired": false,
+        "win": 16,
+        "loss": 25,
+        "total": 41,
+        "pct": 39.0,
+        "currentTeam": "South Carolina"
+      },
+      {
+        "name": "Kyle",
+        "displayName": "Kyle",
+        "tier": null,
+        "retired": true,
+        "win": 3,
+        "loss": 5,
+        "total": 8,
+        "pct": 37.5,
+        "currentTeam": null
+      },
+      {
+        "name": "Fox",
+        "displayName": "Fox",
+        "tier": null,
+        "retired": true,
+        "win": 4,
+        "loss": 7,
+        "total": 11,
+        "pct": 36.4,
+        "currentTeam": null
+      },
+      {
+        "name": "Harmon",
+        "displayName": "Harmon",
+        "tier": "T3",
+        "retired": false,
+        "win": 17,
+        "loss": 30,
+        "total": 47,
+        "pct": 36.2,
+        "currentTeam": "Michigan State"
+      },
+      {
+        "name": "Austin",
+        "displayName": "Austin",
+        "tier": "T3",
+        "retired": false,
+        "win": 18,
+        "loss": 32,
+        "total": 50,
+        "pct": 36.0,
+        "currentTeam": "Miami"
+      },
+      {
+        "name": "Chuckie",
+        "displayName": "Chuckie",
+        "tier": "T5",
+        "retired": false,
+        "win": 5,
+        "loss": 9,
+        "total": 14,
+        "pct": 35.7,
+        "currentTeam": null
+      },
+      {
+        "name": "Kurt",
+        "displayName": "Kurt",
+        "tier": "T5",
+        "retired": false,
+        "win": 15,
+        "loss": 29,
+        "total": 44,
+        "pct": 34.1,
+        "currentTeam": "Tennessee"
+      },
+      {
+        "name": "Pat",
+        "displayName": "Pat",
+        "tier": "T5",
+        "retired": false,
+        "win": 15,
+        "loss": 30,
+        "total": 45,
+        "pct": 33.3,
+        "currentTeam": "Texas"
+      },
+      {
+        "name": "Chris",
+        "displayName": "Chris",
+        "tier": null,
+        "retired": true,
+        "win": 3,
+        "loss": 6,
+        "total": 9,
+        "pct": 33.3,
+        "currentTeam": null
+      },
+      {
+        "name": "Coltrain",
+        "displayName": "Coltrain",
+        "tier": "T4",
+        "retired": false,
+        "win": 14,
+        "loss": 31,
+        "total": 45,
+        "pct": 31.1,
+        "currentTeam": "USC"
+      },
+      {
+        "name": "Goose",
+        "displayName": "Goose",
+        "tier": null,
+        "retired": true,
+        "win": 4,
+        "loss": 12,
+        "total": 16,
+        "pct": 25.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Swaggy",
+        "displayName": "Swaggy",
+        "tier": "T5",
+        "retired": false,
+        "win": 1,
+        "loss": 8,
+        "total": 9,
+        "pct": 11.1,
+        "currentTeam": null
+      },
+      {
+        "name": "Dylan",
+        "displayName": "Dylan",
+        "tier": null,
+        "retired": true,
+        "win": 1,
+        "loss": 12,
+        "total": 13,
+        "pct": 7.7,
+        "currentTeam": null
+      }
+    ],
+    "weighted": [
+      {
+        "name": "AJ",
+        "tier": "T1",
+        "weightedWin": 42.75,
+        "weightedLoss": 7,
+        "weightedTotal": 49.75,
+        "pct": 85.9,
+        "currentTeam": null
+      },
+      {
+        "name": "Jhump",
+        "tier": "T1",
+        "weightedWin": 45.25,
+        "weightedLoss": 8.25,
+        "weightedTotal": 53.5,
+        "pct": 84.6,
+        "currentTeam": "Fresno State"
+      },
+      {
+        "name": "Adam",
+        "tier": "T1",
+        "weightedWin": 39.75,
+        "weightedLoss": 9.5,
+        "weightedTotal": 49.25,
+        "pct": 80.7,
+        "currentTeam": "Tulane"
+      },
+      {
+        "name": "Ben",
+        "tier": "T2",
+        "weightedWin": 29.25,
+        "weightedLoss": 12.75,
+        "weightedTotal": 42,
+        "pct": 69.6,
+        "currentTeam": "Duke"
+      },
+      {
+        "name": "Jared",
+        "tier": "T2",
+        "weightedWin": 32.25,
+        "weightedLoss": 15,
+        "weightedTotal": 47.25,
+        "pct": 68.3,
+        "currentTeam": "Rutgers"
+      },
+      {
+        "name": "Vince",
+        "tier": "T2",
+        "weightedWin": 24,
+        "weightedLoss": 12.5,
+        "weightedTotal": 36.5,
+        "pct": 65.8,
+        "currentTeam": "NC State"
+      },
+      {
+        "name": "Dom",
+        "tier": "T2",
+        "weightedWin": 28.25,
+        "weightedLoss": 16,
+        "weightedTotal": 44.25,
+        "pct": 63.8,
+        "currentTeam": "Baylor"
+      },
+      {
+        "name": "Shawn",
+        "tier": "T3",
+        "weightedWin": 14.25,
+        "weightedLoss": 11.75,
+        "weightedTotal": 26,
+        "pct": 54.8,
+        "currentTeam": null
+      },
+      {
+        "name": "Jeremy",
+        "tier": "T3",
+        "weightedWin": 14.75,
+        "weightedLoss": 14.5,
+        "weightedTotal": 29.25,
+        "pct": 50.4,
+        "currentTeam": null
+      },
+      {
+        "name": "Ceseque",
+        "tier": "T3",
+        "weightedWin": 8,
+        "weightedLoss": 8,
+        "weightedTotal": 16,
+        "pct": 50.0,
+        "currentTeam": "Wisconsin"
+      },
+      {
+        "name": "Nick",
+        "tier": "T3",
+        "weightedWin": 19.5,
+        "weightedLoss": 21,
+        "weightedTotal": 40.5,
+        "pct": 48.1,
+        "currentTeam": "Arizona State"
+      },
+      {
+        "name": "Tim",
+        "tier": "T3",
+        "weightedWin": 20.5,
+        "weightedLoss": 22.75,
+        "weightedTotal": 43.25,
+        "pct": 47.4,
+        "currentTeam": "Iowa"
+      },
+      {
+        "name": "Harmon",
+        "tier": "T3",
+        "weightedWin": 18.5,
+        "weightedLoss": 22,
+        "weightedTotal": 40.5,
+        "pct": 45.7,
+        "currentTeam": "Michigan State"
+      },
+      {
+        "name": "JoJo",
+        "tier": "T3",
+        "weightedWin": 15.25,
+        "weightedLoss": 18.5,
+        "weightedTotal": 33.75,
+        "pct": 45.2,
+        "currentTeam": "SMU"
+      },
+      {
+        "name": "Dguy",
+        "tier": "T3",
+        "weightedWin": 4,
+        "weightedLoss": 6.25,
+        "weightedTotal": 10.25,
+        "pct": 39.0,
+        "currentTeam": null
+      },
+      {
+        "name": "Coltrain",
+        "tier": "T4",
+        "weightedWin": 10,
+        "weightedLoss": 16.75,
+        "weightedTotal": 26.75,
+        "pct": 37.4,
+        "currentTeam": "USC"
+      },
+      {
+        "name": "Tipton",
+        "tier": "T4",
+        "weightedWin": 11.75,
+        "weightedLoss": 20.5,
+        "weightedTotal": 32.25,
+        "pct": 36.4,
+        "currentTeam": "Penn State"
+      },
+      {
+        "name": "Bruce",
+        "tier": "T4",
+        "weightedWin": 11.25,
+        "weightedLoss": 20.5,
+        "weightedTotal": 31.75,
+        "pct": 35.4,
+        "currentTeam": "South Carolina"
+      },
+      {
+        "name": "Chuckie",
+        "tier": "T4",
+        "weightedWin": 10.5,
+        "weightedLoss": 20.25,
+        "weightedTotal": 30.75,
+        "pct": 34.1,
+        "currentTeam": null
+      },
+      {
+        "name": "Logan",
+        "tier": "T4",
+        "weightedWin": 12,
+        "weightedLoss": 23.75,
+        "weightedTotal": 35.75,
+        "pct": 33.6,
+        "currentTeam": "Clemson"
+      },
+      {
+        "name": "Austin",
+        "tier": "T5",
+        "weightedWin": 10.25,
+        "weightedLoss": 26,
+        "weightedTotal": 36.25,
+        "pct": 28.3,
+        "currentTeam": "Miami"
+      },
+      {
+        "name": "Justin",
+        "tier": "T5",
+        "weightedWin": 6.5,
+        "weightedLoss": 21,
+        "weightedTotal": 27.5,
+        "pct": 23.6,
+        "currentTeam": "Michigan"
+      },
+      {
+        "name": "Pat",
+        "tier": "T5",
+        "weightedWin": 6.75,
+        "weightedLoss": 22.5,
+        "weightedTotal": 29.25,
+        "pct": 23.1,
+        "currentTeam": "Texas"
+      },
+      {
+        "name": "Kurt",
+        "tier": "T5",
+        "weightedWin": 5.25,
+        "weightedLoss": 31.75,
+        "weightedTotal": 37,
+        "pct": 14.2,
+        "currentTeam": "Tennessee"
+      }
+    ],
+    "pre27Seasons": [
+      {
+        "season": 1,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "CPU",
+          "CPU"
+        ]
+      },
+      {
+        "season": 2,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Justin",
+          "CPU"
+        ]
+      },
+      {
+        "season": 3,
+        "champion": "Brandon",
+        "runnerUp": "Adam",
+        "finalFour": [
+          "Isiah",
+          "CPU"
+        ]
+      },
+      {
+        "season": 4,
+        "champion": "Vince",
+        "runnerUp": "Dom",
+        "finalFour": [
+          "Jared",
+          "Nick"
+        ]
+      },
+      {
+        "season": 5,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Tyler M",
+          "Dom"
+        ]
+      },
+      {
+        "season": 6,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Austin",
+          "Jake"
+        ]
+      }
+    ],
+    "cfb27Seasons": [],
+    "titleLeaderboard": [
+      {
+        "name": "Adam",
+        "champs": 5,
+        "runnerUps": 1,
+        "finalFours": 2
+      },
+      {
+        "name": "Jhump",
+        "champs": 2,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Dom",
+        "champs": 1,
+        "runnerUps": 1,
+        "finalFours": 1
+      },
+      {
+        "name": "Vince",
+        "champs": 1,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Brandon",
+        "champs": 1,
+        "runnerUps": 0,
+        "finalFours": 0
+      },
+      {
+        "name": "Jared",
+        "champs": 0,
+        "runnerUps": 5,
+        "finalFours": 1
+      },
+      {
+        "name": "AJ",
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 1
+      },
+      {
+        "name": "Bruce",
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 0
+      },
+      {
+        "name": "Logan",
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 0
+      },
+      {
+        "name": "Nick",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 2
+      },
+      {
+        "name": "Justin",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Isiah",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Tyler M",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Austin",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Jake",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "Jeremy",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      },
+      {
+        "name": "JoJo",
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1
+      }
+    ],
+    "currentSeasonLabel": "CFB 27 \u2014 Season 1 (in progress)",
+    "currentRecordByUser": {
+      "Jay": "6-0",
+      "Jhump": "5-0",
+      "Justin": "5-0",
+      "Cory": "5-0",
+      "Tipton": "4-1",
+      "Nick": "5-0",
+      "Coltrain": "4-2",
+      "Logan": "3-1",
+      "Bruce": "4-1",
+      "Derrick": "3-2",
+      "Austin": "4-1",
+      "Ben": "4-1",
+      "Dom": "4-1",
+      "Ceseque": "2-3",
+      "Wemple": "4-1",
+      "Pat": "4-2",
+      "Vince": "3-1",
+      "Harmon": "3-2",
+      "Adam": "3-3",
+      "Tim": "2-3",
+      "JoJo": "2-3",
+      "Kurt": "2-3",
+      "Jared": "1-5"
+    },
+    "cfb25Seasons": [
+      {
+        "season": 1,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "CPU",
+          "CPU"
+        ]
+      },
+      {
+        "season": 2,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Justin",
+          "CPU"
+        ]
+      },
+      {
+        "season": 3,
+        "champion": "Brandon",
+        "runnerUp": "Adam",
+        "finalFour": [
+          "Isiah",
+          "CPU"
+        ]
+      },
+      {
+        "season": 4,
+        "champion": "Vince",
+        "runnerUp": "Dom",
+        "finalFour": [
+          "Jared",
+          "Nick"
+        ]
+      },
+      {
+        "season": 5,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Tyler M",
+          "Dom"
+        ]
+      },
+      {
+        "season": 6,
+        "champion": "Adam",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Austin",
+          "Jake"
+        ]
+      }
+    ],
+    "cfb26Seasons": [
+      {
+        "season": 1,
+        "champion": "Jhump",
+        "runnerUp": "Bruce",
+        "finalFour": [
+          "AJ",
+          "Jeremy"
+        ]
+      },
+      {
+        "season": 2,
+        "champion": "Adam",
+        "runnerUp": "Logan",
+        "finalFour": [
+          "Nick",
+          "Jhump"
+        ]
+      },
+      {
+        "season": 3,
+        "champion": "Dom",
+        "runnerUp": "AJ",
+        "finalFour": [
+          "Adam",
+          "Vince"
+        ]
+      },
+      {
+        "season": 4,
+        "champion": "Jhump",
+        "runnerUp": "Jared",
+        "finalFour": [
+          "Adam",
+          "JoJo"
+        ]
+      }
+    ],
+    "historicalPower": [
+      {
+        "name": "Adam",
+        "displayName": "Adam",
+        "retired": false,
+        "currentTeam": "Tulane",
+        "win": 52,
+        "loss": 16,
+        "pct": 76.5,
+        "champs": 5,
+        "runnerUps": 1,
+        "finalFours": 2,
+        "score": 126.2,
+        "rank": 1
+      },
+      {
+        "name": "Jhump",
+        "displayName": "Booski",
+        "retired": false,
+        "currentTeam": "Fresno State",
+        "win": 24,
+        "loss": 6,
+        "pct": 80.0,
+        "champs": 2,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 73.0,
+        "rank": 2
+      },
+      {
+        "name": "Jared",
+        "displayName": "Jared",
+        "retired": false,
+        "currentTeam": "Rutgers",
+        "win": 49,
+        "loss": 22,
+        "pct": 69.0,
+        "champs": 0,
+        "runnerUps": 5,
+        "finalFours": 1,
+        "score": 72.5,
+        "rank": 3
+      },
+      {
+        "name": "Dom",
+        "displayName": "Dom",
+        "retired": false,
+        "currentTeam": "Baylor",
+        "win": 29,
+        "loss": 19,
+        "pct": 60.4,
+        "champs": 1,
+        "runnerUps": 1,
+        "finalFours": 1,
+        "score": 55.2,
+        "rank": 4
+      },
+      {
+        "name": "Vince",
+        "displayName": "Vince",
+        "retired": false,
+        "currentTeam": "NC State",
+        "win": 30,
+        "loss": 18,
+        "pct": 62.5,
+        "champs": 1,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 49.2,
+        "rank": 5
+      },
+      {
+        "name": "Brandon",
+        "displayName": "Brandon",
+        "retired": true,
+        "currentTeam": null,
+        "win": 19,
+        "loss": 10,
+        "pct": 65.5,
+        "champs": 1,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 47.8,
+        "rank": 6
+      },
+      {
+        "name": "AJ",
+        "displayName": "AJ",
+        "retired": false,
+        "currentTeam": null,
+        "win": 15,
+        "loss": 5,
+        "pct": 75.0,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 1,
+        "score": 47.5,
+        "rank": 7
+      },
+      {
+        "name": "Isiah",
+        "displayName": "Isiah",
+        "retired": true,
+        "currentTeam": null,
+        "win": 12,
+        "loss": 6,
+        "pct": 66.7,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 36.4,
+        "rank": 8
+      },
+      {
+        "name": "Jeremy",
+        "displayName": "Jeremy",
+        "retired": false,
+        "currentTeam": null,
+        "win": 11,
+        "loss": 9,
+        "pct": 55.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 30.5,
+        "rank": 9
+      },
+      {
+        "name": "Ben",
+        "displayName": "Ben",
+        "retired": false,
+        "currentTeam": "Duke",
+        "win": 28,
+        "loss": 18,
+        "pct": 60.9,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 30.4,
+        "rank": 10
+      },
+      {
+        "name": "Nick",
+        "displayName": "Nick",
+        "retired": false,
+        "currentTeam": "Arizona State",
+        "win": 27,
+        "loss": 29,
+        "pct": 48.2,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 2,
+        "score": 30.1,
+        "rank": 11
+      },
+      {
+        "name": "Logan",
+        "displayName": "Logan",
+        "retired": false,
+        "currentTeam": "Clemson",
+        "win": 20,
+        "loss": 27,
+        "pct": 42.6,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 0,
+        "score": 28.3,
+        "rank": 12
+      },
+      {
+        "name": "Tyler",
+        "displayName": "Tyler",
+        "retired": true,
+        "currentTeam": null,
+        "win": 26,
+        "loss": 20,
+        "pct": 56.5,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 28.2,
+        "rank": 13
+      },
+      {
+        "name": "Tipton",
+        "displayName": "Tipton",
+        "retired": false,
+        "currentTeam": "Penn State",
+        "win": 26,
+        "loss": 23,
+        "pct": 53.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 26.6,
+        "rank": 14
+      },
+      {
+        "name": "Bruce",
+        "displayName": "Bruce",
+        "retired": false,
+        "currentTeam": "South Carolina",
+        "win": 16,
+        "loss": 25,
+        "pct": 39.0,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 0,
+        "score": 26.5,
+        "rank": 15
+      },
+      {
+        "name": "Jake",
+        "displayName": "Jake",
+        "retired": true,
+        "currentTeam": null,
+        "win": 10,
+        "loss": 12,
+        "pct": 45.5,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 25.8,
+        "rank": 16
+      },
+      {
+        "name": "Ceseque",
+        "displayName": "Cesq",
+        "retired": false,
+        "currentTeam": "Wisconsin",
+        "win": 4,
+        "loss": 4,
+        "pct": 50.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 25.0,
+        "rank": 17
+      },
+      {
+        "name": "Dguy",
+        "displayName": "Dguy",
+        "retired": false,
+        "currentTeam": null,
+        "win": 4,
+        "loss": 4,
+        "pct": 50.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 25.0,
+        "rank": 18
+      },
+      {
+        "name": "Justin",
+        "displayName": "Justin",
+        "retired": false,
+        "currentTeam": "Michigan",
+        "win": 21,
+        "loss": 28,
+        "pct": 42.9,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 24.4,
+        "rank": 19
+      },
+      {
+        "name": "Shawn",
+        "displayName": "Shawn",
+        "retired": false,
+        "currentTeam": null,
+        "win": 12,
+        "loss": 13,
+        "pct": 48.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 24.0,
+        "rank": 20
+      },
+      {
+        "name": "Tim",
+        "displayName": "Tim",
+        "retired": false,
+        "currentTeam": "Iowa",
+        "win": 26,
+        "loss": 30,
+        "pct": 46.4,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 23.2,
+        "rank": 21
+      },
+      {
+        "name": "JoJo",
+        "displayName": "Jojo",
+        "retired": false,
+        "currentTeam": "SMU",
+        "win": 18,
+        "loss": 27,
+        "pct": 40.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 23.0,
+        "rank": 22
+      },
+      {
+        "name": "Austin",
+        "displayName": "Austin",
+        "retired": false,
+        "currentTeam": "Miami",
+        "win": 18,
+        "loss": 32,
+        "pct": 36.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 21.0,
+        "rank": 23
+      },
+      {
+        "name": "Phil",
+        "displayName": "Phil",
+        "retired": true,
+        "currentTeam": null,
+        "win": 2,
+        "loss": 3,
+        "pct": 40.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 20.0,
+        "rank": 24
+      },
+      {
+        "name": "Kyle",
+        "displayName": "Kyle",
+        "retired": true,
+        "currentTeam": null,
+        "win": 3,
+        "loss": 5,
+        "pct": 37.5,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 18.8,
+        "rank": 25
+      },
+      {
+        "name": "Fox",
+        "displayName": "Fox",
+        "retired": true,
+        "currentTeam": null,
+        "win": 4,
+        "loss": 7,
+        "pct": 36.4,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 18.2,
+        "rank": 26
+      },
+      {
+        "name": "Harmon",
+        "displayName": "Harmon",
+        "retired": false,
+        "currentTeam": "Michigan State",
+        "win": 17,
+        "loss": 30,
+        "pct": 36.2,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 18.1,
+        "rank": 27
+      },
+      {
+        "name": "Chuckie",
+        "displayName": "Chuckie",
+        "retired": false,
+        "currentTeam": null,
+        "win": 5,
+        "loss": 9,
+        "pct": 35.7,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 17.9,
+        "rank": 28
+      },
+      {
+        "name": "Kurt",
+        "displayName": "Kurt",
+        "retired": false,
+        "currentTeam": "Tennessee",
+        "win": 15,
+        "loss": 29,
+        "pct": 34.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 17.1,
+        "rank": 29
+      },
+      {
+        "name": "Pat",
+        "displayName": "Pat",
+        "retired": false,
+        "currentTeam": "Texas",
+        "win": 15,
+        "loss": 30,
+        "pct": 33.3,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 16.6,
+        "rank": 30
+      },
+      {
+        "name": "Chris",
+        "displayName": "Chris",
+        "retired": true,
+        "currentTeam": null,
+        "win": 3,
+        "loss": 6,
+        "pct": 33.3,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 16.6,
+        "rank": 31
+      },
+      {
+        "name": "Coltrain",
+        "displayName": "Coltrain",
+        "retired": false,
+        "currentTeam": "USC",
+        "win": 14,
+        "loss": 31,
+        "pct": 31.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 15.6,
+        "rank": 32
+      },
+      {
+        "name": "Goose",
+        "displayName": "Goose",
+        "retired": true,
+        "currentTeam": null,
+        "win": 4,
+        "loss": 12,
+        "pct": 25.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 12.5,
+        "rank": 33
+      },
+      {
+        "name": "Swaggy",
+        "displayName": "Swaggy",
+        "retired": false,
+        "currentTeam": null,
+        "win": 1,
+        "loss": 8,
+        "pct": 11.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 5.5,
+        "rank": 34
+      },
+      {
+        "name": "Dylan",
+        "displayName": "Dylan",
+        "retired": true,
+        "currentTeam": null,
+        "win": 1,
+        "loss": 12,
+        "pct": 7.7,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 3.9,
+        "rank": 35
+      }
+    ],
+    "droughtClock": [
+      {
+        "user": "Jhump",
+        "team": "Fresno State",
+        "status": "champion",
+        "seasonsSince": 0,
+        "lastWon": "CFB 26 S4"
+      },
+      {
+        "user": "Dom",
+        "team": "Baylor",
+        "status": "champion",
+        "seasonsSince": 1,
+        "lastWon": "CFB 26 S3"
+      },
+      {
+        "user": "Adam",
+        "team": "Tulane",
+        "status": "champion",
+        "seasonsSince": 2,
+        "lastWon": "CFB 26 S2"
+      },
+      {
+        "user": "Vince",
+        "team": "NC State",
+        "status": "champion",
+        "seasonsSince": 6,
+        "lastWon": "CFB 25 S4"
+      },
+      {
+        "user": "Ben",
+        "team": "Duke",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Jared",
+        "team": "Rutgers",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Nick",
+        "team": "Arizona State",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Harmon",
+        "team": "Michigan State",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Tim",
+        "team": "Iowa",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Bruce",
+        "team": "South Carolina",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Tipton",
+        "team": "Penn State",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Coltrain",
+        "team": "USC",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Ceseque",
+        "team": "Wisconsin",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "JoJo",
+        "team": "SMU",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Logan",
+        "team": "Clemson",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Austin",
+        "team": "Miami",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Pat",
+        "team": "Texas",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Kurt",
+        "team": "Tennessee",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Justin",
+        "team": "Michigan",
+        "status": "never",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Wemple",
+        "team": "Wake Forest",
+        "status": "new",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Jay",
+        "team": "LSU",
+        "status": "new",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Cory",
+        "team": "Texas A&M",
+        "status": "new",
+        "seasonsSince": null,
+        "lastWon": null
+      },
+      {
+        "user": "Derrick",
+        "team": "Oklahoma",
+        "status": "new",
+        "seasonsSince": null,
+        "lastWon": null
+      }
+    ],
+    "trajectory": [
+      {
+        "user": "Justin",
+        "team": "Michigan",
+        "careerPct": 42.9,
+        "currentPct": 100.0,
+        "delta": 57.1,
+        "currentRecord": "5-0",
+        "careerRecord": "21-28"
+      },
+      {
+        "user": "Nick",
+        "team": "Arizona State",
+        "careerPct": 48.2,
+        "currentPct": 100.0,
+        "delta": 51.8,
+        "currentRecord": "5-0",
+        "careerRecord": "27-29"
+      },
+      {
+        "user": "Austin",
+        "team": "Miami",
+        "careerPct": 36.0,
+        "currentPct": 80.0,
+        "delta": 44.0,
+        "currentRecord": "4-1",
+        "careerRecord": "18-32"
+      },
+      {
+        "user": "Bruce",
+        "team": "South Carolina",
+        "careerPct": 39.0,
+        "currentPct": 80.0,
+        "delta": 41.0,
+        "currentRecord": "4-1",
+        "careerRecord": "16-25"
+      },
+      {
+        "user": "Coltrain",
+        "team": "USC",
+        "careerPct": 31.1,
+        "currentPct": 66.7,
+        "delta": 35.6,
+        "currentRecord": "4-2",
+        "careerRecord": "14-31"
+      },
+      {
+        "user": "Pat",
+        "team": "Texas",
+        "careerPct": 33.3,
+        "currentPct": 66.7,
+        "delta": 33.4,
+        "currentRecord": "4-2",
+        "careerRecord": "15-30"
+      },
+      {
+        "user": "Logan",
+        "team": "Clemson",
+        "careerPct": 42.6,
+        "currentPct": 75.0,
+        "delta": 32.4,
+        "currentRecord": "3-1",
+        "careerRecord": "20-27"
+      },
+      {
+        "user": "Tipton",
+        "team": "Penn State",
+        "careerPct": 53.1,
+        "currentPct": 80.0,
+        "delta": 26.9,
+        "currentRecord": "4-1",
+        "careerRecord": "26-23"
+      },
+      {
+        "user": "Harmon",
+        "team": "Michigan State",
+        "careerPct": 36.2,
+        "currentPct": 60.0,
+        "delta": 23.8,
+        "currentRecord": "3-2",
+        "careerRecord": "17-30"
+      },
+      {
+        "user": "Jhump",
+        "team": "Fresno State",
+        "careerPct": 80.0,
+        "currentPct": 100.0,
+        "delta": 20.0,
+        "currentRecord": "5-0",
+        "careerRecord": "24-6"
+      },
+      {
+        "user": "Dom",
+        "team": "Baylor",
+        "careerPct": 60.4,
+        "currentPct": 80.0,
+        "delta": 19.6,
+        "currentRecord": "4-1",
+        "careerRecord": "29-19"
+      },
+      {
+        "user": "Ben",
+        "team": "Duke",
+        "careerPct": 60.9,
+        "currentPct": 80.0,
+        "delta": 19.1,
+        "currentRecord": "4-1",
+        "careerRecord": "28-18"
+      },
+      {
+        "user": "Vince",
+        "team": "NC State",
+        "careerPct": 62.5,
+        "currentPct": 75.0,
+        "delta": 12.5,
+        "currentRecord": "3-1",
+        "careerRecord": "30-18"
+      },
+      {
+        "user": "Kurt",
+        "team": "Tennessee",
+        "careerPct": 34.1,
+        "currentPct": 40.0,
+        "delta": 5.9,
+        "currentRecord": "2-3",
+        "careerRecord": "15-29"
+      },
+      {
+        "user": "JoJo",
+        "team": "SMU",
+        "careerPct": 40.0,
+        "currentPct": 40.0,
+        "delta": 0.0,
+        "currentRecord": "2-3",
+        "careerRecord": "18-27"
+      },
+      {
+        "user": "Tim",
+        "team": "Iowa",
+        "careerPct": 46.4,
+        "currentPct": 40.0,
+        "delta": -6.4,
+        "currentRecord": "2-3",
+        "careerRecord": "26-30"
+      },
+      {
+        "user": "Ceseque",
+        "team": "Wisconsin",
+        "careerPct": 50.0,
+        "currentPct": 40.0,
+        "delta": -10.0,
+        "currentRecord": "2-3",
+        "careerRecord": "4-4"
+      },
+      {
+        "user": "Adam",
+        "team": "Tulane",
+        "careerPct": 76.5,
+        "currentPct": 50.0,
+        "delta": -26.5,
+        "currentRecord": "3-3",
+        "careerRecord": "52-16"
+      },
+      {
+        "user": "Jared",
+        "team": "Rutgers",
+        "careerPct": 69.0,
+        "currentPct": 16.7,
+        "delta": -52.3,
+        "currentRecord": "1-5",
+        "careerRecord": "49-22"
+      }
+    ]
+  }
+}
+</script>
+<script>
+const DATA = JSON.parse(document.getElementById('dataBlob').textContent);
+
+const TABS = [
+  {id:'power', label:'Power Poll'},
+  {id:'standings', label:'Standings'},
+  {id:'week', label:'This Week'},
+  {id:'record', label:'Record Book'},
+  {id:'recruiting', label:'Recruiting'},
+  {id:'rosters', label:'Rosters'},
+  {id:'history', label:'History'},
+];
+
+function confClass(conf){
+  const map = {'ACC':'acc','MWC':'mwc','Big 12':'big12','SEC':'sec','Big Ten':'bigten'};
+  return map[conf] || 'acc';
+}
+
+function esc(s){
+  if (s===null || s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---------- Nav ----------
+function renderNav(){
+  const nav = document.getElementById('tabnav');
+  nav.innerHTML = TABS.map((t,i)=>`<button data-tab="${t.id}" class="${i===0?'active':''}">${t.label}</button>`).join('');
+  nav.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    switchTab(btn.dataset.tab);
+  });
+}
+function switchTab(id){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+id));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ---------- Hero ----------
+function renderHero(){
+  const top = DATA.power[0];
+  const mostGames = [...DATA.power].sort((a,b)=> (b.pf+b.pa)-(a.pf+a.pa))[0];
+  const longestStreak = [...DATA.power].sort((a,b)=>{
+    const av = parseInt(a.streak.slice(1))*(a.streak[0]==='W'?1:-1);
+    const bv = parseInt(b.streak.slice(1))*(b.streak[0]==='W'?1:-1);
+    return bv-av;
+  })[0];
+  const undefeated = DATA.power.filter(p=>p.record.endsWith('-0'));
+
+  document.getElementById('heroSub').textContent =
+    `Every result, ranking, and grudge match from the dynasty, logged from screenshots as they happen. ${DATA.meta.totalGames} games played across ${DATA.meta.conferences.length} conferences that make no geographic sense.`;
+
+  const stats = [
+    {num:`${top.user}`, lbl:`#1 Power · ${top.team} (${top.record})`},
+    {num:`${undefeated.length}`, lbl:'Teams still unbeaten'},
+    {num:`${longestStreak.streak}`, lbl:`Longest active streak · ${longestStreak.user}`},
+    {num:`${DATA.h2hUpcoming.length}`, lbl:'Grudge matches next week'},
+  ];
+  document.getElementById('heroStats').innerHTML = stats.map(s=>`
+    <div class="hero-stat"><div class="num display">${esc(s.num)}</div><div class="lbl">${esc(s.lbl)}</div></div>
+  `).join('');
+
+  document.getElementById('footNote').textContent =
+    `Snapshot: Week ${DATA.meta.week} final / Week ${DATA.meta.nextWeek} on deck`;
+}
+
+// ---------- Ticker ----------
+function renderTicker(){
+  const h2h = DATA.gameLog.filter(g=>g.isH2H).sort((a,b)=>b.week-a.week).slice(0,16);
+  const items = h2h.map(g=>{
+    const winner = g.result==='W' ? g.user : g.oppUser;
+    const loser = g.result==='W' ? g.oppUser : g.user;
+    const wScore = g.result==='W' ? g.teamPts : g.oppPts;
+    const lScore = g.result==='W' ? g.oppPts : g.teamPts;
+    return `<span class="tick"><span class="win">${esc(winner)}</span> def. <span class="lose">${esc(loser)}</span> <span class="score">${wScore}-${lScore}</span> <span class="wk">WK${g.week}</span></span>`;
+  }).join('');
+  document.getElementById('tickerTrack').innerHTML = items + items; // duplicate for seamless loop
+}
+
+// ---------- Power poll ----------
+function renderPower(){
+  const el = document.getElementById('powerList');
+  el.innerHTML = DATA.power.map(p=>{
+    const diffClass = p.diff>=0 ? 'pos':'neg';
+    const diffStr = p.diff>=0 ? `+${p.diff}`:`${p.diff}`;
+    const streakClass = p.streak[0]==='W' ? 'w':'l';
+    const why = p.signatureWin ? `Best win: ${esc(p.signatureWin)}` : 'Still looking for a signature win';
+    return `
+    <div class="poll-row ${p.rank<=3?'top3':''}">
+      <div class="poll-rank mono">${p.rank}</div>
+      <div class="poll-team">
+        <div class="name">${esc(p.user)} <span style="color:var(--chalk-dimmer); font-weight:400;">— ${esc(p.team)}</span></div>
+        <div class="meta"><span class="tag ${confClass(p.conf)}">${esc(p.conf)}</span> <span class="conf">${p.natlRank?`#${p.natlRank} nationally`:''}</span></div>
+      </div>
+      <div class="poll-record">
+        <div class="rec mono">${esc(p.record)}</div>
+        <div class="diff mono ${diffClass}">${diffStr} pts</div>
+      </div>
+      <div><span class="streak-badge ${streakClass}">${esc(p.streak)}</span></div>
+      <div class="poll-why">${why}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Standings ----------
+function renderStandings(){
+  const el = document.getElementById('confGrid');
+  const order = ['SEC','Big 12','ACC','MWC','Big Ten'];
+  el.innerHTML = order.filter(c=>DATA.standingsByConf[c]).map(conf=>{
+    const teams = DATA.standingsByConf[conf];
+    const rows = teams.map(t=>`
+      <tr>
+        <td class="team-cell"><div class="t">${esc(t.team)}</div><div class="u">${esc(t.user)}</div></td>
+        <td class="rec">${esc(t.record)}</td>
+        <td class="rk">${t.natlRank?'#'+t.natlRank:'—'}</td>
+      </tr>`).join('');
+    return `
+    <div class="card conf-card">
+      <div class="conf-card-head">
+        <span class="cname">${esc(conf)}</span>
+        <span class="ccount">${teams.length} teams</span>
+      </div>
+      <table class="standings">
+        <thead><tr><th>Team</th><th style="text-align:right;">Record</th><th style="text-align:right;">Rank</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+// ---------- This week ----------
+function renderWeek(){
+  const marquee = document.getElementById('marqueeGrid');
+  marquee.innerHTML = DATA.h2hUpcoming.map(g=>`
+    <div class="card matchup-card">
+      <div class="matchup-teams">
+        <div class="matchup-side">
+          <div class="u">${esc(g.user)}</div>
+          <div class="t">${esc(g.team)}</div>
+        </div>
+        <div class="matchup-vs">${g.homeAway==='Home'?'VS':'@'}</div>
+        <div class="matchup-side away">
+          <div class="u">${esc(g.oppUser)}</div>
+          <div class="t">${esc(g.opponent)}</div>
+        </div>
+      </div>
+      <div class="matchup-meta"><span>WEEK ${g.week}</span><span>${esc(g.time||'TBD')}</span></div>
+    </div>`).join('');
+
+  const list = document.getElementById('weekList');
+  const all = [...DATA.upcomingWeek7].sort((a,b)=> a.team.localeCompare(b.team));
+  list.innerHTML = all.map(g=>{
+    const rankPill = g.oppRank ? `<span class="rankpill">#${g.oppRank}</span>` : '';
+    const h2hTag = g.isH2H ? `<span class="h2htag">H2H</span>` : '';
+    const at = g.homeAway==='Home' ? 'vs' : (g.homeAway==='Away' ? 'at' : g.homeAway);
+    return `
+    <div class="week-row">
+      <div class="matchline">
+        <span class="who">${esc(g.user)}</span><span style="color:var(--chalk-dimmer);">(${esc(g.team)})</span>
+        <span style="color:var(--chalk-dimmer);">${at}</span>
+        ${rankPill}<span>${esc(g.opponent)}</span>
+        ${h2hTag}
+      </div>
+      <div class="time">${esc(g.time||'TBD')}</div>
+      <div></div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Record book ----------
+function gameLine(g, showMargin){
+  const winner = g.result==='W' ? g.user : g.oppUser;
+  const loser = g.result==='W' ? g.oppUser : g.user;
+  const wScore = g.result==='W' ? g.teamPts : g.oppPts;
+  const lScore = g.result==='W' ? g.oppPts : g.teamPts;
+  return `<div class="rb-row">
+    <div><span style="font-weight:700;">${esc(winner)}</span> <span style="color:var(--chalk-dimmer);">def.</span> ${esc(loser)}</div>
+    <div class="m">${wScore}-${lScore}${showMargin?` · +${g.margin}`:''}</div>
+  </div>`;
+}
+function renderRecordBook(){
+  document.getElementById('blowoutList').innerHTML = DATA.blowouts.map(g=>gameLine(g,true)).join('');
+  document.getElementById('closeList').innerHTML = DATA.closestGames.map(g=>gameLine(g,true)).join('');
+
+  document.getElementById('hotList').innerHTML = DATA.hotStreaks.map(p=>`
+    <div class="rb-row"><div><span style="font-weight:700;">${esc(p.user)}</span> <span style="color:var(--chalk-dimmer);">— ${esc(p.team)}</span></div>
+    <div class="m"><span class="streak-badge w">${esc(p.streak)}</span></div></div>`).join('') || '<div class="rb-row">No streaks of 3+ yet.</div>';
+  document.getElementById('coldList').innerHTML = DATA.coldStreaks.map(p=>`
+    <div class="rb-row"><div><span style="font-weight:700;">${esc(p.user)}</span> <span style="color:var(--chalk-dimmer);">— ${esc(p.team)}</span></div>
+    <div class="m"><span class="streak-badge l">${esc(p.streak)}</span></div></div>`).join('') || '<div class="rb-row">Nobody\'s in a real skid. Yet.</div>';
+
+  document.getElementById('potwGrid').innerHTML = DATA.potw.map(p=>`
+    <div class="card potw-card">
+      <div class="wk">WEEK ${p.week} · NATIONAL</div>
+      <div class="pn">${esc(p.player)} <span style="color:var(--chalk-dimmer); font-weight:400;">${esc(p.pos)}</span></div>
+      <div class="pt">${p.isUserTeam ? `${esc(p.user)} — ${esc(p.team)}` : `${esc(p.team)} (CPU)`}</div>
+      <div class="pd">${esc(p.game)}</div>
+    </div>`).join('');
+}
+
+// ---------- Recruiting ----------
+function renderRecruiting(){
+  const classRows = DATA.recruitingClass.map(r=>`
+    <tr><td>${esc(r.team)}</td><td>${esc(r.user)}</td><td class="num">#${r.classRank}</td><td class="num">${'★'.repeat(r.fiveStar||0) || '—'}</td></tr>
+  `).join('');
+  document.getElementById('classTable').innerHTML = `
+    <thead><tr><th>Team</th><th>Coach</th><th style="text-align:right;">Rank</th><th style="text-align:right;">5-Stars</th></tr></thead>
+    <tbody>${classRows}</tbody>`;
+
+  const nilRows = DATA.nilSpend.map(r=>`
+    <tr><td>${esc(r.team)}</td><td>${esc(r.user)}</td><td class="num">$${r.nilTotal.toLocaleString()}</td></tr>
+  `).join('');
+  document.getElementById('nilTable').innerHTML = `
+    <thead><tr><th>Team</th><th>Coach</th><th style="text-align:right;">NIL Spend</th></tr></thead>
+    <tbody>${nilRows}</tbody>`;
+}
+
+// ---------- Rosters ----------
+function renderRosters(){
+  const el = document.getElementById('rosterGrid');
+  el.innerHTML = DATA.roster.map(r=>`
+    <div class="card roster-card">
+      <div class="u">${esc(r.user)}</div>
+      <div class="t">${esc(r.team)}</div>
+      <div class="g">${esc(r.gamertag)}</div>
+    </div>`).join('');
+}
+
+// ---------- History ----------
+function renderHistory(){
+  const h = DATA.historical;
+  if (!h) return;
+
+  const totalKnownSeasons = h.cfb25Seasons.length + h.cfb26Seasons.length;
+  document.getElementById('historyIntro').textContent =
+    `6 seasons of CFB 25, 4 of CFB 26, and now CFB 27's very first season — three separate games, `+
+    `three separate drafts, same 23-ish coaches settling the same arguments. ${h.currentSeasonLabel} is what everything `+
+    `else on this site is tracking live. Title tallies below cover the ${totalKnownSeasons} completed seasons on record.`;
+
+  // Historical Power Poll — full ranked list, same visual language as the current-season Power Poll
+  const hp = h.historicalPower;
+  document.getElementById('histPowerList').innerHTML = hp.map(p=>{
+    const statusTag = p.retired ? `<span class="tag retired">retired</span>` : (p.currentTeam ? `<span class="tag active-team">${esc(p.currentTeam)}</span>` : `<span class="tag retired">not this season</span>`);
+    let why;
+    if (p.name==='Adam') why = `5 championships — more than everyone else on this list combined.`;
+    else if (p.name==='Jared') why = `0 titles despite 5 runner-up finishes and a .690 career clip. Never enough.`;
+    else if (p.champs>0) why = `${p.champs} title${p.champs>1?'s':''}${p.runnerUps?`, ${p.runnerUps} runner-up${p.runnerUps>1?'s':''}`:''} on a ${p.pct}% career clip.`;
+    else if (p.runnerUps>0 || p.finalFours>0) why = `No titles yet — ${p.runnerUps?`${p.runnerUps} runner-up${p.runnerUps>1?'s':''}`:''}${p.runnerUps&&p.finalFours?', ':''}${p.finalFours?`${p.finalFours} Final Four${p.finalFours>1?'s':''}`:''}, ${p.pct}% career.`;
+    else why = `${p.win}-${p.loss} career, ${p.pct}% — no deep playoff runs on record yet.`;
+    const trophyStr = p.champs>0 ? '🏆'.repeat(Math.min(p.champs,5)) : '';
+    return `
+    <div class="poll-row ${p.rank<=3?'top3':''}">
+      <div class="poll-rank mono">${p.rank}</div>
+      <div class="poll-team">
+        <div class="name">${esc(p.name)}${trophyStr?` ${trophyStr}`:''}</div>
+        <div class="meta">${statusTag}</div>
+      </div>
+      <div class="poll-record">
+        <div class="rec mono">${p.win}-${p.loss}</div>
+        <div class="diff mono ${p.pct>=50?'pos':'neg'}">${p.pct}%</div>
+      </div>
+      <div><span class="streak-badge ${p.champs>0?'w':'l'}">${p.score} pts</span></div>
+      <div class="poll-why">${why}</div>
+    </div>`;
+  }).join('');
+
+  const seasonRow = (s, era) => `
+    <div class="season-row">
+      <div class="sn">SEASON ${s.season} · ${era}</div>
+      <div class="champ-line">🏆 <b>${esc(s.champion)}</b> def. ${esc(s.runnerUp)}</div>
+      <div class="sub-line">Final Four: ${s.finalFour.map(esc).join(', ')}</div>
+    </div>`;
+
+  document.getElementById('cfb25List').innerHTML = h.cfb25Seasons.map(s=>seasonRow(s,'CFB 25')).join('');
+  document.getElementById('cfb26List').innerHTML = h.cfb26Seasons.map(s=>seasonRow(s,'CFB 26')).join('');
+
+  const currentLeader = DATA.power[0];
+  document.getElementById('cfb27List').innerHTML = `
+    <div class="season-row in-progress">
+      <div class="sn">SEASON 1 · CFB 27 — IN PROGRESS</div>
+      <div class="champ-line">Currently tracking: <b>${esc(currentLeader.user)}</b> (${esc(currentLeader.team)}, ${esc(currentLeader.record)}) leads the Power Poll</div>
+      <div class="sub-line">First season of a new game, first crack at the title — nobody's hoisting anything yet. See Power Poll for the live picture.</div>
+    </div>`;
+
+  document.getElementById('allTimeTable').innerHTML = `
+    <thead><tr><th>Coach</th><th>Status</th><th class="num">W</th><th class="num">L</th><th class="num">Win %</th></tr></thead>
+    <tbody>${h.allTime.map(a=>{
+      const statusTag = a.retired ? `<span class="tag retired">retired</span>` : (a.currentTeam ? `<span class="tag active-team">${esc(a.currentTeam)}</span>` : `<span class="tag retired">not this season</span>`);
+      return `<tr><td>${esc(a.name)}${a.displayName!==a.name?` <span style="color:var(--chalk-dimmer); font-size:11px;">(${esc(a.displayName)})</span>`:''}</td><td>${statusTag}</td><td class="num">${a.win}</td><td class="num">${a.loss}</td><td class="num">${a.pct}%</td></tr>`;
+    }).join('')}</tbody>`;
+
+  document.getElementById('weightedTable').innerHTML = `
+    <thead><tr><th>Coach</th><th>Team</th><th class="num">Weighted W</th><th class="num">Weighted L</th><th class="num">Win %</th></tr></thead>
+    <tbody>${h.weighted.map(w=>{
+      const teamTag = w.currentTeam ? `<span class="tag active-team">${esc(w.currentTeam)}</span>` : `<span class="tag retired">not this season</span>`;
+      return `<tr><td>${esc(w.name)}</td><td>${teamTag}</td><td class="num">${w.weightedWin}</td><td class="num">${w.weightedLoss}</td><td class="num">${w.pct}%</td></tr>`;
+    }).join('')}</tbody>`;
+
+  renderAwards(h);
+  renderDrought(h);
+  renderTrajectory(h);
+  renderH2H(h);
+}
+
+// ---------- Superlatives ----------
+function renderAwards(h){
+  const titles = {}; h.titleLeaderboard.forEach(t=>titles[t.name]=t);
+  const alltimeByName = {}; h.allTime.forEach(a=>alltimeByName[a.name]=a);
+
+  const untouchable = h.titleLeaderboard[0]; // Adam, sorted by champs already
+  const yips = h.titleLeaderboard.find(t=>t.name==='Jared') || h.titleLeaderboard.filter(t=>t.champs===0).sort((a,b)=>b.runnerUps-a.runnerUps)[0];
+  const ironMan = [...h.allTime].sort((a,b)=>b.total-a.total)[0];
+  const ghosts = h.titleLeaderboard.filter(t=>t.champs===0 && t.runnerUps===0 && t.finalFours>0).sort((a,b)=>b.finalFours-a.finalFours);
+  const ghost = ghosts[0];
+  const away = h.allTime.filter(a=>!a.currentTeam && a.total>=15).sort((a,b)=>b.pct-a.pct)[0];
+  const rockBottom = [...h.allTime].filter(a=>a.currentTeam).sort((a,b)=>a.pct-b.pct)[0];
+
+  const awards = [
+    {icon:'🏆', title:'The Untouchable', name:untouchable.name, team: alltimeByName[untouchable.name]?.currentTeam,
+     reason:`${untouchable.champs} championships. Nobody else in league history has more than 2.`},
+    {icon:'😬', title:'Best Case of the Yips', name:yips.name, team: alltimeByName[yips.name]?.currentTeam,
+     reason:`${yips.runnerUps} runner-up finishes, ${yips.champs} championships. The math doesn't work out and everyone's noticed.`},
+    {icon:'🦴', title:'Iron Man', name:ironMan.name, team: ironMan.currentTeam,
+     reason:`${ironMan.total} career games — more than anyone else who's ever played in this league.`},
+    ghost ? {icon:'👻', title:'The Ghost', name:ghost.name, team: alltimeByName[ghost.name]?.currentTeam,
+     reason:`${ghost.finalFours} Final Four appearance${ghost.finalFours>1?'s':''}, never once made the title game itself.`} : null,
+    away ? {icon:'🚪', title:'The One That Got Away', name:away.name, team:null,
+     reason:`${away.pct}% career win rate — best of anyone not currently in the league.`} : null,
+    rockBottom ? {icon:'🪨', title:'Rock Bottom', name:rockBottom.name, team: rockBottom.currentTeam,
+     reason:`${rockBottom.pct}% career win rate, worst among this season's 23 coaches.`} : null,
+  ].filter(Boolean);
+
+  document.getElementById('awardGrid').innerHTML = awards.map(a=>`
+    <div class="card award-card">
+      <div class="icon">${a.icon}</div>
+      <div class="title">${esc(a.title)}</div>
+      <div class="winner">${esc(a.name)} ${a.team?`<span class="team">— ${esc(a.team)}</span>`:''}</div>
+      <div class="reason">${a.reason}</div>
+    </div>`).join('');
+}
+
+// ---------- Title Drought Clock ----------
+function renderDrought(h){
+  const champs = h.droughtClock.filter(d=>d.status==='champion').length;
+  document.getElementById('droughtIntro').textContent =
+    `Only ${champs} of this season's 23 coaches have ever actually won a championship. Here's how long everyone's been waiting.`;
+  document.getElementById('droughtList').innerHTML = h.droughtClock.map(d=>{
+    let badge, badgeClass;
+    if (d.status==='champion'){
+      badge = d.seasonsSince===0 ? 'DEFENDING' : `${d.seasonsSince} season${d.seasonsSince>1?'s':''} ago`;
+      badgeClass = d.seasonsSince===0 ? 'zero' : 'some';
+    } else if (d.status==='never'){
+      badge = 'never won it'; badgeClass = 'never';
+    } else {
+      badge = 'new to the league'; badgeClass = 'new';
+    }
+    return `
+    <div class="drought-row">
+      <div><div class="who">${esc(d.user)}</div><div class="team">${esc(d.team)}${d.lastWon?` · last won ${esc(d.lastWon)}`:''}</div></div>
+      <div class="drought-badge ${badgeClass}">${badge}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Then vs Now trajectory ----------
+function renderTrajectory(h){
+  const maxAbs = Math.max(...h.trajectory.map(t=>Math.abs(t.delta)), 10);
+  document.getElementById('trajList').innerHTML = h.trajectory.map(t=>{
+    const pct = Math.min(Math.abs(t.delta)/maxAbs*50, 50);
+    const isPos = t.delta>=0;
+    return `
+    <div class="traj-row">
+      <div class="who">${esc(t.user)}<span class="t">${esc(t.team)}</span></div>
+      <div class="traj-bar-track">
+        <div class="traj-bar-mid"></div>
+        <div class="traj-bar ${isPos?'pos':'neg'}" style="width:${pct}%;"></div>
+      </div>
+      <div class="traj-delta ${isPos?'pos':'neg'}">${isPos?'+':''}${t.delta}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Head-to-head ----------
+function renderH2H(h){
+  const users = DATA.roster.map(r=>r.user).sort();
+  const selA = document.getElementById('h2hA');
+  const selB = document.getElementById('h2hB');
+  selA.innerHTML = users.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+  selB.innerHTML = users.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+  selA.value = users.includes('Adam') ? 'Adam' : users[0];
+  selB.value = users.includes('Jared') ? 'Jared' : users[1];
+
+  function compute(){
+    const a = selA.value, b = selB.value;
+    if (a===b){ document.getElementById('h2hResult').innerHTML = `<div class="h2h-empty">Pick two different coaches.</div>`; return; }
+    const teamA = DATA.roster.find(r=>r.user===a);
+    const teamB = DATA.roster.find(r=>r.user===b);
+    const meetings = DATA.gameLog.filter(g=>g.isH2H && ((g.user===a && g.oppUser===b) || (g.user===b && g.oppUser===a)) )
+      .filter((g,i,arr)=> arr.findIndex(x=>x.week===g.week && new Set([x.user,x.oppUser]).size===new Set([g.user,g.oppUser]).size)===i);
+    // dedupe to one row per week
+    const seen = new Set(); const uniqueMeetings = [];
+    meetings.forEach(g=>{ const k=g.week; if(!seen.has(k)){ seen.add(k); uniqueMeetings.push(g); } });
+
+    const meetingsHtml = uniqueMeetings.length ? uniqueMeetings.map(g=>{
+      const winner = g.result==='W' ? g.user : g.oppUser;
+      const wScore = g.result==='W' ? g.teamPts : g.oppPts;
+      const lScore = g.result==='W' ? g.oppPts : g.teamPts;
+      return `<div class="h2h-meeting">Week ${g.week}: <b>${esc(winner)}</b> won, ${wScore}-${lScore}</div>`;
+    }).join('') : `<div class="h2h-empty">Haven't played each other yet this season.</div>`;
+
+    const aHist = h.allTime.find(x=>x.name===a);
+    const bHist = h.allTime.find(x=>x.name===b);
+    const aTitle = h.titleLeaderboard.find(x=>x.name===a) || {champs:0,runnerUps:0,finalFours:0};
+    const bTitle = h.titleLeaderboard.find(x=>x.name===b) || {champs:0,runnerUps:0,finalFours:0};
+
+    function col(user, team, hist, title){
+      return `<div class="h2h-col">
+        <div class="who">${esc(user)}</div><div class="team">${esc(team?.team||'')}</div>
+        <div class="h2h-stat-line"><span>This season</span><b>${esc(DATA.power.find(p=>p.user===user)?.record||'—')}</b></div>
+        <div class="h2h-stat-line"><span>Career record</span><b>${hist?`${hist.win}-${hist.loss}`:'—'}</b></div>
+        <div class="h2h-stat-line"><span>Career win%</span><b>${hist?hist.pct+'%':'—'}</b></div>
+        <div class="h2h-stat-line"><span>Championships</span><b>${title.champs}</b></div>
+      </div>`;
+    }
+
+    document.getElementById('h2hResult').innerHTML = `
+      ${meetingsHtml}
+      <div class="h2h-compare">
+        ${col(a, teamA, aHist, aTitle)}
+        ${col(b, teamB, bHist, bTitle)}
+      </div>`;
+  }
+  selA.addEventListener('change', compute);
+  selB.addEventListener('change', compute);
+  compute();
+}
+
+renderNav();
+renderHero();
+renderTicker();
+renderPower();
+renderStandings();
+renderWeek();
+renderRecordBook();
+renderRecruiting();
+renderRosters();
+renderHistory();
+
+</script>
+</body>
+</html>
