@@ -89,7 +89,7 @@
 
   /* ---------- Ticker ---------- */
   .ticker-wrap{
-    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--line);
     background:var(--turf-2); overflow:hidden; position:relative;
   }
   .ticker-label{
@@ -324,6 +324,11 @@
 </head>
 <body>
 
+<div class="ticker-wrap">
+  <div class="ticker-label">RECENT RESULTS</div>
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
 <div class="topbar">
   <div class="topbar-inner">
     <div class="wordmark">
@@ -339,11 +344,6 @@
   <h1 class="hero-title display" id="heroTitle">23 coaches.<br>One league.<br><em>Zero mercy.</em></h1>
   <p class="hero-sub" id="heroSub"></p>
   <div class="hero-stats" id="heroStats"></div>
-</div>
-
-<div class="ticker-wrap">
-  <div class="ticker-label">RECENT RESULTS</div>
-  <div class="ticker-track" id="tickerTrack"></div>
 </div>
 
 <main>
