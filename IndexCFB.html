@@ -249,9 +249,15 @@
   .season-row .champ-line b{ color:var(--chalk); }
   .season-row .sub-line{ font-size:12px; color:var(--chalk-dimmer); margin-top:3px; }
   .season-row.in-progress{ background:linear-gradient(90deg, rgba(231,163,62,0.06), transparent); }
+  .bracket-detail{ margin-top:8px; }
+  .bracket-line{ font-size:11.5px; color:var(--chalk-dimmer); line-height:1.7; }
+  .bracket-line .rlabel{ display:inline-block; min-width:72px; color:var(--chalk-dim); font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.04em; }
 
   .tag.retired{ background:rgba(169,184,174,0.12); color:var(--chalk-dimmer); }
   .tag.active-team{ background:rgba(92,174,126,0.15); color:var(--win); }
+
+  .ach-badge{ display:inline-flex; align-items:center; gap:1px; font-size:13px; vertical-align:middle; }
+  .ach-count{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--chalk-dimmer); font-weight:600; margin-left:1px; }
 
   /* awards */
   .award-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
@@ -4401,9 +4407,9 @@
         "finalFours": 1
       },
       {
-        "name": "Dom",
+        "name": "Brandon",
         "champs": 1,
-        "runnerUps": 1,
+        "runnerUps": 0,
         "finalFours": 1
       },
       {
@@ -4413,7 +4419,7 @@
         "finalFours": 1
       },
       {
-        "name": "Brandon",
+        "name": "Dom",
         "champs": 1,
         "runnerUps": 0,
         "finalFours": 0
@@ -4422,10 +4428,10 @@
         "name": "Jared",
         "champs": 0,
         "runnerUps": 5,
-        "finalFours": 1
+        "finalFours": 2
       },
       {
-        "name": "AJ",
+        "name": "Ben",
         "champs": 0,
         "runnerUps": 1,
         "finalFours": 1
@@ -4438,6 +4444,12 @@
       },
       {
         "name": "Logan",
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 0
+      },
+      {
+        "name": "AJ",
         "champs": 0,
         "runnerUps": 1,
         "finalFours": 0
@@ -4473,19 +4485,13 @@
         "finalFours": 1
       },
       {
-        "name": "Jake",
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 1
-      },
-      {
         "name": "Jeremy",
         "champs": 0,
         "runnerUps": 0,
         "finalFours": 1
       },
       {
-        "name": "JoJo",
+        "name": "Chuckie",
         "champs": 0,
         "runnerUps": 0,
         "finalFours": 1
@@ -4522,18 +4528,14 @@
         "season": 1,
         "champion": "Adam",
         "runnerUp": "Jared",
-        "finalFour": [
-          "CPU",
-          "CPU"
-        ]
+        "finalFour": []
       },
       {
         "season": 2,
         "champion": "Adam",
         "runnerUp": "Jared",
         "finalFour": [
-          "Justin",
-          "CPU"
+          "Justin"
         ]
       },
       {
@@ -4541,14 +4543,13 @@
         "champion": "Brandon",
         "runnerUp": "Adam",
         "finalFour": [
-          "Isiah",
-          "CPU"
+          "Isiah"
         ]
       },
       {
         "season": 4,
         "champion": "Vince",
-        "runnerUp": "Dom",
+        "runnerUp": "Ben",
         "finalFour": [
           "Jared",
           "Nick"
@@ -4559,8 +4560,9 @@
         "champion": "Adam",
         "runnerUp": "Jared",
         "finalFour": [
+          "Ben",
           "Tyler M",
-          "Dom"
+          "Austin"
         ]
       },
       {
@@ -4568,8 +4570,8 @@
         "champion": "Adam",
         "runnerUp": "Jared",
         "finalFour": [
-          "Austin",
-          "Jake"
+          "Brandon",
+          "Jeremy"
         ]
       }
     ],
@@ -4579,8 +4581,7 @@
         "champion": "Jhump",
         "runnerUp": "Bruce",
         "finalFour": [
-          "AJ",
-          "Jeremy"
+          "Jared"
         ]
       },
       {
@@ -4588,8 +4589,9 @@
         "champion": "Adam",
         "runnerUp": "Logan",
         "finalFour": [
-          "Nick",
-          "Jhump"
+          "Jhump",
+          "Vince",
+          "Nick"
         ]
       },
       {
@@ -4597,8 +4599,7 @@
         "champion": "Dom",
         "runnerUp": "AJ",
         "finalFour": [
-          "Adam",
-          "Vince"
+          "Adam"
         ]
       },
       {
@@ -4607,7 +4608,7 @@
         "runnerUp": "Jared",
         "finalFour": [
           "Adam",
-          "JoJo"
+          "Chuckie"
         ]
       }
     ],
@@ -4627,6 +4628,20 @@
         "rank": 1
       },
       {
+        "name": "Jared",
+        "displayName": "Jared",
+        "retired": false,
+        "currentTeam": "Rutgers",
+        "win": 49,
+        "loss": 22,
+        "pct": 69.0,
+        "champs": 0,
+        "runnerUps": 5,
+        "finalFours": 2,
+        "score": 75.5,
+        "rank": 2
+      },
+      {
         "name": "Jhump",
         "displayName": "Booski",
         "retired": false,
@@ -4638,34 +4653,20 @@
         "runnerUps": 0,
         "finalFours": 1,
         "score": 73.0,
-        "rank": 2
-      },
-      {
-        "name": "Jared",
-        "displayName": "Jared",
-        "retired": false,
-        "currentTeam": "Rutgers",
-        "win": 49,
-        "loss": 22,
-        "pct": 69.0,
-        "champs": 0,
-        "runnerUps": 5,
-        "finalFours": 1,
-        "score": 72.5,
         "rank": 3
       },
       {
-        "name": "Dom",
-        "displayName": "Dom",
-        "retired": false,
-        "currentTeam": "Baylor",
-        "win": 29,
-        "loss": 19,
-        "pct": 60.4,
+        "name": "Brandon",
+        "displayName": "Brandon",
+        "retired": true,
+        "currentTeam": null,
+        "win": 19,
+        "loss": 10,
+        "pct": 65.5,
         "champs": 1,
-        "runnerUps": 1,
+        "runnerUps": 0,
         "finalFours": 1,
-        "score": 55.2,
+        "score": 50.8,
         "rank": 4
       },
       {
@@ -4683,17 +4684,17 @@
         "rank": 5
       },
       {
-        "name": "Brandon",
-        "displayName": "Brandon",
-        "retired": true,
-        "currentTeam": null,
-        "win": 19,
-        "loss": 10,
-        "pct": 65.5,
+        "name": "Dom",
+        "displayName": "Dom",
+        "retired": false,
+        "currentTeam": "Baylor",
+        "win": 29,
+        "loss": 19,
+        "pct": 60.4,
         "champs": 1,
         "runnerUps": 0,
         "finalFours": 0,
-        "score": 47.8,
+        "score": 45.2,
         "rank": 6
       },
       {
@@ -4706,9 +4707,23 @@
         "pct": 75.0,
         "champs": 0,
         "runnerUps": 1,
-        "finalFours": 1,
-        "score": 47.5,
+        "finalFours": 0,
+        "score": 44.5,
         "rank": 7
+      },
+      {
+        "name": "Ben",
+        "displayName": "Ben",
+        "retired": false,
+        "currentTeam": "Duke",
+        "win": 28,
+        "loss": 18,
+        "pct": 60.9,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 1,
+        "score": 40.5,
+        "rank": 8
       },
       {
         "name": "Isiah",
@@ -4722,7 +4737,7 @@
         "runnerUps": 0,
         "finalFours": 1,
         "score": 36.4,
-        "rank": 8
+        "rank": 9
       },
       {
         "name": "Jeremy",
@@ -4736,20 +4751,6 @@
         "runnerUps": 0,
         "finalFours": 1,
         "score": 30.5,
-        "rank": 9
-      },
-      {
-        "name": "Ben",
-        "displayName": "Ben",
-        "retired": false,
-        "currentTeam": "Duke",
-        "win": 28,
-        "loss": 18,
-        "pct": 60.9,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "score": 30.4,
         "rank": 10
       },
       {
@@ -4823,20 +4824,6 @@
         "rank": 15
       },
       {
-        "name": "Jake",
-        "displayName": "Jake",
-        "retired": true,
-        "currentTeam": null,
-        "win": 10,
-        "loss": 12,
-        "pct": 45.5,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 1,
-        "score": 25.8,
-        "rank": 16
-      },
-      {
         "name": "Ceseque",
         "displayName": "Cesq",
         "retired": false,
@@ -4848,7 +4835,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 25.0,
-        "rank": 17
+        "rank": 16
       },
       {
         "name": "Dguy",
@@ -4862,7 +4849,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 25.0,
-        "rank": 18
+        "rank": 17
       },
       {
         "name": "Justin",
@@ -4876,7 +4863,7 @@
         "runnerUps": 0,
         "finalFours": 1,
         "score": 24.4,
-        "rank": 19
+        "rank": 18
       },
       {
         "name": "Shawn",
@@ -4890,7 +4877,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 24.0,
-        "rank": 20
+        "rank": 19
       },
       {
         "name": "Tim",
@@ -4904,21 +4891,21 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 23.2,
-        "rank": 21
+        "rank": 20
       },
       {
-        "name": "JoJo",
-        "displayName": "Jojo",
-        "retired": false,
-        "currentTeam": "SMU",
-        "win": 18,
-        "loss": 27,
-        "pct": 40.0,
+        "name": "Jake",
+        "displayName": "Jake",
+        "retired": true,
+        "currentTeam": null,
+        "win": 10,
+        "loss": 12,
+        "pct": 45.5,
         "champs": 0,
         "runnerUps": 0,
-        "finalFours": 1,
-        "score": 23.0,
-        "rank": 22
+        "finalFours": 0,
+        "score": 22.8,
+        "rank": 21
       },
       {
         "name": "Austin",
@@ -4932,7 +4919,35 @@
         "runnerUps": 0,
         "finalFours": 1,
         "score": 21.0,
+        "rank": 22
+      },
+      {
+        "name": "Chuckie",
+        "displayName": "Chuckie",
+        "retired": false,
+        "currentTeam": null,
+        "win": 5,
+        "loss": 9,
+        "pct": 35.7,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "score": 20.9,
         "rank": 23
+      },
+      {
+        "name": "JoJo",
+        "displayName": "Jojo",
+        "retired": false,
+        "currentTeam": "SMU",
+        "win": 18,
+        "loss": 27,
+        "pct": 40.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "score": 20.0,
+        "rank": 24
       },
       {
         "name": "Phil",
@@ -4946,7 +4961,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 20.0,
-        "rank": 24
+        "rank": 25
       },
       {
         "name": "Kyle",
@@ -4960,7 +4975,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 18.8,
-        "rank": 25
+        "rank": 26
       },
       {
         "name": "Fox",
@@ -4974,7 +4989,7 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 18.2,
-        "rank": 26
+        "rank": 27
       },
       {
         "name": "Harmon",
@@ -4988,20 +5003,6 @@
         "runnerUps": 0,
         "finalFours": 0,
         "score": 18.1,
-        "rank": 27
-      },
-      {
-        "name": "Chuckie",
-        "displayName": "Chuckie",
-        "retired": false,
-        "currentTeam": null,
-        "win": 5,
-        "loss": 9,
-        "pct": 35.7,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "score": 17.9,
         "rank": 28
       },
       {
@@ -5438,7 +5439,605 @@
         "currentRecord": "1-5",
         "careerRecord": "49-22"
       }
-    ]
+    ],
+    "fullBrackets": {
+      "25S1": [
+        {
+          "name": "Adam",
+          "win": 3,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Jared",
+          "win": 2,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Harmon",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Kurt",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Austin",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "25S2": [
+        {
+          "name": "Adam",
+          "win": 3,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Jared",
+          "win": 2,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Justin",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Isiah",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Vince",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Nick",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Harmon",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        }
+      ],
+      "25S3": [
+        {
+          "name": "Brandon",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Adam",
+          "win": 3,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Isiah",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Jared",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Vince",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Dom",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Nick",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Phil",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tim",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Justin",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Coltrain",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "25S4": [
+        {
+          "name": "Vince",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Ben",
+          "win": 3,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Jared",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Nick",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Dom",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Kurt",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tyler M",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Justin",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Coltrain",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "25S5": [
+        {
+          "name": "Adam",
+          "win": 3,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Jared",
+          "win": 3,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Ben",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Tyler M",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Austin",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Brandon",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Dom",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tipton",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Vince",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Jake",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Logan",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Justin",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "25S6": [
+        {
+          "name": "Adam",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Jared",
+          "win": 2,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Brandon",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Jeremy",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Jhump",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tipton",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Ceseque",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Nick",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Ben",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Tyler M",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Logan",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "26S1": [
+        {
+          "name": "Jhump",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Bruce",
+          "win": 2,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Jared",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Adam",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Jeremy",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tim",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Harmon",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Coltrain",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Vince",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "26S2": [
+        {
+          "name": "Adam",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Logan",
+          "win": 3,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Jhump",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Vince",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Nick",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Dom",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tim",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Ben",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Shawn",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Bruce",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "26S3": [
+        {
+          "name": "Dom",
+          "win": 3,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "AJ",
+          "win": 2,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Adam",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Jared",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Ben",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Tim",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "JoJo",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Harmon",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Jhump",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Tipton",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Ceseque",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ],
+      "26S4": [
+        {
+          "name": "Jhump",
+          "win": 4,
+          "loss": 0,
+          "round": "Champ"
+        },
+        {
+          "name": "Jared",
+          "win": 3,
+          "loss": 1,
+          "round": "Runner Up"
+        },
+        {
+          "name": "Adam",
+          "win": 1,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "Chuckie",
+          "win": 2,
+          "loss": 1,
+          "round": "Final Four"
+        },
+        {
+          "name": "AJ",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Ceseque",
+          "win": 1,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Nick",
+          "win": 0,
+          "loss": 1,
+          "round": "2nd Round"
+        },
+        {
+          "name": "Vince",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Tipton",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "Logan",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        },
+        {
+          "name": "JoJo",
+          "win": 0,
+          "loss": 1,
+          "round": "1st Round"
+        }
+      ]
+    }
   }
 }
 </script>
@@ -5463,6 +6062,18 @@ function confClass(conf){
 function esc(s){
   if (s===null || s===undefined) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Best-tier achievement badge for a coach, using historical title data. Champion > Runner-up > Final Four — only the highest tier reached is shown.
+function achievementBadge(name){
+  const h = DATA.historical;
+  if (!h) return '';
+  const t = h.titleLeaderboard.find(x=>x.name===name);
+  if (!t) return '';
+  if (t.champs>0) return `<span class="ach-badge" title="${t.champs} championship${t.champs>1?'s':''}">🏆${t.champs>1?`<span class="ach-count">×${t.champs}</span>`:''}</span>`;
+  if (t.runnerUps>0) return `<span class="ach-badge" title="${t.runnerUps} runner-up finish${t.runnerUps>1?'es':''}">🥈${t.runnerUps>1?`<span class="ach-count">×${t.runnerUps}</span>`:''}</span>`;
+  if (t.finalFours>0) return `<span class="ach-badge" title="${t.finalFours} Final Four appearance${t.finalFours>1?'s':''}">🥉${t.finalFours>1?`<span class="ach-count">×${t.finalFours}</span>`:''}</span>`;
+  return '';
 }
 
 // ---------- Nav ----------
@@ -5534,7 +6145,7 @@ function renderPower(){
     <div class="poll-row ${p.rank<=3?'top3':''}">
       <div class="poll-rank mono">${p.rank}</div>
       <div class="poll-team">
-        <div class="name">${esc(p.user)} <span style="color:var(--chalk-dimmer); font-weight:400;">— ${esc(p.team)}</span></div>
+        <div class="name">${esc(p.user)} ${achievementBadge(p.user)}<span style="color:var(--chalk-dimmer); font-weight:400;">— ${esc(p.team)}</span></div>
         <div class="meta"><span class="tag ${confClass(p.conf)}">${esc(p.conf)}</span> <span class="conf">${p.natlRank?`#${p.natlRank} nationally`:''}</span></div>
       </div>
       <div class="poll-record">
@@ -5665,7 +6276,7 @@ function renderRosters(){
   const el = document.getElementById('rosterGrid');
   el.innerHTML = DATA.roster.map(r=>`
     <div class="card roster-card">
-      <div class="u">${esc(r.user)}</div>
+      <div class="u">${esc(r.user)} ${achievementBadge(r.user)}</div>
       <div class="t">${esc(r.team)}</div>
       <div class="g">${esc(r.gamertag)}</div>
     </div>`).join('');
@@ -5692,12 +6303,11 @@ function renderHistory(){
     else if (p.champs>0) why = `${p.champs} title${p.champs>1?'s':''}${p.runnerUps?`, ${p.runnerUps} runner-up${p.runnerUps>1?'s':''}`:''} on a ${p.pct}% career clip.`;
     else if (p.runnerUps>0 || p.finalFours>0) why = `No titles yet — ${p.runnerUps?`${p.runnerUps} runner-up${p.runnerUps>1?'s':''}`:''}${p.runnerUps&&p.finalFours?', ':''}${p.finalFours?`${p.finalFours} Final Four${p.finalFours>1?'s':''}`:''}, ${p.pct}% career.`;
     else why = `${p.win}-${p.loss} career, ${p.pct}% — no deep playoff runs on record yet.`;
-    const trophyStr = p.champs>0 ? '🏆'.repeat(Math.min(p.champs,5)) : '';
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}">
       <div class="poll-rank mono">${p.rank}</div>
       <div class="poll-team">
-        <div class="name">${esc(p.name)}${trophyStr?` ${trophyStr}`:''}</div>
+        <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
         <div class="meta">${statusTag}</div>
       </div>
       <div class="poll-record">
@@ -5709,15 +6319,25 @@ function renderHistory(){
     </div>`;
   }).join('');
 
-  const seasonRow = (s, era) => `
+  const seasonRow = (s, key) => {
+    const bracket = h.fullBrackets[key] || [];
+    const others = bracket.filter(p => p.round !== 'Champ' && p.round !== 'Runner Up');
+    const grouped = {};
+    others.forEach(p => { (grouped[p.round] = grouped[p.round] || []).push(`${p.name} (${p.win}-${p.loss})`); });
+    const roundOrder = ['Final Four','2nd Round','1st Round'];
+    const groupLines = roundOrder.filter(r=>grouped[r]).map(r=>
+      `<div class="bracket-line"><span class="rlabel">${r}</span> ${grouped[r].map(esc).join(', ')}</div>`
+    ).join('');
+    return `
     <div class="season-row">
-      <div class="sn">SEASON ${s.season} · ${era}</div>
+      <div class="sn">SEASON ${s.season}</div>
       <div class="champ-line">🏆 <b>${esc(s.champion)}</b> def. ${esc(s.runnerUp)}</div>
-      <div class="sub-line">Final Four: ${s.finalFour.map(esc).join(', ')}</div>
+      <div class="bracket-detail">${groupLines}</div>
     </div>`;
+  };
 
-  document.getElementById('cfb25List').innerHTML = h.cfb25Seasons.map(s=>seasonRow(s,'CFB 25')).join('');
-  document.getElementById('cfb26List').innerHTML = h.cfb26Seasons.map(s=>seasonRow(s,'CFB 26')).join('');
+  document.getElementById('cfb25List').innerHTML = h.cfb25Seasons.map(s=>seasonRow(s, `25S${s.season}`)).join('');
+  document.getElementById('cfb26List').innerHTML = h.cfb26Seasons.map(s=>seasonRow(s, `26S${s.season}`)).join('');
 
   const currentLeader = DATA.power[0];
   document.getElementById('cfb27List').innerHTML = `
@@ -5860,7 +6480,7 @@ function renderH2H(h){
 
     function col(user, team, hist, title){
       return `<div class="h2h-col">
-        <div class="who">${esc(user)}</div><div class="team">${esc(team?.team||'')}</div>
+        <div class="who">${esc(user)} ${achievementBadge(user)}</div><div class="team">${esc(team?.team||'')}</div>
         <div class="h2h-stat-line"><span>This season</span><b>${esc(DATA.power.find(p=>p.user===user)?.record||'—')}</b></div>
         <div class="h2h-stat-line"><span>Career record</span><b>${hist?`${hist.win}-${hist.loss}`:'—'}</b></div>
         <div class="h2h-stat-line"><span>Career win%</span><b>${hist?hist.pct+'%':'—'}</b></div>
