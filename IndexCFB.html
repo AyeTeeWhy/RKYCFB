@@ -496,7 +496,7 @@
     </div>
 
     <div class="section-eyebrow" style="margin-bottom:6px;">All-Time Power Poll</div>
-    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5)</span>. Same spirit as the current Power Poll, but built for a career instead of a week — hardware counts for a lot more than a good record.</div>
+    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5) + experience bonus</span>. Experience bonus is <span class="mono">games played × 0.1</span>, capped at 5 points.</div>
     <div class="card" id="histPowerList"></div>
 
     <div class="section-head" style="margin-top:44px;">
@@ -4802,8 +4802,10 @@
         "runnerUps": 1,
         "finalFours": 2,
         "earlyRounds": 1,
-        "score": 108.2,
-        "rank": 1
+        "score": 113.2,
+        "rank": 1,
+        "gamesPlayed": 68,
+        "experienceBonus": 5.0
       },
       {
         "name": "Jared",
@@ -4817,8 +4819,10 @@
         "runnerUps": 5,
         "finalFours": 1,
         "earlyRounds": 2,
-        "score": 82.0,
-        "rank": 2
+        "score": 87.0,
+        "rank": 2,
+        "gamesPlayed": 71,
+        "experienceBonus": 5.0
       },
       {
         "name": "Jhump",
@@ -4832,8 +4836,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 2,
-        "score": 70.0,
-        "rank": 3
+        "score": 73.0,
+        "rank": 3,
+        "gamesPlayed": 30,
+        "experienceBonus": 3.0
       },
       {
         "name": "Vince",
@@ -4847,23 +4853,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 4,
-        "score": 56.2,
-        "rank": 4
-      },
-      {
-        "name": "AJ",
-        "displayName": "AJ",
-        "retired": false,
-        "currentTeam": null,
-        "win": 15,
-        "loss": 5,
-        "pct": 75.0,
-        "champs": 0,
-        "runnerUps": 1,
-        "finalFours": 1,
-        "earlyRounds": 1,
-        "score": 52.5,
-        "rank": 5
+        "score": 61.0,
+        "rank": 4,
+        "gamesPlayed": 48,
+        "experienceBonus": 4.8
       },
       {
         "name": "Ben",
@@ -4877,8 +4870,27 @@
         "runnerUps": 1,
         "finalFours": 1,
         "earlyRounds": 3,
-        "score": 50.5,
-        "rank": 6
+        "score": 55.1,
+        "rank": 5,
+        "gamesPlayed": 46,
+        "experienceBonus": 4.6
+      },
+      {
+        "name": "AJ",
+        "displayName": "AJ",
+        "retired": false,
+        "currentTeam": null,
+        "win": 15,
+        "loss": 5,
+        "pct": 75.0,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 1,
+        "earlyRounds": 1,
+        "score": 54.5,
+        "rank": 6,
+        "gamesPlayed": 20,
+        "experienceBonus": 2.0
       },
       {
         "name": "Brandon",
@@ -4892,8 +4904,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 50.2,
-        "rank": 7
+        "score": 53.1,
+        "rank": 7,
+        "gamesPlayed": 29,
+        "experienceBonus": 2.9
       },
       {
         "name": "Dom",
@@ -4907,8 +4921,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 47.7,
-        "rank": 8
+        "score": 52.5,
+        "rank": 8,
+        "gamesPlayed": 48,
+        "experienceBonus": 4.8
       },
       {
         "name": "Nick",
@@ -4922,8 +4938,10 @@
         "runnerUps": 0,
         "finalFours": 2,
         "earlyRounds": 4,
-        "score": 44.1,
-        "rank": 9
+        "score": 49.1,
+        "rank": 9,
+        "gamesPlayed": 56,
+        "experienceBonus": 5.0
       },
       {
         "name": "Isiah",
@@ -4937,8 +4955,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 40.9,
-        "rank": 10
+        "score": 42.7,
+        "rank": 10,
+        "gamesPlayed": 18,
+        "experienceBonus": 1.8
       },
       {
         "name": "Tipton",
@@ -4952,8 +4972,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 4,
-        "score": 36.5,
-        "rank": 11
+        "score": 41.4,
+        "rank": 11,
+        "gamesPlayed": 49,
+        "experienceBonus": 4.9
       },
       {
         "name": "Logan",
@@ -4967,23 +4989,10 @@
         "runnerUps": 1,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 36.3,
-        "rank": 12
-      },
-      {
-        "name": "Jeremy",
-        "displayName": "Jeremy",
-        "retired": false,
-        "currentTeam": null,
-        "win": 11,
-        "loss": 9,
-        "pct": 55.0,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 1,
-        "earlyRounds": 1,
-        "score": 35.0,
-        "rank": 13
+        "score": 41.0,
+        "rank": 12,
+        "gamesPlayed": 47,
+        "experienceBonus": 4.7
       },
       {
         "name": "Justin",
@@ -4997,8 +5006,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 3,
-        "score": 34.0,
-        "rank": 14
+        "score": 38.9,
+        "rank": 13,
+        "gamesPlayed": 49,
+        "experienceBonus": 4.9
       },
       {
         "name": "Tim",
@@ -5012,8 +5023,27 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 4,
-        "score": 33.2,
-        "rank": 15
+        "score": 38.2,
+        "rank": 14,
+        "gamesPlayed": 56,
+        "experienceBonus": 5.0
+      },
+      {
+        "name": "Jeremy",
+        "displayName": "Jeremy",
+        "retired": false,
+        "currentTeam": null,
+        "win": 11,
+        "loss": 9,
+        "pct": 55.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "earlyRounds": 1,
+        "score": 37.0,
+        "rank": 15,
+        "gamesPlayed": 20,
+        "experienceBonus": 2.0
       },
       {
         "name": "Bruce",
@@ -5027,23 +5057,10 @@
         "runnerUps": 1,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 29.5,
-        "rank": 16
-      },
-      {
-        "name": "Tyler",
-        "displayName": "Tyler",
-        "retired": true,
-        "currentTeam": null,
-        "win": 26,
-        "loss": 20,
-        "pct": 56.5,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 0,
-        "score": 28.2,
-        "rank": 17
+        "score": 33.6,
+        "rank": 16,
+        "gamesPlayed": 41,
+        "experienceBonus": 4.1
       },
       {
         "name": "Harmon",
@@ -5057,38 +5074,27 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 4,
-        "score": 28.1,
-        "rank": 18
+        "score": 32.8,
+        "rank": 17,
+        "gamesPlayed": 47,
+        "experienceBonus": 4.7
       },
       {
-        "name": "Ceseque",
-        "displayName": "Cesq",
-        "retired": false,
-        "currentTeam": "Wisconsin",
-        "win": 4,
-        "loss": 4,
-        "pct": 50.0,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 1,
-        "score": 27.5,
-        "rank": 19
-      },
-      {
-        "name": "Shawn",
-        "displayName": "Shawn",
-        "retired": false,
+        "name": "Tyler",
+        "displayName": "Tyler",
+        "retired": true,
         "currentTeam": null,
-        "win": 12,
-        "loss": 13,
-        "pct": 48.0,
+        "win": 26,
+        "loss": 20,
+        "pct": 56.5,
         "champs": 0,
         "runnerUps": 0,
         "finalFours": 0,
-        "earlyRounds": 1,
-        "score": 26.5,
-        "rank": 20
+        "earlyRounds": 0,
+        "score": 32.8,
+        "rank": 18,
+        "gamesPlayed": 46,
+        "experienceBonus": 4.6
       },
       {
         "name": "Austin",
@@ -5102,38 +5108,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 25.5,
-        "rank": 21
-      },
-      {
-        "name": "Jake",
-        "displayName": "Jake",
-        "retired": true,
-        "currentTeam": null,
-        "win": 10,
-        "loss": 12,
-        "pct": 45.5,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 1,
-        "score": 25.2,
-        "rank": 22
-      },
-      {
-        "name": "Dguy",
-        "displayName": "Dguy",
-        "retired": false,
-        "currentTeam": null,
-        "win": 4,
-        "loss": 4,
-        "pct": 50.0,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 0,
-        "score": 25.0,
-        "rank": 23
+        "score": 30.5,
+        "rank": 19,
+        "gamesPlayed": 50,
+        "experienceBonus": 5.0
       },
       {
         "name": "JoJo",
@@ -5147,8 +5125,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 2,
-        "score": 25.0,
-        "rank": 24
+        "score": 29.5,
+        "rank": 20,
+        "gamesPlayed": 45,
+        "experienceBonus": 4.5
       },
       {
         "name": "Kurt",
@@ -5162,8 +5142,44 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 24.6,
-        "rank": 25
+        "score": 29.0,
+        "rank": 21,
+        "gamesPlayed": 44,
+        "experienceBonus": 4.4
+      },
+      {
+        "name": "Shawn",
+        "displayName": "Shawn",
+        "retired": false,
+        "currentTeam": null,
+        "win": 12,
+        "loss": 13,
+        "pct": 48.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 1,
+        "score": 29.0,
+        "rank": 22,
+        "gamesPlayed": 25,
+        "experienceBonus": 2.5
+      },
+      {
+        "name": "Ceseque",
+        "displayName": "Cesq",
+        "retired": false,
+        "currentTeam": "Wisconsin",
+        "win": 4,
+        "loss": 4,
+        "pct": 50.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 1,
+        "score": 28.3,
+        "rank": 23,
+        "gamesPlayed": 8,
+        "experienceBonus": 0.8
       },
       {
         "name": "Coltrain",
@@ -5177,8 +5193,44 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 23.1,
-        "rank": 26
+        "score": 27.6,
+        "rank": 24,
+        "gamesPlayed": 45,
+        "experienceBonus": 4.5
+      },
+      {
+        "name": "Jake",
+        "displayName": "Jake",
+        "retired": true,
+        "currentTeam": null,
+        "win": 10,
+        "loss": 12,
+        "pct": 45.5,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 1,
+        "score": 27.4,
+        "rank": 25,
+        "gamesPlayed": 22,
+        "experienceBonus": 2.2
+      },
+      {
+        "name": "Dguy",
+        "displayName": "Dguy",
+        "retired": false,
+        "currentTeam": null,
+        "win": 4,
+        "loss": 4,
+        "pct": 50.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 0,
+        "score": 25.8,
+        "rank": 26,
+        "gamesPlayed": 8,
+        "experienceBonus": 0.8
       },
       {
         "name": "Chuckie",
@@ -5192,8 +5244,10 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 0,
-        "score": 22.9,
-        "rank": 27
+        "score": 24.3,
+        "rank": 27,
+        "gamesPlayed": 14,
+        "experienceBonus": 1.4
       },
       {
         "name": "Phil",
@@ -5207,38 +5261,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 22.5,
-        "rank": 28
-      },
-      {
-        "name": "Kyle",
-        "displayName": "Kyle",
-        "retired": true,
-        "currentTeam": null,
-        "win": 3,
-        "loss": 5,
-        "pct": 37.5,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 0,
-        "score": 18.8,
-        "rank": 29
-      },
-      {
-        "name": "Fox",
-        "displayName": "Fox",
-        "retired": true,
-        "currentTeam": null,
-        "win": 4,
-        "loss": 7,
-        "pct": 36.4,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 0,
-        "score": 18.2,
-        "rank": 30
+        "score": 23.0,
+        "rank": 28,
+        "gamesPlayed": 5,
+        "experienceBonus": 0.5
       },
       {
         "name": "Pat",
@@ -5252,8 +5278,44 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 16.6,
-        "rank": 31
+        "score": 21.1,
+        "rank": 29,
+        "gamesPlayed": 45,
+        "experienceBonus": 4.5
+      },
+      {
+        "name": "Kyle",
+        "displayName": "Kyle",
+        "retired": true,
+        "currentTeam": null,
+        "win": 3,
+        "loss": 5,
+        "pct": 37.5,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 0,
+        "score": 19.6,
+        "rank": 30,
+        "gamesPlayed": 8,
+        "experienceBonus": 0.8
+      },
+      {
+        "name": "Fox",
+        "displayName": "Fox",
+        "retired": true,
+        "currentTeam": null,
+        "win": 4,
+        "loss": 7,
+        "pct": 36.4,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 0,
+        "score": 19.3,
+        "rank": 31,
+        "gamesPlayed": 11,
+        "experienceBonus": 1.1
       },
       {
         "name": "Chris",
@@ -5267,8 +5329,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 16.6,
-        "rank": 32
+        "score": 17.5,
+        "rank": 32,
+        "gamesPlayed": 9,
+        "experienceBonus": 0.9
       },
       {
         "name": "Goose",
@@ -5282,8 +5346,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 12.5,
-        "rank": 33
+        "score": 14.1,
+        "rank": 33,
+        "gamesPlayed": 16,
+        "experienceBonus": 1.6
       },
       {
         "name": "Swaggy",
@@ -5297,8 +5363,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 5.5,
-        "rank": 34
+        "score": 6.4,
+        "rank": 34,
+        "gamesPlayed": 9,
+        "experienceBonus": 0.9
       },
       {
         "name": "Dylan",
@@ -5312,8 +5380,10 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 3.9,
-        "rank": 35
+        "score": 5.2,
+        "rank": 35,
+        "gamesPlayed": 13,
+        "experienceBonus": 1.3
       }
     ],
     "droughtClock": [
@@ -6703,6 +6773,7 @@ function renderHistory(){
       <div class="poll-record">
         <div class="rec mono">${p.win}-${p.loss}</div>
         <div class="diff mono ${p.pct>=50?'pos':'neg'}">${p.pct}%</div>
+        <div class="mono" style="font-size:10px; color:var(--chalk-dimmer); margin-top:3px;">${p.gamesPlayed || (p.win+p.loss)} GP</div>
       </div>
       <div><span class="streak-badge ${p.champs>0?'w':'l'}">${p.score} pts</span></div>
       <div class="poll-why">${why}</div>
