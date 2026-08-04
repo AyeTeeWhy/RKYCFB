@@ -138,6 +138,7 @@
   .poll-record{ text-align:right; }
   .poll-record .rec{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; }
   .poll-record .diff{ font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:2px; }
+  .poll-record .power-score{ font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; color:var(--gold-bright); margin-top:4px; white-space:nowrap; }
   .diff.pos{ color:var(--win); } .diff.neg{ color:var(--alert); }
   .streak-badge{
     font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; padding:4px 9px;
@@ -145,8 +146,13 @@
   }
   .streak-badge.w{ background:rgba(92,174,126,0.15); color:var(--win); }
   .streak-badge.l{ background:rgba(210,85,59,0.15); color:var(--alert); }
+  .power-toolbar{ display:flex; justify-content:flex-end; margin:-8px 0 14px; }
+  .power-mode-control{ display:flex; flex-direction:column; gap:6px; width:min(420px,100%); color:var(--chalk-dim); font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+  .power-mode-control select{ width:100%; padding:10px 38px 10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--turf-2); color:var(--chalk); font-family:'Inter',sans-serif; font-size:13px; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
+  .power-mode-control select:focus{ outline:2px solid var(--gold); outline-offset:2px; }
   .formula-note{ font-size:12.5px; color:var(--chalk-dimmer); margin-bottom:18px; padding:12px 16px; background:var(--turf-2); border-radius:10px; border:1px solid var(--line);}
   .formula-note .mono{ color:var(--gold-bright); }
+  @media(max-width:640px){ .power-toolbar{ justify-content:stretch; } .power-mode-control{ width:100%; } }
 
   /* Standings by conference */
   .conf-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
@@ -355,7 +361,7 @@
 
 <div class="hero">
   <div class="hero-eyebrow" id="heroEyebrow">WEEK 6 COMPLETE</div>
-  <h1 class="hero-title display" id="heroTitle">23 coaches.<br>One league.<br><em>Zero mercy.</em></h1>
+  <h1 class="hero-title display" id="heroTitle">RKY CFB Hub</h1>
   <p class="hero-sub" id="heroSub"></p>
   <div class="hero-stats" id="heroStats"></div>
 </div>
@@ -366,9 +372,18 @@
     <div class="section-head">
       <div class="section-eyebrow">01 — CFB 27 Power Poll</div>
       <h2 class="section-title display">Who's actually good</h2>
-      <p class="section-desc">This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
+      <p class="section-desc" id="powerDescription">This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
     </div>
-    <div class="formula-note">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.2)</span></div>
+    <div class="power-toolbar">
+      <label class="power-mode-control" for="powerMode">
+        <span>Algorithm view</span>
+        <select id="powerMode">
+          <option value="with-history">Current — includes CFB 26 weighted win %</option>
+          <option value="cfb27-only">CFB 27 only — removes CFB 26 weighted win %</option>
+        </select>
+      </label>
+    </div>
+    <div class="formula-note" id="powerFormulaNote">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.2)</span></div>
     <div class="card" id="powerList"></div>
   </section>
 
@@ -598,6 +613,29 @@
       "rank": 2
     },
     {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "record": "1-1",
+      "conf": "Big 12",
+      "natlRank": null,
+      "diff": 27,
+      "pf": 90,
+      "pa": 63,
+      "score": 21.6,
+      "streak": "L1",
+      "signatureWin": "Departed coach",
+      "worstLoss": "NC State (34-42)",
+      "ovr": null,
+      "h2hGamesPlayed": 2,
+      "teamOverall": 74,
+      "ovrDeviation": 9.2,
+      "rosterBonus": 1.8,
+      "reputationBased": false,
+      "historicalWinPct": 84.6,
+      "historicalBonus": 6.9,
+      "rank": 3
+    },
+    {
       "team": "LSU",
       "user": "Jay",
       "record": "2-0",
@@ -618,7 +656,7 @@
       "reputationBased": true,
       "historicalWinPct": null,
       "historicalBonus": 0.0,
-      "rank": 3
+      "rank": 4
     },
     {
       "team": "Penn State",
@@ -641,7 +679,7 @@
       "reputationBased": false,
       "historicalWinPct": 36.4,
       "historicalBonus": -2.7,
-      "rank": 4
+      "rank": 5
     },
     {
       "team": "South Carolina",
@@ -664,7 +702,7 @@
       "reputationBased": false,
       "historicalWinPct": 35.4,
       "historicalBonus": -2.9,
-      "rank": 5
+      "rank": 6
     },
     {
       "team": "Duke",
@@ -687,7 +725,7 @@
       "reputationBased": false,
       "historicalWinPct": 69.6,
       "historicalBonus": 3.9,
-      "rank": 6
+      "rank": 7
     },
     {
       "team": "USC",
@@ -710,7 +748,7 @@
       "reputationBased": false,
       "historicalWinPct": 37.4,
       "historicalBonus": -2.5,
-      "rank": 7
+      "rank": 8
     },
     {
       "team": "Tulane",
@@ -733,7 +771,7 @@
       "reputationBased": false,
       "historicalWinPct": 80.7,
       "historicalBonus": 6.1,
-      "rank": 8
+      "rank": 9
     },
     {
       "team": "Baylor",
@@ -756,7 +794,7 @@
       "reputationBased": false,
       "historicalWinPct": 63.8,
       "historicalBonus": 2.8,
-      "rank": 9
+      "rank": 10
     },
     {
       "team": "NC State",
@@ -779,7 +817,7 @@
       "reputationBased": false,
       "historicalWinPct": 65.8,
       "historicalBonus": 3.2,
-      "rank": 10
+      "rank": 11
     },
     {
       "team": "Michigan",
@@ -802,7 +840,7 @@
       "reputationBased": false,
       "historicalWinPct": 23.6,
       "historicalBonus": -5.3,
-      "rank": 11
+      "rank": 12
     },
     {
       "team": "Clemson",
@@ -825,7 +863,7 @@
       "reputationBased": false,
       "historicalWinPct": 33.6,
       "historicalBonus": -3.3,
-      "rank": 12
+      "rank": 13
     },
     {
       "team": "Oklahoma",
@@ -848,29 +886,6 @@
       "reputationBased": true,
       "historicalWinPct": null,
       "historicalBonus": 0.0,
-      "rank": 13
-    },
-    {
-      "team": "Fresno State",
-      "user": "Jhump",
-      "record": "0-1",
-      "conf": "Big 12",
-      "natlRank": null,
-      "diff": -8,
-      "pf": 34,
-      "pa": 42,
-      "score": 2.7,
-      "streak": "L1",
-      "signatureWin": null,
-      "worstLoss": "NC State (34-42)",
-      "ovr": null,
-      "h2hGamesPlayed": 1,
-      "teamOverall": 74,
-      "ovrDeviation": 9.2,
-      "rosterBonus": 0.0,
-      "reputationBased": false,
-      "historicalWinPct": 84.6,
-      "historicalBonus": 6.9,
       "rank": 14
     },
     {
@@ -1847,14 +1862,16 @@
       "team": "Fresno State",
       "user": "Jhump",
       "opponent": "Nebraska",
-      "oppUser": null,
+      "oppUser": "Departed Coach",
       "homeAway": "Away",
       "result": "W",
       "teamPts": 56,
       "oppPts": 21,
       "oppRank": null,
-      "isH2H": false,
-      "margin": 35
+      "isH2H": true,
+      "margin": 35,
+      "unassignedLoss": true,
+      "opponentSkillNote": "Lower-skill departed opponent"
     },
     {
       "week": 3,
@@ -2631,6 +2648,22 @@
   ],
   "blowouts": [
     {
+      "week": 3,
+      "team": "Fresno State",
+      "user": "Jhump",
+      "opponent": "Nebraska",
+      "oppUser": "Departed Coach",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 56,
+      "oppPts": 21,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 35,
+      "unassignedLoss": true,
+      "opponentSkillNote": "Lower-skill departed opponent"
+    },
+    {
       "week": 5,
       "team": "Tulane",
       "user": "Adam",
@@ -2699,20 +2732,6 @@
       "oppRank": null,
       "isH2H": true,
       "margin": 23
-    },
-    {
-      "week": 1,
-      "team": "USC",
-      "user": "Coltrain",
-      "opponent": "Oklahoma",
-      "oppUser": "Derrick",
-      "homeAway": "Away",
-      "result": "W",
-      "teamPts": 21,
-      "oppPts": 0,
-      "oppRank": 13,
-      "isH2H": true,
-      "margin": 21
     }
   ],
   "upcomingWeek7": [
@@ -4658,7 +4677,7 @@
         "finalFours": 1
       }
     ],
-    "currentSeasonLabel": "CFB 27 \u2014 Season 1 (in progress)",
+    "currentSeasonLabel": "CFB 27 — Season 1 (in progress)",
     "currentRecordByUser": {
       "Jay": "6-0",
       "Jhump": "5-0",
@@ -6342,24 +6361,54 @@ function renderTicker(){
 // ---------- Power poll ----------
 function renderPower(){
   const el = document.getElementById('powerList');
+  const modeEl = document.getElementById('powerMode');
+  const mode = modeEl ? modeEl.value : 'with-history';
+  const cfb27Only = mode === 'cfb27-only';
+  const description = document.getElementById('powerDescription');
+  const formulaNote = document.getElementById('powerFormulaNote');
+
+  if (description){
+    description.textContent = cfb27Only
+      ? "This view uses only CFB 27 coach-vs.-coach results. CPU games don't count, and all CFB 26 weighted win percentage history is removed. The remaining score rewards wins, point differential, and winning with a lower-rated roster."
+      : "This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.";
+  }
+  if (formulaNote){
+    formulaNote.innerHTML = cfb27Only
+      ? 'Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2)</span>'
+      : 'Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.2)</span>';
+  }
+
   const tiebreakByUser = {};
   (DATA.h2hTiebreaks||[]).forEach(note=>{
     const m = note.match(/^(\S+)/);
     if (m) tiebreakByUser[m[1]] = note;
   });
-  el.innerHTML = DATA.power.map(p=>{
+
+  const poll = DATA.power.map(p=>({
+    ...p,
+    displayScore: cfb27Only ? Number((Number(p.score) - Number(p.historicalBonus || 0)).toFixed(1)) : Number(p.score)
+  }));
+
+  if (cfb27Only){
+    poll.sort((a,b)=> b.displayScore-a.displayScore || b.diff-a.diff || a.user.localeCompare(b.user));
+  } else {
+    poll.sort((a,b)=> a.rank-b.rank);
+  }
+
+  el.innerHTML = poll.map((p,index)=>{
+    const displayRank = index + 1;
     const diffClass = p.diff>=0 ? 'pos':'neg';
     const diffStr = p.diff>=0 ? `+${p.diff}`:`${p.diff}`;
     const streakClass = p.streak[0]==='W' ? 'w':'l';
     const bits = [];
     if (p.signatureWin) bits.push(`<span style="color:var(--win);">Best win: ${esc(p.signatureWin)}</span>`);
     if (p.worstLoss) bits.push(`<span style="color:var(--alert);">Worst loss: ${esc(p.worstLoss)}</span>`);
-    if (tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
+    if (!cfb27Only && tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
     const why = bits.join(' · ');
     const tc = teamColors(p.team);
     return `
-    <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
-      <div class="poll-rank mono">${p.rank}</div>
+    <div class="poll-row ${displayRank<=3?'top3':''}" style="border-left-color:${tc.bg};">
+      <div class="poll-rank mono">${displayRank}</div>
       <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
         ${teamBadge(p.team, 34)}
         <div style="min-width:0;">
@@ -6370,6 +6419,7 @@ function renderPower(){
       <div class="poll-record">
         <div class="rec mono">${esc(p.record)}</div>
         <div class="diff mono ${diffClass}">${diffStr} pts</div>
+        <div class="power-score">${p.displayScore.toFixed(1)} score</div>
       </div>
       <div><span class="streak-badge ${streakClass}">${esc(p.streak)}</span></div>
       <div class="poll-why">${why}</div>
@@ -6698,6 +6748,8 @@ function renderH2H(h){
 renderNav();
 renderHero();
 renderTicker();
+const powerModeEl = document.getElementById('powerMode');
+if (powerModeEl) powerModeEl.addEventListener('change', renderPower);
 renderPower();
 renderStandings();
 renderRecordBook();
