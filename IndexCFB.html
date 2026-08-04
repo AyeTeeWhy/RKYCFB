@@ -340,6 +340,38 @@
     .ticker-track{ animation:none; }
     html{ scroll-behavior:auto; }
   }
+
+  /* all-time power poll team history badges */
+  .hist-coach-wrap{display:flex; align-items:center; justify-content:space-between; gap:14px; min-width:0; flex-wrap:wrap;}
+  .hist-coach-info{min-width:130px;}
+  .hist-logo-strip{display:flex; align-items:center; justify-content:flex-end; gap:9px; flex-wrap:wrap;}
+  .hist-era-group{display:inline-flex; align-items:center; gap:5px; padding-left:9px; border-left:1px solid var(--line);}
+  .hist-era-group:first-child{padding-left:0; border-left:0;}
+  .hist-era-label{font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--chalk-dimmer); letter-spacing:.04em;}
+  .hist-era-badges{display:inline-flex; align-items:center; gap:4px;}
+  .hist-logo-strip .team-badge{box-shadow:none;}
+  @media(max-width:760px){
+    .hist-coach-wrap{align-items:flex-start; flex-direction:column; gap:8px;}
+    .hist-logo-strip{justify-content:flex-start;}
+  }
+
+  /* team history */
+  .team-history-list{display:grid; gap:10px;}
+  .team-history-header,.team-history-row{display:grid; grid-template-columns:170px repeat(3,minmax(0,1fr)); gap:12px; align-items:center;}
+  .team-history-header{padding:0 0 8px; border-bottom:1px solid var(--line); color:var(--chalk-dimmer); font-size:11px; text-transform:uppercase; letter-spacing:.12em;}
+  .team-history-row{padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);}
+  .team-history-row:last-child{border-bottom:0;}
+  .team-history-name{font-weight:700; color:var(--chalk);}
+  .team-history-season{display:flex; flex-wrap:wrap; gap:8px; align-items:center; min-height:36px;}
+  .team-history-empty{color:var(--chalk-dimmer); font-size:12px;}
+  .team-history-season .team-badge{box-shadow:none;}
+  @media (max-width:860px){
+    .team-history-header{display:none;}
+    .team-history-row{grid-template-columns:1fr; gap:8px;}
+    .team-history-name{margin-bottom:2px;}
+    .team-history-season::before{content:attr(data-era); display:inline-block; min-width:52px; color:var(--chalk-dimmer); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-right:4px;}
+  }
+
 </style>
 </head>
 <body>
@@ -6234,6 +6266,34 @@ const TEAM_COLORS = {
   'Rutgers':       {bg:'#CC0033', text:'#FFFFFF', abbr:'RU'},
   'Miami':         {bg:'#005030', text:'#F47321', abbr:'MIA'},
   'Tulane':        {bg:'#00693E', text:'#63C7F2', abbr:'TUL'},
+  'USC Trojans':   {bg:'#990000', text:'#FFC72C', abbr:'USC'},
+  'Boise State':   {bg:'#0033A0', text:'#F16322', abbr:'BSU'},
+  'Arkansas':      {bg:'#9D2235', text:'#FFFFFF', abbr:'ARK'},
+  'Nebraska':      {bg:'#E41C38', text:'#FFFFFF', abbr:'NEB'},
+  'Utah':          {bg:'#CC0000', text:'#FFFFFF', abbr:'UTAH'},
+  'Florida':       {bg:'#0021A5', text:'#FA4616', abbr:'UF'},
+  'Ole Miss':      {bg:'#CE1126', text:'#FFFFFF', abbr:'MISS'},
+  'UCF':           {bg:'#000000', text:'#BA9B37', abbr:'UCF'},
+  'TCU':           {bg:'#4D1979', text:'#FFFFFF', abbr:'TCU'},
+  'Vanderbilt':    {bg:'#000000', text:'#B4975A', abbr:'VAN'},
+  'Kansas State':  {bg:'#512888', text:'#FFFFFF', abbr:'KSU'},
+  'California':    {bg:'#003262', text:'#FDB515', abbr:'CAL'},
+  'Georgia Tech':  {bg:'#B3A369', text:'#003057', abbr:'GT'},
+  'Gerogia Tech':  {bg:'#B3A369', text:'#003057', abbr:'GT'},
+  'Pittsburgh':    {bg:'#003594', text:'#FFB81C', abbr:'PITT'},
+  'Pittsburg':     {bg:'#003594', text:'#FFB81C', abbr:'PITT'},
+  'Auburn':        {bg:'#0C2340', text:'#E87722', abbr:'AUB'},
+  'UCLA':          {bg:'#2774AE', text:'#FFD100', abbr:'UCLA'},
+  'Louisville':    {bg:'#AD0000', text:'#000000', abbr:'LOU'},
+  'North Carolina':{bg:'#7BAFD4', text:'#13294B', abbr:'UNC'},
+  'Oregon':        {bg:'#154733', text:'#FEE123', abbr:'ORE'},
+  'West Virginia': {bg:'#002855', text:'#EAAA00', abbr:'WVU'},
+  'Washington':    {bg:'#4B2E83', text:'#B7A57A', abbr:'UW'},
+  'Northwestern':  {bg:'#4E2A84', text:'#FFFFFF', abbr:'NW'},
+  'Texas Tech':    {bg:'#CC0000', text:'#FFFFFF', abbr:'TTU'},
+  'Missouri':      {bg:'#000000', text:'#F1B82D', abbr:'MIZ'},
+  'Cincinnati':    {bg:'#E00122', text:'#000000', abbr:'CIN'},
+  'Colorado':      {bg:'#000000', text:'#CFB87C', abbr:'CU'},
 };
 function teamColors(team){ return TEAM_COLORS[team] || {bg:'var(--turf-2)', text:'var(--chalk)', abbr:'—'}; }
 function teamBadge(team, size, invert){
@@ -6243,6 +6303,93 @@ function teamBadge(team, size, invert){
   const bg = invert ? c.text : c.bg;
   const fg = invert ? c.bg : c.text;
   return `<span class="team-badge" style="width:${size}px; height:${size}px; background:${bg}; color:${fg}; font-size:${fontSize}px; border-color:rgba(255,255,255,0.25);">${esc(c.abbr)}</span>`;
+}
+
+const COACH_TEAM_HISTORY = [
+  {name:'Jhump', cfb25:['Clemson'], cfb26:['Cincinnati','Colorado'], cfb27:['Fresno State']},
+  {name:'Adam', cfb25:['USC Trojans'], cfb26:['Boise State'], cfb27:['Tulane']},
+  {name:'AJ', cfb25:[], cfb26:['Arkansas','Nebraska'], cfb27:[]},
+  {name:'Jared', cfb25:['Utah'], cfb26:['Northwestern'], cfb27:['Rutgers']},
+  {name:'Isiah', cfb25:['South Carolina'], cfb26:[], cfb27:[]},
+  {name:'Brandon', cfb25:['Tennessee','Miami'], cfb26:[], cfb27:[]},
+  {name:'Vince', cfb25:['UCF'], cfb26:['Missouri'], cfb27:['NC State']},
+  {name:'Ben', cfb25:['TCU'], cfb26:['Vanderbilt'], cfb27:['Duke']},
+  {name:'Dom', cfb25:['Florida'], cfb26:['TCU'], cfb27:['Baylor']},
+  {name:'Tyler M', cfb25:['Ole Miss'], cfb26:[], cfb27:[]},
+  {name:'Jeremy', cfb25:[], cfb26:['Texas A&M'], cfb27:[]},
+  {name:'Tipton', cfb25:['Kansas State','LSU'], cfb26:['Miami'], cfb27:['Penn State']},
+  {name:'Ceseque', cfb25:['Clemson'], cfb26:['Clemson'], cfb27:['Wisconsin']},
+  {name:'Dguy', cfb25:[], cfb26:['Louisville'], cfb27:[]},
+  {name:'Nick', cfb25:['California'], cfb26:['Georgia Tech'], cfb27:['Arizona State']},
+  {name:'Shawn', cfb25:[], cfb26:['Wisconsin'], cfb27:[]},
+  {name:'Tim', cfb25:['Northwestern'], cfb26:['Texas Tech'], cfb27:['Iowa']},
+  {name:'Jake', cfb25:['Michigan State'], cfb26:[], cfb27:[]},
+  {name:'Logan', cfb25:['Pittsburgh'], cfb26:['Missouri'], cfb27:['Clemson']},
+  {name:'Justin', cfb25:['Auburn'], cfb26:['SMU'], cfb27:['Michigan']},
+  {name:'Phil', cfb25:['Iowa'], cfb26:[], cfb27:[]},
+  {name:'JoJo', cfb25:['UCLA'], cfb26:['LSU'], cfb27:['SMU']},
+  {name:'Bruce', cfb25:['Nebraska'], cfb26:['Michigan'], cfb27:['South Carolina']},
+  {name:'Kyle', cfb25:[], cfb26:[], cfb27:[]},
+  {name:'Fox', cfb25:[], cfb26:[], cfb27:[]},
+  {name:'Harmon', cfb25:['Louisville'], cfb26:['Tennessee'], cfb27:['Michigan State']},
+  {name:'Austin', cfb25:['SMU'], cfb26:['NC State'], cfb27:['Miami']},
+  {name:'Chuckie', cfb25:[], cfb26:['UCLA'], cfb27:['Nebraska']},
+  {name:'Kurt', cfb25:['North Carolina'], cfb26:['Arizona State'], cfb27:['Tennessee']},
+  {name:'Pat', cfb25:['Arkansas'], cfb26:['Oregon'], cfb27:['Texas']},
+  {name:'Chris', cfb25:['West Virginia'], cfb26:[], cfb27:[]},
+  {name:'Coltrain', cfb25:['Texas Tech'], cfb26:['Washington'], cfb27:['USC']},
+  {name:'Goose', cfb25:[], cfb26:[], cfb27:[]},
+  {name:'Swaggy', cfb25:[], cfb26:['Penn State'], cfb27:[]},
+  {name:'Dylan', cfb25:['Oregon'], cfb26:[], cfb27:[]},
+  {name:'Jay', cfb25:[], cfb26:[], cfb27:['LSU']},
+  {name:'Wemple', cfb25:[], cfb26:[], cfb27:['Wake Forest']},
+  {name:'Derrick', cfb25:[], cfb26:[], cfb27:['Oklahoma']},
+];
+const TEAM_HISTORY_ALIASES = {
+  'Cesq':'Ceseque',
+  'Ceseque':'Ceseque',
+  'Derick':'Derrick',
+  'Derrick Durham':'Derrick',
+  'Chuck':'Chuckie',
+  'Tyler':'Tyler M'
+};
+function teamHistoryKey(name){ return TEAM_HISTORY_ALIASES[name] || name; }
+function allTimeTeamLogoStrip(name){
+  const history = COACH_TEAM_HISTORY.find(r=>r.name===teamHistoryKey(name));
+  if (!history) return '';
+  const eras = [
+    {label:'25', full:'CFB 25', teams:history.cfb25 || []},
+    {label:'26', full:'CFB 26', teams:history.cfb26 || []},
+    {label:'27', full:'CFB 27', teams:history.cfb27 || []},
+  ].filter(era=>era.teams.length);
+  if (!eras.length) return '';
+  return `<div class="hist-logo-strip" aria-label="${esc(name)} team history">${eras.map(era=>`
+    <span class="hist-era-group">
+      <span class="hist-era-label">${era.label}</span>
+      <span class="hist-era-badges">${era.teams.map(team=>`<span title="${era.full}: ${esc(team)}">${teamBadge(team, 27)}</span>`).join('')}</span>
+    </span>`).join('')}</div>`;
+}
+function seasonHistoryBadges(teams, era){
+  if (!teams || !teams.length) return `<div class="team-history-season" data-era="${era}"><span class="team-history-empty">—</span></div>`;
+  return `<div class="team-history-season" data-era="${era}">${teams.map(team=>{ const norm = team; return `<span title="${esc(norm)}">${teamBadge(norm, 30)}</span>`; }).join('')}</div>`;
+}
+function renderCoachTeamHistory(){
+  const root = document.getElementById('teamHistoryList');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="team-history-header">
+      <div>Coach</div>
+      <div>CFB 25</div>
+      <div>CFB 26</div>
+      <div>CFB 27</div>
+    </div>
+    ${COACH_TEAM_HISTORY.map(r=>`
+      <div class="team-history-row">
+        <div class="team-history-name">${esc(r.name)}</div>
+        ${seasonHistoryBadges(r.cfb25, 'CFB 25')}
+        ${seasonHistoryBadges(r.cfb26, 'CFB 26')}
+        ${seasonHistoryBadges(r.cfb27, 'CFB 27')}
+      </div>`).join('')}`;
 }
 
 const TABS = [
@@ -6544,11 +6691,13 @@ function renderHistory(){
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
       <div class="poll-rank mono">${p.rank}</div>
-      <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
-        ${p.currentTeam ? teamBadge(p.currentTeam, 34) : ''}
-        <div style="min-width:0;">
-        <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
-        <div class="meta">${statusTag}</div>
+      <div class="poll-team">
+        <div class="hist-coach-wrap">
+          <div class="hist-coach-info">
+            <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
+            <div class="meta">${statusTag}</div>
+          </div>
+          ${allTimeTeamLogoStrip(p.name)}
         </div>
       </div>
       <div class="poll-record">
