@@ -372,7 +372,7 @@
     <div class="section-head">
       <div class="section-eyebrow">01 — CFB 27 Power Poll</div>
       <h2 class="section-title display">Who's actually good</h2>
-      <p class="section-desc" id="powerDescription">This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
+      <p class="section-desc" id="powerDescription">Coach-vs.-coach rankings based on user-game results. CPU games do not count.</p>
     </div>
     <div class="power-toolbar">
       <label class="power-mode-control" for="powerMode">
@@ -6369,8 +6369,8 @@ function renderPower(){
 
   if (description){
     description.textContent = cfb27Only
-      ? "This view uses only CFB 27 coach-vs.-coach results. CPU games don't count, and all CFB 26 weighted win percentage history is removed. The remaining score rewards wins, point differential, and winning with a lower-rated roster."
-      : "This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.";
+      ? "Coach-vs.-coach rankings using only CFB 27 results. CPU games and CFB 26 history do not count."
+      : "Coach-vs.-coach rankings based on user-game results. CPU games do not count.";
   }
   if (formulaNote){
     formulaNote.innerHTML = cfb27Only
