@@ -6474,7 +6474,8 @@ function switchTab(id){
 
 // ---------- Hero ----------
 function renderHero(){
-  const top = DATA.power[0];
+  const rankedForHero = rankPower(DATA.power, powerAlgoMode==='full');
+  const top = rankedForHero[0];
   const eyebrowEl = document.getElementById('heroEyebrow');
   if (DATA.meta.liveSource && DATA.meta.lastSynced){
     const d = DATA.meta.lastSynced;
@@ -7195,6 +7196,7 @@ function setupAlgoToggle(){
   sel.value = powerAlgoMode==='full' ? 'full' : 'nohist';
   sel.addEventListener('change', ()=>{
     powerAlgoMode = sel.value === 'nohist' ? 'nohist' : 'full';
+    renderHero();
     renderPower();
   });
 }
