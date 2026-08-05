@@ -128,6 +128,24 @@
   }
   .score-val{ font-size:15px; font-weight:700; color:var(--gold-bright); text-align:right; }
   .score-lbl{ font-size:9.5px; color:var(--chalk-dimmer); text-transform:uppercase; letter-spacing:0.06em; text-align:right; margin-top:2px; }
+
+  .algo-controls{ display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .algo-controls label{ font-size:11.5px; color:var(--chalk-dimmer); text-transform:uppercase; letter-spacing:0.05em; }
+  .algo-controls select{
+    background:var(--turf-2); color:var(--chalk); border:1px solid var(--line-2); border-radius:8px;
+    padding:8px 12px; font-family:'Inter',sans-serif; font-weight:600; font-size:13px;
+  }
+  .math-toggle{
+    background:none; border:none; color:var(--gold); font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    text-decoration:underline; cursor:pointer; padding:0; margin-left:4px;
+  }
+  .math-toggle:hover{ color:var(--gold-bright); }
+  .math-panel{ display:none; margin-top:12px; padding:12px 16px; background:var(--turf-2); border-radius:8px; border:1px solid var(--line); }
+  .math-panel.open{ display:block; }
+  .math-line{ display:flex; justify-content:space-between; gap:12px; font-size:12px; padding:4px 0; color:var(--chalk-dim); font-family:'JetBrains Mono',monospace; }
+  .math-line b{ color:var(--chalk); font-weight:700; }
+  .math-line.total{ border-top:1px solid var(--line-2); margin-top:4px; padding-top:8px; }
+  .math-line.total b{ color:var(--gold-bright); }
   .poll-row:last-child{ border-bottom:none; }
   .poll-row:hover{ background:var(--turf-2); }
   .poll-rank{ font-family:'Anton',sans-serif; font-size:26px; color:var(--chalk-dimmer); }
@@ -370,6 +388,13 @@
       <div class="section-eyebrow">01 — CFB 27 Power Poll</div>
       <h2 class="section-title display">Who's actually good</h2>
       <p class="section-desc">Only games between two coaches count here — CPU wins and losses don't factor into these rankings at all.</p>
+    </div>
+    <div class="algo-controls">
+      <label for="algoSelect">Ranking</label>
+      <select id="algoSelect">
+        <option value="full">Current algorithm</option>
+        <option value="nohist">Without CFB 26 weighted win% history</option>
+      </select>
     </div>
     <div class="card" id="powerList"></div>
   </section>
@@ -6490,14 +6515,55 @@ function renderTicker(){
 }
 
 // ---------- Power poll ----------
+// Re-sorts and re-applies the head-to-head tiebreak for a chosen scoring variant, without
+// needing to refetch or recompute anything from scratch. Used by the algorithm-variant dropdown.
+function rankPower(baseList, includeHistorical){
+  const list = baseList.map(p=>{
+    const coreScorePerGame = (p.coreScorePerGame!=null) ? p.coreScorePerGame : p.score;
+    const rosterBonus = p.rosterBonus||0;
+    const hb = includeHistorical ? (p.historicalBonus||0) : 0;
+    const displayScore = Math.round((coreScorePerGame + rosterBonus + hb)*10)/10;
+    return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus});
+  });
+
+  const h2hResult = {};
+  (DATA.gameLog||[]).forEach(g=>{
+    h2hResult[g.team+'|'+g.opponent] = g.result;
+    h2hResult[g.opponent+'|'+g.team] = g.result==='W' ? 'L' : 'W';
+  });
+
+  list.sort((a,b)=> b.score-a.score);
+  const THRESHOLD = 1.0;
+  let changed = true, iterations = 0;
+  while (changed && iterations < 30){
+    changed = false; iterations++;
+    let didSwap = false;
+    for (let i=0; i<list.length && !didSwap; i++){
+      for (let j=i+1; j<list.length; j++){
+        const a=list[i], b=list[j];
+        if (Math.abs(a.score-b.score)<=THRESHOLD && h2hResult[b.team+'|'+a.team]==='W'){
+          list.splice(j,1); list.splice(i,0,b);
+          changed = true; didSwap = true;
+          break;
+        }
+      }
+    }
+  }
+  list.forEach((p,i)=> p.rank=i+1);
+  return list;
+}
+
+let powerAlgoMode = 'full'; // 'full' or 'nohist'
+
 function renderPower(){
   const el = document.getElementById('powerList');
+  const ranked = rankPower(DATA.power, powerAlgoMode==='full');
   const tiebreakByUser = {};
   (DATA.h2hTiebreaks||[]).forEach(note=>{
     const m = note.match(/^(\S+)/);
     if (m) tiebreakByUser[m[1]] = note;
   });
-  el.innerHTML = DATA.power.map(p=>{
+  el.innerHTML = ranked.map(p=>{
     const diffClass = p.diff>=0 ? 'pos':'neg';
     const diffStr = p.diff>=0 ? `+${p.diff}`:`${p.diff}`;
     const streakClass = p.streak[0]==='W' ? 'w':'l';
@@ -6507,6 +6573,18 @@ function renderPower(){
     if (tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
     const why = bits.join(' · ');
     const tc = teamColors(p.team);
+    const rowId = 'math-'+p.team.replace(/[^a-zA-Z0-9]/g,'');
+    const histLine = p.historicalApplied
+      ? `<div class="math-line"><span>Career track record (${p.historicalWinPct!=null?p.historicalWinPct+'%':'n/a'} weighted)</span><b>${p.historicalBonus>=0?'+':''}${p.historicalBonus}</b></div>`
+      : `<div class="math-line" style="color:var(--chalk-dimmer);"><span>Career track record</span><b>not applied (toggled off)</b></div>`;
+    const mathPanel = `
+      <div class="math-panel" id="${rowId}">
+        <div class="math-line"><span>Record (${p.wins!=null?p.wins:'?'}-${p.losses!=null?p.losses:'?'}) &amp; point differential, home/away adjusted</span><b>${p.coreScoreRaw!=null?p.coreScoreRaw:'—'}</b></div>
+        <div class="math-line"><span>÷ games played (${p.h2hGamesPlayed})</span><b>${p.coreScorePerGame}</b></div>
+        <div class="math-line"><span>Roster-strength adjustment (${p.teamOverall||'—'} OVR)</span><b>${p.rosterBonus>=0?'+':''}${p.rosterBonus}</b></div>
+        ${histLine}
+        <div class="math-line total"><span>Final score</span><b>${p.score>=0?'+':''}${p.score}</b></div>
+      </div>`;
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
       <div class="poll-rank mono">${p.rank}</div>
@@ -6526,9 +6604,18 @@ function renderPower(){
         <div class="score-lbl">score</div>
       </div>
       <div><span class="streak-badge ${streakClass}">${esc(p.streak)}</span></div>
-      <div class="poll-why">${why}</div>
+      <div class="poll-why">${why} <button class="math-toggle" data-target="${rowId}">show the math</button></div>
+      ${mathPanel}
     </div>`;
   }).join('');
+
+  el.querySelectorAll('.math-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const panel = document.getElementById(btn.dataset.target);
+      const open = panel.classList.toggle('open');
+      btn.textContent = open ? 'hide the math' : 'show the math';
+    });
+  });
 }
 
 // ---------- Standings ----------
@@ -6994,6 +7081,7 @@ function computeLiveState(games){
     // next to a 4-2 team just for having played fewer games.
     let coreScore = wins.length*3 - losses.length*1 + diff*0.4 + homeAwayBonus;
     let score = list.length>0 ? Math.round((coreScore/list.length)*10)/10 : 0;
+    const coreScorePerGame = score;
 
     let sig=null;
     const rankedWins = wins.filter(g=> teamStatic[g.opponent] && teamStatic[g.opponent].natlRank);
@@ -7022,7 +7110,8 @@ function computeLiveState(games){
       team, user:r.user, record:`${wins.length}-${losses.length}`, conf: ts.conf, natlRank: ts.natlRank,
       diff, pf, pa, score, streak: streakFor(list), signatureWin: sig, worstLoss: worst,
       h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus, homeAwayBonus,
-      reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus
+      reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus,
+      wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScore*10)/10, coreScorePerGame: coreScorePerGame
     };
   });
 
@@ -7080,6 +7169,16 @@ function computeLiveState(games){
   return { power, gameLog: dedupLog, closestGames, blowouts, hotStreaks, coldStreaks, standingsByConf, h2hTiebreaks: tiebreakNotes, totalGames: dedupLog.length };
 }
 
+function setupAlgoToggle(){
+  const sel = document.getElementById('algoSelect');
+  if (!sel) return;
+  sel.value = powerAlgoMode==='full' ? 'full' : 'nohist';
+  sel.addEventListener('change', ()=>{
+    powerAlgoMode = sel.value === 'nohist' ? 'nohist' : 'full';
+    renderPower();
+  });
+}
+
 function renderAll(){
   renderHero();
   renderTicker();
@@ -7093,6 +7192,7 @@ function renderAll(){
 
 async function boot(){
   renderNav();
+  setupAlgoToggle();
   renderAll(); // instant paint using the snapshot baked in at build time
   const games = await fetchLiveGames();
   if (games){
