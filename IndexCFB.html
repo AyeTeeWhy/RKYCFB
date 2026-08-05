@@ -358,7 +358,7 @@
 
 <div class="hero">
   <div class="hero-eyebrow" id="heroEyebrow">WEEK 6 COMPLETE</div>
-  <h1 class="hero-title display" id="heroTitle">23 coaches.<br>One league.<br><em>Zero mercy.</em></h1>
+  <h1 class="hero-title display" id="heroTitle">RKY CFB<br><em>Online Dynasty</em></h1>
   <p class="hero-sub" id="heroSub"></p>
   <div class="hero-stats" id="heroStats"></div>
 </div>
@@ -369,9 +369,8 @@
     <div class="section-head">
       <div class="section-eyebrow">01 — CFB 27 Power Poll</div>
       <h2 class="section-title display">Who's actually good</h2>
-      <p class="section-desc">This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
+      <p class="section-desc">Only games between two coaches count here — CPU wins and losses don't factor into these rankings at all.</p>
     </div>
-    <div class="formula-note">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.2)</span></div>
     <div class="card" id="powerList"></div>
   </section>
 
@@ -6289,6 +6288,32 @@ const TEAM_COLORS = {
   'Rutgers':       {bg:'#CC0033', text:'#FFFFFF', abbr:'RU'},
   'Miami':         {bg:'#005030', text:'#F47321', abbr:'MIA'},
   'Tulane':        {bg:'#00693E', text:'#63C7F2', abbr:'TUL'},
+  // Historical-only schools (teams users had in earlier CFB25/26 seasons)
+  'Cincinnati':    {bg:'#000000', text:'#E00122', abbr:'CIN'},
+  'Colorado':      {bg:'#000000', text:'#CFB87C', abbr:'COL'},
+  'Boise State':   {bg:'#0033A0', text:'#D64309', abbr:'BSU'},
+  'Arkansas':      {bg:'#9D2235', text:'#FFFFFF', abbr:'ARK'},
+  'Nebraska':      {bg:'#E41C38', text:'#F5F1E7', abbr:'NEB'},
+  'Utah':          {bg:'#CC0000', text:'#FFFFFF', abbr:'UTAH'},
+  'Northwestern':  {bg:'#4E2A84', text:'#FFFFFF', abbr:'NW'},
+  'UCF':           {bg:'#000000', text:'#BA9B37', abbr:'UCF'},
+  'Missouri':      {bg:'#000000', text:'#F1B82D', abbr:'MIZ'},
+  'TCU':           {bg:'#4D1979', text:'#FFFFFF', abbr:'TCU'},
+  'Vanderbilt':    {bg:'#000000', text:'#CFAE70', abbr:'VAN'},
+  'Florida':       {bg:'#0021A5', text:'#FA4616', abbr:'FLA'},
+  'Ole Miss':      {bg:'#14213D', text:'#CE1126', abbr:'MISS'},
+  'Kansas State':  {bg:'#512888', text:'#FFFFFF', abbr:'KSU'},
+  'California':    {bg:'#003262', text:'#FDB515', abbr:'CAL'},
+  'Georgia Tech':  {bg:'#003057', text:'#B3A369', abbr:'GT'},
+  'Texas Tech':    {bg:'#CC0000', text:'#FFFFFF', abbr:'TTU'},
+  'Pittsburgh':    {bg:'#003594', text:'#FFB81C', abbr:'PITT'},
+  'Auburn':        {bg:'#03244D', text:'#E86100', abbr:'AUB'},
+  'UCLA':          {bg:'#2D68C4', text:'#F2A900', abbr:'UCLA'},
+  'Louisville':    {bg:'#AD0000', text:'#FFFFFF', abbr:'LOU'},
+  'North Carolina':{bg:'#7BAFD4', text:'#13294B', abbr:'UNC'},
+  'Oregon':        {bg:'#154733', text:'#FEE123', abbr:'ORE'},
+  'Washington':    {bg:'#4B2E83', text:'#B7A57A', abbr:'WASH'},
+  'West Virginia': {bg:'#002855', text:'#EAAA00', abbr:'WVU'},
 };
 function teamColors(team){ return TEAM_COLORS[team] || {bg:'var(--turf-2)', text:'var(--chalk)', abbr:'—'}; }
 function teamBadge(team, size, invert){
@@ -6298,6 +6323,55 @@ function teamBadge(team, size, invert){
   const bg = invert ? c.text : c.bg;
   const fg = invert ? c.bg : c.text;
   return `<span class="team-badge" style="width:${size}px; height:${size}px; background:${bg}; color:${fg}; font-size:${fontSize}px; border-color:rgba(255,255,255,0.25);">${esc(c.abbr)}</span>`;
+}
+
+// Every team a coach has had across CFB 25, CFB 26, and CFB 27 (order = chronological).
+const USER_TEAM_HISTORY = {
+ "Jhump":   ["Clemson","Cincinnati","Colorado","Fresno State"],
+ "Adam":    ["USC","Boise State","Tulane"],
+ "AJ":      ["Arkansas","Nebraska"],
+ "Jared":   ["Utah","Northwestern","Rutgers"],
+ "Isiah":   ["South Carolina"],
+ "Brandon": ["Tennessee","Miami"],
+ "Vince":   ["UCF","Missouri","NC State"],
+ "Ben":     ["TCU","Vanderbilt","Duke"],
+ "Dom":     ["Florida","TCU","Baylor"],
+ "Tyler M": ["Ole Miss"],
+ "Jeremy":  ["Texas A&M"],
+ "Tipton":  ["Kansas State","LSU","Miami","Penn State"],
+ "Ceseque": ["Clemson","Wisconsin"],
+ "Dguy":    ["Louisville"],
+ "Nick":    ["California","Georgia Tech","Arizona State"],
+ "Shawn":   [],
+ "Tim":     ["Northwestern","Texas Tech","Iowa"],
+ "Jake":    ["Michigan State"],
+ "Logan":   ["Pittsburgh","Missouri","Clemson"],
+ "Justin":  ["Auburn","SMU","Michigan"],
+ "Phil":    ["Iowa"],
+ "JoJo":    ["UCLA","LSU","SMU"],
+ "Bruce":   ["Nebraska","Michigan","South Carolina"],
+ "Kyle":    [],
+ "Fox":     [],
+ "Harmon":  ["Louisville","Tennessee","Michigan State"],
+ "Austin":  ["SMU","NC State","Miami"],
+ "Chuckie": ["UCLA","Nebraska"],
+ "Kurt":    ["North Carolina","Arizona State","Tennessee"],
+ "Pat":     ["Arkansas","Oregon","Texas"],
+ "Chris":   ["West Virginia"],
+ "Coltrain":["Texas Tech","Washington","USC"],
+ "Goose":   [],
+ "Swaggy":  ["Penn State"],
+ "Dylan":   ["Oregon"],
+ "Jay":     ["LSU"],
+ "Wemple":  ["Wake Forest"],
+ "Derick":  ["Oklahoma"],
+ "Cory":    ["Texas A&M"],
+};
+// Small row of every team badge a coach has ever had, in order (small=22px, non-inverted).
+function teamHistoryBadges(name){
+  const list = USER_TEAM_HISTORY[name];
+  if (!list || !list.length) return '';
+  return `<span style="display:inline-flex; gap:4px; vertical-align:middle;">${list.map(t=>teamBadge(t,22)).join('')}</span>`;
 }
 
 const TABS = [
@@ -6382,15 +6456,16 @@ function renderHero(){
     return bv-av;
   })[0];
   const undefeated = DATA.power.filter(p=>p.record.endsWith('-0') && p.h2hGamesPlayed>0);
+  const longestSkid = [...DATA.power].filter(p=>p.streak[0]==='L').sort((a,b)=> parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)))[0];
 
   document.getElementById('heroSub').textContent =
-    `Every result, ranking, and grudge match from the dynasty, logged from screenshots as they happen. ${DATA.meta.totalGames} games played across ${DATA.meta.conferences.length} conferences that make no geographic sense.`;
+    `Live standings, power rankings, and history for the league — updated automatically as results come in.`;
 
   const stats = [
     {num:`${top.user}`, lbl:`#1 Power · ${top.team} (${top.record})`},
     {num:`${undefeated.length}`, lbl:'Teams still unbeaten'},
     {num:`${longestStreak.streak}`, lbl:`Longest active streak · ${longestStreak.user}`},
-    {num:`${DATA.h2hUpcoming.length}`, lbl:'Grudge matches next week'},
+    {num:`${longestSkid?longestSkid.streak:'—'}`, lbl:`Longest losing streak${longestSkid?' · '+longestSkid.user:''}`},
   ];
   document.getElementById('heroStats').innerHTML = stats.map(s=>`
     <div class="hero-stat"><div class="num display">${esc(s.num)}</div><div class="lbl">${esc(s.lbl)}</div></div>
@@ -6574,7 +6649,7 @@ function renderHistory(){
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
       <div class="poll-rank mono">${p.rank}</div>
       <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
-        ${p.currentTeam ? teamBadge(p.currentTeam, 34) : ''}
+        ${teamHistoryBadges(p.name) || (p.currentTeam ? teamBadge(p.currentTeam, 34) : '')}
         <div style="min-width:0;">
         <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
         <div class="meta">${statusTag}</div>
