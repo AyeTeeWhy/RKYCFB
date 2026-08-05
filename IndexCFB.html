@@ -6958,6 +6958,9 @@ const TEAM_OVERALL = {
   'Dom':81, 'Coltrain':87, 'Cory':91, 'Adam':73, 'Wemple':77, 'Ceseque':81, 'Jay':91, 'Derrick':87
 };
 const REPUTATION_BASED = new Set(['Wemple','Jay','Derrick','Cory']);
+// Teams belonging to a user who has since retired/left the league. Games against them still
+// count toward the CURRENT roster member's record — they just don't get their own ranked row.
+const RETIRED_OPPONENTS = new Set(['Nebraska']);
 
 // Minimal RFC4180-ish CSV parser — handles quoted fields with embedded commas/quotes.
 function parseCSV(text){
@@ -7029,19 +7032,27 @@ function computeLiveState(games){
   const teamGames = {}; DATA.roster.forEach(r=> teamGames[r.team] = []);
   const gameLog = [];
 
+  const countable = t => teamSet.has(t) || RETIRED_OPPONENTS.has(t);
   games.forEach(g=>{
-    if (!teamSet.has(g.teamA) || !teamSet.has(g.teamB)) return;
+    if (!countable(g.teamA) || !countable(g.teamB)) return;
     const resultA = g.scoreA > g.scoreB ? 'W' : 'L';
     const resultB = resultA === 'W' ? 'L' : 'W';
     // home: 'A' team A hosted, 'B' team B hosted, 'N' neutral/unknown
     const siteA = g.home==='A' ? 'Home' : (g.home==='B' ? 'Away' : 'Neutral');
     const siteB = g.home==='A' ? 'Away' : (g.home==='B' ? 'Home' : 'Neutral');
-    teamGames[g.teamA].push({week:g.week, opponent:g.teamB, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, site:siteA});
-    teamGames[g.teamB].push({week:g.week, opponent:g.teamA, result:resultB, teamPts:g.scoreB, oppPts:g.scoreA, site:siteB});
+    // Only push into a team's own game list if that side is an actual current roster team —
+    // a retired opponent (e.g. Nebraska) never gets its own ranked row, but its result still
+    // counts for whichever current team played them.
+    if (teamSet.has(g.teamA)) teamGames[g.teamA].push({week:g.week, opponent:g.teamB, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, site:siteA});
+    if (teamSet.has(g.teamB)) teamGames[g.teamB].push({week:g.week, opponent:g.teamA, result:resultB, teamPts:g.scoreB, oppPts:g.scoreA, site:siteB});
+    // The results ticker / Record Book stay focused on real coach-vs-coach rivalries, so a game
+    // against a retired user's old team is excluded from those (isH2H false) even though it
+    // still counts toward the record above.
+    const bothCurrent = teamSet.has(g.teamA) && teamSet.has(g.teamB);
     gameLog.push({
       week:g.week, team:g.teamA, user:userForTeam[g.teamA], opponent:g.teamB, oppUser:userForTeam[g.teamB],
       homeAway:null, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, oppRank:(teamStatic[g.teamB]||{}).natlRank,
-      isH2H:true, margin:Math.abs(g.scoreA-g.scoreB)
+      isH2H:bothCurrent, margin:Math.abs(g.scoreA-g.scoreB)
     });
   });
 
