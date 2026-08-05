@@ -6910,9 +6910,9 @@ async function fetchLiveGames(){
     const idx = {
       week: header.indexOf('week'), teamA: header.indexOf('team a'),
       scoreA: header.indexOf('score a'), teamB: header.indexOf('team b'),
-      scoreB: header.indexOf('score b')
+      scoreB: header.indexOf('score b'), home: header.indexOf('home')
     };
-    if (Object.values(idx).some(v=>v<0)) return null;
+    if (idx.week<0 || idx.teamA<0 || idx.scoreA<0 || idx.teamB<0 || idx.scoreB<0) return null;
     const games = [];
     for (let i=1; i<rows.length; i++){
       const r = rows[i];
@@ -6922,7 +6922,10 @@ async function fetchLiveGames(){
       const teamB = (r[idx.teamB]||'').trim();
       const scoreB = parseInt(r[idx.scoreB]);
       if (!teamA || !teamB || isNaN(week) || isNaN(scoreA) || isNaN(scoreB)) continue;
-      games.push({week, teamA, scoreA, teamB, scoreB});
+      // home: 'A' = Team A hosted, 'B' = Team B hosted, 'N'/blank/anything else = unknown or neutral (no bonus applied)
+      let home = idx.home>=0 ? (r[idx.home]||'').trim().toUpperCase() : '';
+      if (home !== 'A' && home !== 'B') home = 'N';
+      games.push({week, teamA, scoreA, teamB, scoreB, home});
     }
     return games.length ? games : null;
   } catch(e){
@@ -6943,8 +6946,11 @@ function computeLiveState(games){
     if (!teamSet.has(g.teamA) || !teamSet.has(g.teamB)) return;
     const resultA = g.scoreA > g.scoreB ? 'W' : 'L';
     const resultB = resultA === 'W' ? 'L' : 'W';
-    teamGames[g.teamA].push({week:g.week, opponent:g.teamB, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB});
-    teamGames[g.teamB].push({week:g.week, opponent:g.teamA, result:resultB, teamPts:g.scoreB, oppPts:g.scoreA});
+    // home: 'A' team A hosted, 'B' team B hosted, 'N' neutral/unknown
+    const siteA = g.home==='A' ? 'Home' : (g.home==='B' ? 'Away' : 'Neutral');
+    const siteB = g.home==='A' ? 'Away' : (g.home==='B' ? 'Home' : 'Neutral');
+    teamGames[g.teamA].push({week:g.week, opponent:g.teamB, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, site:siteA});
+    teamGames[g.teamB].push({week:g.week, opponent:g.teamA, result:resultB, teamPts:g.scoreB, oppPts:g.scoreA, site:siteB});
     gameLog.push({
       week:g.week, team:g.teamA, user:userForTeam[g.teamA], opponent:g.teamB, oppUser:userForTeam[g.teamB],
       homeAway:null, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, oppRank:(teamStatic[g.teamB]||{}).natlRank,
@@ -6973,7 +6979,21 @@ function computeLiveState(games){
     const pf = list.reduce((s,g)=>s+g.teamPts,0);
     const pa = list.reduce((s,g)=>s+g.oppPts,0);
     const diff = pf-pa;
-    let score = Math.round((wins.length*3 - losses.length*1 + diff*0.4)*10)/10;
+
+    // Slight bonus for winning on the road, slight penalty for losing at home. Neutral-site
+    // games (or games with no site recorded yet) get no adjustment either way.
+    const HOME_AWAY_WEIGHT = 1.5;
+    let homeAwayBonus = 0;
+    list.forEach(g=>{
+      if (g.result==='W' && g.site==='Away') homeAwayBonus += HOME_AWAY_WEIGHT;
+      else if (g.result==='L' && g.site==='Home') homeAwayBonus -= HOME_AWAY_WEIGHT;
+    });
+    homeAwayBonus = Math.round(homeAwayBonus*10)/10;
+
+    // Core record-based score, then averaged per game played so a 2-0 team isn't penalized
+    // next to a 4-2 team just for having played fewer games.
+    let coreScore = wins.length*3 - losses.length*1 + diff*0.4 + homeAwayBonus;
+    let score = list.length>0 ? Math.round((coreScore/list.length)*10)/10 : 0;
 
     let sig=null;
     const rankedWins = wins.filter(g=> teamStatic[g.opponent] && teamStatic[g.opponent].natlRank);
@@ -7001,7 +7021,7 @@ function computeLiveState(games){
     return {
       team, user:r.user, record:`${wins.length}-${losses.length}`, conf: ts.conf, natlRank: ts.natlRank,
       diff, pf, pa, score, streak: streakFor(list), signatureWin: sig, worstLoss: worst,
-      h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus,
+      h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus, homeAwayBonus,
       reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus
     };
   });
@@ -7014,7 +7034,7 @@ function computeLiveState(games){
   });
 
   power.sort((a,b)=> b.score-a.score);
-  const THRESHOLD = 3.0;
+  const THRESHOLD = 1.0; // rescaled for per-game-averaged scores (was 3.0 under the old cumulative scale)
   const tiebreakNotes = [];
   let changed = true, iterations = 0;
   while (changed && iterations < 30){
