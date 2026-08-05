@@ -123,9 +123,11 @@
 
   /* Power poll */
   .poll-row{
-    display:grid; grid-template-columns:52px 1fr auto auto; gap:16px; align-items:center;
+    display:grid; grid-template-columns:52px 1fr auto auto auto; gap:16px; align-items:center;
     padding:16px 20px 16px 17px; border-bottom:1px solid var(--line); border-left:3px solid transparent;
   }
+  .score-val{ font-size:15px; font-weight:700; color:var(--gold-bright); text-align:right; }
+  .score-lbl{ font-size:9.5px; color:var(--chalk-dimmer); text-transform:uppercase; letter-spacing:0.06em; text-align:right; margin-top:2px; }
   .poll-row:last-child{ border-bottom:none; }
   .poll-row:hover{ background:var(--turf-2); }
   .poll-rank{ font-family:'Anton',sans-serif; font-size:26px; color:var(--chalk-dimmer); }
@@ -138,7 +140,6 @@
   .poll-record{ text-align:right; }
   .poll-record .rec{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; }
   .poll-record .diff{ font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:2px; }
-  .poll-record .power-score{ font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; color:var(--gold-bright); margin-top:4px; white-space:nowrap; }
   .diff.pos{ color:var(--win); } .diff.neg{ color:var(--alert); }
   .streak-badge{
     font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; padding:4px 9px;
@@ -146,13 +147,8 @@
   }
   .streak-badge.w{ background:rgba(92,174,126,0.15); color:var(--win); }
   .streak-badge.l{ background:rgba(210,85,59,0.15); color:var(--alert); }
-  .power-toolbar{ display:flex; justify-content:flex-end; margin:-8px 0 14px; }
-  .power-mode-control{ display:flex; flex-direction:column; gap:6px; width:min(420px,100%); color:var(--chalk-dim); font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
-  .power-mode-control select{ width:100%; padding:10px 38px 10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--turf-2); color:var(--chalk); font-family:'Inter',sans-serif; font-size:13px; font-weight:600; text-transform:none; letter-spacing:0; cursor:pointer; }
-  .power-mode-control select:focus{ outline:2px solid var(--gold); outline-offset:2px; }
   .formula-note{ font-size:12.5px; color:var(--chalk-dimmer); margin-bottom:18px; padding:12px 16px; background:var(--turf-2); border-radius:10px; border:1px solid var(--line);}
   .formula-note .mono{ color:var(--gold-bright); }
-  @media(max-width:640px){ .power-toolbar{ justify-content:stretch; } .power-mode-control{ width:100%; } }
 
   /* Standings by conference */
   .conf-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:20px; }
@@ -333,6 +329,7 @@
     nav.tabs{ overflow-x:auto; padding-bottom:2px; }
     .poll-row{ grid-template-columns:36px 1fr; row-gap:8px; }
     .poll-record{ grid-column:2; text-align:left; display:flex; gap:10px; align-items:center; }
+    .poll-score{ grid-column:2; }
     .poll-why{ grid-column:1/-1; }
     .topbar-inner{ flex-wrap:wrap; }
   }
@@ -340,38 +337,6 @@
     .ticker-track{ animation:none; }
     html{ scroll-behavior:auto; }
   }
-
-  /* all-time power poll team history badges */
-  .hist-coach-wrap{display:flex; align-items:center; justify-content:space-between; gap:14px; min-width:0; flex-wrap:wrap;}
-  .hist-coach-info{min-width:130px;}
-  .hist-logo-strip{display:flex; align-items:center; justify-content:flex-end; gap:9px; flex-wrap:wrap;}
-  .hist-era-group{display:inline-flex; align-items:center; gap:5px; padding-left:9px; border-left:1px solid var(--line);}
-  .hist-era-group:first-child{padding-left:0; border-left:0;}
-  .hist-era-label{font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--chalk-dimmer); letter-spacing:.04em;}
-  .hist-era-badges{display:inline-flex; align-items:center; gap:4px;}
-  .hist-logo-strip .team-badge{box-shadow:none;}
-  @media(max-width:760px){
-    .hist-coach-wrap{align-items:flex-start; flex-direction:column; gap:8px;}
-    .hist-logo-strip{justify-content:flex-start;}
-  }
-
-  /* team history */
-  .team-history-list{display:grid; gap:10px;}
-  .team-history-header,.team-history-row{display:grid; grid-template-columns:170px repeat(3,minmax(0,1fr)); gap:12px; align-items:center;}
-  .team-history-header{padding:0 0 8px; border-bottom:1px solid var(--line); color:var(--chalk-dimmer); font-size:11px; text-transform:uppercase; letter-spacing:.12em;}
-  .team-history-row{padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);}
-  .team-history-row:last-child{border-bottom:0;}
-  .team-history-name{font-weight:700; color:var(--chalk);}
-  .team-history-season{display:flex; flex-wrap:wrap; gap:8px; align-items:center; min-height:36px;}
-  .team-history-empty{color:var(--chalk-dimmer); font-size:12px;}
-  .team-history-season .team-badge{box-shadow:none;}
-  @media (max-width:860px){
-    .team-history-header{display:none;}
-    .team-history-row{grid-template-columns:1fr; gap:8px;}
-    .team-history-name{margin-bottom:2px;}
-    .team-history-season::before{content:attr(data-era); display:inline-block; min-width:52px; color:var(--chalk-dimmer); font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-right:4px;}
-  }
-
 </style>
 </head>
 <body>
@@ -393,7 +358,7 @@
 
 <div class="hero">
   <div class="hero-eyebrow" id="heroEyebrow">WEEK 6 COMPLETE</div>
-  <h1 class="hero-title display" id="heroTitle">RKY CFB Hub</h1>
+  <h1 class="hero-title display" id="heroTitle">23 coaches.<br>One league.<br><em>Zero mercy.</em></h1>
   <p class="hero-sub" id="heroSub"></p>
   <div class="hero-stats" id="heroStats"></div>
 </div>
@@ -404,18 +369,9 @@
     <div class="section-head">
       <div class="section-eyebrow">01 — CFB 27 Power Poll</div>
       <h2 class="section-title display">Who's actually good</h2>
-      <p class="section-desc" id="powerDescription">Coach-vs.-coach rankings based on user-game results. CPU games do not count.</p>
+      <p class="section-desc">This is coach vs. coach only — CPU games don't count toward this one. Ranked by record against everyone else in the league, adjusted for point differential, adjusted again for the fact that team assignments were rigged for parity, nudged by career track record from CFB 26, and finally checked against head-to-head results for anyone closely bunched together. Nobody voted on this — it's math, so take it up with the formula, not the coach.</p>
     </div>
-    <div class="power-toolbar">
-      <label class="power-mode-control" for="powerMode">
-        <span>Algorithm view</span>
-        <select id="powerMode">
-          <option value="with-history">Current — includes CFB 26 weighted win %</option>
-          <option value="cfb27-only">CFB 27 only — removes CFB 26 weighted win %</option>
-        </select>
-      </label>
-    </div>
-    <div class="formula-note" id="powerFormulaNote">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.15)</span></div>
+    <div class="formula-note">Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.2)</span></div>
     <div class="card" id="powerList"></div>
   </section>
 
@@ -496,7 +452,7 @@
     </div>
 
     <div class="section-eyebrow" style="margin-bottom:6px;">All-Time Power Poll</div>
-    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5) + experience bonus</span>. Experience bonus is <span class="mono">games played × 0.1</span>, capped at 5 points.</div>
+    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5)</span>. Same spirit as the current Power Poll, but built for a career instead of a week — hardware counts for a lot more than a good record.</div>
     <div class="card" id="histPowerList"></div>
 
     <div class="section-head" style="margin-top:44px;">
@@ -587,7 +543,7 @@
   "meta": {
     "week": 6,
     "nextWeek": 7,
-    "totalGames": 87,
+    "totalGames": 90,
     "totalTeams": 23,
     "conferences": [
       "ACC",
@@ -601,24 +557,24 @@
     {
       "team": "Arizona State",
       "user": "Nick",
-      "record": "3-0",
+      "record": "4-0",
       "conf": "ACC",
       "natlRank": 20,
-      "diff": 52,
-      "pf": 98,
-      "pa": 46,
-      "score": 30.8,
-      "streak": "W3",
+      "diff": 69,
+      "pf": 129,
+      "pa": 60,
+      "score": 41.0,
+      "streak": "W4",
       "signatureWin": "Texas (42-16)",
       "worstLoss": null,
       "ovr": 79,
-      "h2hGamesPlayed": 3,
+      "h2hGamesPlayed": 4,
       "teamOverall": 81,
       "ovrDeviation": 2.2,
-      "rosterBonus": 1.3,
+      "rosterBonus": 1.8,
       "reputationBased": false,
       "historicalWinPct": 48.1,
-      "historicalBonus": -0.3,
+      "historicalBonus": -0.4,
       "rank": 1
     },
     {
@@ -645,26 +601,26 @@
       "rank": 2
     },
     {
-      "team": "Fresno State",
-      "user": "Jhump",
-      "record": "1-1",
-      "conf": "Big 12",
+      "team": "Duke",
+      "user": "Ben",
+      "record": "2-0",
+      "conf": "Big Ten",
       "natlRank": null,
-      "diff": 27,
-      "pf": 90,
-      "pa": 63,
-      "score": 19.8,
-      "streak": "L1",
-      "signatureWin": "Departed coach",
-      "worstLoss": "NC State (34-42)",
+      "diff": 21,
+      "pf": 45,
+      "pa": 24,
+      "score": 20.8,
+      "streak": "W2",
+      "signatureWin": "#19 South Carolina (28-21)",
+      "worstLoss": null,
       "ovr": null,
       "h2hGamesPlayed": 2,
-      "teamOverall": 74,
-      "ovrDeviation": 9.2,
-      "rosterBonus": 1.8,
+      "teamOverall": 77,
+      "ovrDeviation": 6.2,
+      "rosterBonus": 2.5,
       "reputationBased": false,
-      "historicalWinPct": 84.6,
-      "historicalBonus": 5.2,
+      "historicalWinPct": 69.6,
+      "historicalBonus": 3.9,
       "rank": 3
     },
     {
@@ -699,7 +655,7 @@
       "diff": 35,
       "pf": 120,
       "pa": 85,
-      "score": 19.5,
+      "score": 18.8,
       "streak": "W3",
       "signatureWin": "#6 Michigan (56-30)",
       "worstLoss": "LSU (8-34)",
@@ -710,31 +666,8 @@
       "rosterBonus": -0.5,
       "reputationBased": false,
       "historicalWinPct": 36.4,
-      "historicalBonus": -2.0,
+      "historicalBonus": -2.7,
       "rank": 5
-    },
-    {
-      "team": "South Carolina",
-      "user": "Bruce",
-      "record": "2-0",
-      "conf": "Big Ten",
-      "natlRank": 19,
-      "diff": 34,
-      "pf": 45,
-      "pa": 11,
-      "score": 16.7,
-      "streak": "W2",
-      "signatureWin": "#19 Wake Forest (24-3)",
-      "worstLoss": null,
-      "ovr": 86,
-      "h2hGamesPlayed": 2,
-      "teamOverall": 85,
-      "ovrDeviation": -1.8,
-      "rosterBonus": -0.7,
-      "reputationBased": false,
-      "historicalWinPct": 35.4,
-      "historicalBonus": -2.2,
-      "rank": 6
     },
     {
       "team": "USC",
@@ -745,7 +678,7 @@
       "diff": 28,
       "pf": 56,
       "pa": 28,
-      "score": 13.8,
+      "score": 13.2,
       "streak": "W2",
       "signatureWin": "#13 Oklahoma (21-0)",
       "worstLoss": null,
@@ -756,31 +689,31 @@
       "rosterBonus": -1.5,
       "reputationBased": false,
       "historicalWinPct": 37.4,
-      "historicalBonus": -1.9,
-      "rank": 7
+      "historicalBonus": -2.5,
+      "rank": 6
     },
     {
-      "team": "Duke",
-      "user": "Ben",
-      "record": "1-0",
+      "team": "South Carolina",
+      "user": "Bruce",
+      "record": "2-1",
       "conf": "Big Ten",
-      "natlRank": null,
-      "diff": 14,
-      "pf": 17,
-      "pa": 3,
-      "score": 12.8,
-      "streak": "W1",
-      "signatureWin": "Michigan State (17-3)",
-      "worstLoss": null,
-      "ovr": null,
-      "h2hGamesPlayed": 1,
-      "teamOverall": 77,
-      "ovrDeviation": 6.2,
-      "rosterBonus": 1.2,
+      "natlRank": 19,
+      "diff": 27,
+      "pf": 66,
+      "pa": 39,
+      "score": 12.2,
+      "streak": "L1",
+      "signatureWin": "#19 Wake Forest (24-3)",
+      "worstLoss": "Duke (21-28)",
+      "ovr": 86,
+      "h2hGamesPlayed": 3,
+      "teamOverall": 85,
+      "ovrDeviation": -1.8,
+      "rosterBonus": -0.7,
       "reputationBased": false,
-      "historicalWinPct": 69.6,
-      "historicalBonus": 2.9,
-      "rank": 8
+      "historicalWinPct": 35.4,
+      "historicalBonus": -2.9,
+      "rank": 7
     },
     {
       "team": "Tulane",
@@ -791,7 +724,7 @@
       "diff": -11,
       "pf": 65,
       "pa": 76,
-      "score": 8.3,
+      "score": 9.8,
       "streak": "W1",
       "signatureWin": "Wisconsin (21-7)",
       "worstLoss": "Oklahoma (3-35)",
@@ -802,31 +735,8 @@
       "rosterBonus": 4.1,
       "reputationBased": false,
       "historicalWinPct": 80.7,
-      "historicalBonus": 4.6,
-      "rank": 9
-    },
-    {
-      "team": "Michigan",
-      "user": "Justin",
-      "record": "3-1",
-      "conf": "Big 12",
-      "natlRank": 6,
-      "diff": 15,
-      "pf": 113,
-      "pa": 98,
-      "score": 6.6,
-      "streak": "L1",
-      "signatureWin": "#4 Miami (38-21)",
-      "worstLoss": "Penn State (30-56)",
-      "ovr": 89,
-      "h2hGamesPlayed": 4,
-      "teamOverall": 89,
-      "ovrDeviation": -5.8,
-      "rosterBonus": -3.5,
-      "reputationBased": false,
-      "historicalWinPct": 23.6,
-      "historicalBonus": -4.0,
-      "rank": 10
+      "historicalBonus": 6.1,
+      "rank": 8
     },
     {
       "team": "Baylor",
@@ -837,7 +747,7 @@
       "diff": -4,
       "pf": 54,
       "pa": 58,
-      "score": 6.4,
+      "score": 7.1,
       "streak": "W1",
       "signatureWin": "Texas (30-20)",
       "worstLoss": "Penn State (7-28)",
@@ -848,7 +758,53 @@
       "rosterBonus": 0.9,
       "reputationBased": false,
       "historicalWinPct": 63.8,
-      "historicalBonus": 2.1,
+      "historicalBonus": 2.8,
+      "rank": 9
+    },
+    {
+      "team": "NC State",
+      "user": "Vince",
+      "record": "2-1",
+      "conf": "Big Ten",
+      "natlRank": null,
+      "diff": -9,
+      "pf": 88,
+      "pa": 97,
+      "score": 6.3,
+      "streak": "W1",
+      "signatureWin": "Fresno State (42-34)",
+      "worstLoss": "Texas A&M (15-35)",
+      "ovr": 79,
+      "h2hGamesPlayed": 3,
+      "teamOverall": 79,
+      "ovrDeviation": 4.2,
+      "rosterBonus": 1.7,
+      "reputationBased": false,
+      "historicalWinPct": 65.8,
+      "historicalBonus": 3.2,
+      "rank": 10
+    },
+    {
+      "team": "Michigan",
+      "user": "Justin",
+      "record": "3-1",
+      "conf": "Big 12",
+      "natlRank": 6,
+      "diff": 15,
+      "pf": 113,
+      "pa": 98,
+      "score": 5.2,
+      "streak": "L1",
+      "signatureWin": "#4 Miami (38-21)",
+      "worstLoss": "Penn State (30-56)",
+      "ovr": 89,
+      "h2hGamesPlayed": 4,
+      "teamOverall": 89,
+      "ovrDeviation": -5.8,
+      "rosterBonus": -3.5,
+      "reputationBased": false,
+      "historicalWinPct": 23.6,
+      "historicalBonus": -5.3,
       "rank": 11
     },
     {
@@ -860,7 +816,7 @@
       "diff": 16,
       "pf": 52,
       "pa": 36,
-      "score": 5.8,
+      "score": 4.9,
       "streak": "W1",
       "signatureWin": "Iowa (38-15)",
       "worstLoss": "Miami (14-21)",
@@ -871,31 +827,8 @@
       "rosterBonus": -0.2,
       "reputationBased": false,
       "historicalWinPct": 33.6,
-      "historicalBonus": -2.5,
+      "historicalBonus": -3.3,
       "rank": 12
-    },
-    {
-      "team": "NC State",
-      "user": "Vince",
-      "record": "2-1",
-      "conf": "Big Ten",
-      "natlRank": null,
-      "diff": -9,
-      "pf": 88,
-      "pa": 97,
-      "score": 5.5,
-      "streak": "W1",
-      "signatureWin": "Fresno State (42-34)",
-      "worstLoss": "Texas A&M (15-35)",
-      "ovr": 79,
-      "h2hGamesPlayed": 3,
-      "teamOverall": 79,
-      "ovrDeviation": 4.2,
-      "rosterBonus": 1.7,
-      "reputationBased": false,
-      "historicalWinPct": 65.8,
-      "historicalBonus": 2.4,
-      "rank": 13
     },
     {
       "team": "Oklahoma",
@@ -918,7 +851,53 @@
       "reputationBased": true,
       "historicalWinPct": null,
       "historicalBonus": 0.0,
+      "rank": 13
+    },
+    {
+      "team": "Fresno State",
+      "user": "Jhump",
+      "record": "0-1",
+      "conf": "Big 12",
+      "natlRank": null,
+      "diff": -8,
+      "pf": 34,
+      "pa": 42,
+      "score": 2.7,
+      "streak": "L1",
+      "signatureWin": null,
+      "worstLoss": "NC State (34-42)",
+      "ovr": null,
+      "h2hGamesPlayed": 1,
+      "teamOverall": 74,
+      "ovrDeviation": 9.2,
+      "rosterBonus": 0.0,
+      "reputationBased": false,
+      "historicalWinPct": 84.6,
+      "historicalBonus": 6.9,
       "rank": 14
+    },
+    {
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "record": "1-1",
+      "conf": "SEC",
+      "natlRank": null,
+      "diff": -14,
+      "pf": 38,
+      "pa": 52,
+      "score": -2.4,
+      "streak": "W1",
+      "signatureWin": "Wisconsin (35-28)",
+      "worstLoss": "South Carolina (3-24)",
+      "ovr": 77,
+      "h2hGamesPlayed": 2,
+      "teamOverall": 77,
+      "ovrDeviation": 6.2,
+      "rosterBonus": 1.2,
+      "reputationBased": true,
+      "historicalWinPct": null,
+      "historicalBonus": 0.0,
+      "rank": 15
     },
     {
       "team": "Miami",
@@ -929,7 +908,7 @@
       "diff": -7,
       "pf": 55,
       "pa": 62,
-      "score": -3.4,
+      "score": -4.4,
       "streak": "L1",
       "signatureWin": "#23 Clemson (21-14)",
       "worstLoss": "Michigan (21-38)",
@@ -940,8 +919,8 @@
       "rosterBonus": -2.3,
       "reputationBased": false,
       "historicalWinPct": 28.3,
-      "historicalBonus": -3.3,
-      "rank": 15
+      "historicalBonus": -4.3,
+      "rank": 16
     },
     {
       "team": "Michigan State",
@@ -952,7 +931,7 @@
       "diff": -21,
       "pf": 31,
       "pa": 52,
-      "score": -7.6,
+      "score": -7.9,
       "streak": "L1",
       "signatureWin": "SMU (14-7)",
       "worstLoss": "Duke (3-17)",
@@ -963,30 +942,7 @@
       "rosterBonus": 0.4,
       "reputationBased": false,
       "historicalWinPct": 45.7,
-      "historicalBonus": -0.6,
-      "rank": 16
-    },
-    {
-      "team": "Wake Forest",
-      "user": "Wemple",
-      "record": "0-1",
-      "conf": "SEC",
-      "natlRank": null,
-      "diff": -21,
-      "pf": 3,
-      "pa": 24,
-      "score": -9.4,
-      "streak": "L1",
-      "signatureWin": null,
-      "worstLoss": "South Carolina (3-24)",
-      "ovr": 77,
-      "h2hGamesPlayed": 1,
-      "teamOverall": 77,
-      "ovrDeviation": 6.2,
-      "rosterBonus": 0.0,
-      "reputationBased": true,
-      "historicalWinPct": null,
-      "historicalBonus": 0.0,
+      "historicalBonus": -0.9,
       "rank": 17
     },
     {
@@ -998,7 +954,7 @@
       "diff": -18,
       "pf": 95,
       "pa": 113,
-      "score": -10.8,
+      "score": -12.1,
       "streak": "W1",
       "signatureWin": "#13 Oklahoma (28-24)",
       "worstLoss": "Arizona State (16-42)",
@@ -1009,54 +965,31 @@
       "rosterBonus": -3.5,
       "reputationBased": false,
       "historicalWinPct": 23.1,
-      "historicalBonus": -4.0,
+      "historicalBonus": -5.4,
       "rank": 18
-    },
-    {
-      "team": "SMU",
-      "user": "JoJo",
-      "record": "0-2",
-      "conf": "ACC",
-      "natlRank": null,
-      "diff": -27,
-      "pf": 24,
-      "pa": 51,
-      "score": -13.5,
-      "streak": "L2",
-      "signatureWin": null,
-      "worstLoss": "Texas A&M (17-37)",
-      "ovr": null,
-      "h2hGamesPlayed": 2,
-      "teamOverall": 84,
-      "ovrDeviation": -0.8,
-      "rosterBonus": -0.0,
-      "reputationBased": false,
-      "historicalWinPct": 45.2,
-      "historicalBonus": -0.7,
-      "rank": 19
     },
     {
       "team": "Wisconsin",
       "user": "Ceseque",
-      "record": "0-3",
+      "record": "0-4",
       "conf": "SEC",
       "natlRank": null,
-      "diff": -31,
-      "pf": 44,
-      "pa": 75,
-      "score": -15.4,
-      "streak": "L3",
+      "diff": -38,
+      "pf": 72,
+      "pa": 110,
+      "score": -19.2,
+      "streak": "L4",
       "signatureWin": null,
       "worstLoss": "Tulane (7-21)",
       "ovr": 80,
-      "h2hGamesPlayed": 3,
+      "h2hGamesPlayed": 4,
       "teamOverall": 81,
       "ovrDeviation": 2.2,
       "rosterBonus": 0.0,
       "reputationBased": false,
       "historicalWinPct": 50.0,
       "historicalBonus": 0.0,
-      "rank": 20
+      "rank": 19
     },
     {
       "team": "Rutgers",
@@ -1067,7 +1000,7 @@
       "diff": -45,
       "pf": 94,
       "pa": 139,
-      "score": -20.3,
+      "score": -19.3,
       "streak": "L5",
       "signatureWin": null,
       "worstLoss": "South Carolina (8-21)",
@@ -1078,7 +1011,30 @@
       "rosterBonus": 0.0,
       "reputationBased": false,
       "historicalWinPct": 68.3,
-      "historicalBonus": 2.7,
+      "historicalBonus": 3.7,
+      "rank": 20
+    },
+    {
+      "team": "SMU",
+      "user": "JoJo",
+      "record": "0-3",
+      "conf": "ACC",
+      "natlRank": null,
+      "diff": -44,
+      "pf": 38,
+      "pa": 82,
+      "score": -21.6,
+      "streak": "L3",
+      "signatureWin": null,
+      "worstLoss": "Texas A&M (17-37)",
+      "ovr": null,
+      "h2hGamesPlayed": 3,
+      "teamOverall": 84,
+      "ovrDeviation": -0.8,
+      "rosterBonus": -0.0,
+      "reputationBased": false,
+      "historicalWinPct": 45.2,
+      "historicalBonus": -1.0,
       "rank": 21
     },
     {
@@ -1090,7 +1046,7 @@
       "diff": -34,
       "pf": 46,
       "pa": 80,
-      "score": -22.0,
+      "score": -23.8,
       "streak": "L3",
       "signatureWin": null,
       "worstLoss": "Arizona State (7-28)",
@@ -1101,7 +1057,7 @@
       "rosterBonus": -0.0,
       "reputationBased": false,
       "historicalWinPct": 14.2,
-      "historicalBonus": -5.4,
+      "historicalBonus": -7.2,
       "rank": 22
     },
     {
@@ -1113,7 +1069,7 @@
       "diff": -51,
       "pf": 39,
       "pa": 90,
-      "score": -23.8,
+      "score": -23.9,
       "streak": "L3",
       "signatureWin": null,
       "worstLoss": "Clemson (15-38)",
@@ -1124,7 +1080,7 @@
       "rosterBonus": 0.0,
       "reputationBased": false,
       "historicalWinPct": 47.4,
-      "historicalBonus": -0.4,
+      "historicalBonus": -0.5,
       "rank": 23
     }
   ],
@@ -1133,12 +1089,12 @@
       {
         "team": "Arizona State",
         "user": "Nick",
-        "record": "5-0",
-        "confRecord": "1-0",
+        "record": "6-0",
+        "confRecord": "2-0",
         "confStanding": "2nd",
         "natlRank": 20,
         "ovr": 79,
-        "diff": 60
+        "diff": 77
       },
       {
         "team": "Texas",
@@ -1163,12 +1119,12 @@
       {
         "team": "SMU",
         "user": "JoJo",
-        "record": "2-3",
+        "record": "2-4",
         "confRecord": null,
         "confStanding": null,
         "natlRank": null,
         "ovr": null,
-        "diff": -24
+        "diff": -41
       }
     ],
     "MWC": [
@@ -1269,12 +1225,12 @@
       {
         "team": "Wake Forest",
         "user": "Wemple",
-        "record": "4-1",
-        "confRecord": "0-0",
+        "record": "5-1",
+        "confRecord": "1-0",
         "confStanding": "4th",
         "natlRank": null,
         "ovr": 77,
-        "diff": 24
+        "diff": 31
       },
       {
         "team": "Tulane",
@@ -1299,12 +1255,12 @@
       {
         "team": "Wisconsin",
         "user": "Ceseque",
-        "record": "2-3",
-        "confRecord": "0-1",
+        "record": "2-4",
+        "confRecord": "0-2",
         "confStanding": null,
         "natlRank": null,
         "ovr": 80,
-        "diff": 46
+        "diff": 39
       },
       {
         "team": "LSU",
@@ -1321,12 +1277,12 @@
       {
         "team": "South Carolina",
         "user": "Bruce",
-        "record": "4-1",
+        "record": "4-2",
         "confRecord": null,
         "confStanding": "4th",
         "natlRank": 19,
         "ovr": 86,
-        "diff": 55
+        "diff": 48
       },
       {
         "team": "NC State",
@@ -1361,12 +1317,12 @@
       {
         "team": "Duke",
         "user": "Ben",
-        "record": "4-1",
+        "record": "5-1",
         "confRecord": null,
         "confStanding": "3rd",
         "natlRank": null,
         "ovr": null,
-        "diff": 34
+        "diff": 41
       }
     ]
   },
@@ -1894,16 +1850,14 @@
       "team": "Fresno State",
       "user": "Jhump",
       "opponent": "Nebraska",
-      "oppUser": "Departed Coach",
+      "oppUser": null,
       "homeAway": "Away",
       "result": "W",
       "teamPts": 56,
       "oppPts": 21,
       "oppRank": null,
-      "isH2H": true,
-      "margin": 35,
-      "unassignedLoss": true,
-      "opponentSkillNote": "Lower-skill departed opponent"
+      "isH2H": false,
+      "margin": 35
     },
     {
       "week": 3,
@@ -2579,6 +2533,20 @@
     },
     {
       "week": 7,
+      "team": "Duke",
+      "user": "Ben",
+      "opponent": "South Carolina",
+      "oppUser": "Bruce",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 28,
+      "oppPts": 21,
+      "oppRank": 19,
+      "isH2H": true,
+      "margin": 7
+    },
+    {
+      "week": 7,
       "team": "Penn State",
       "user": "Tipton",
       "opponent": "Michigan",
@@ -2590,6 +2558,34 @@
       "oppRank": 6,
       "isH2H": true,
       "margin": 26
+    },
+    {
+      "week": 8,
+      "team": "Arizona State",
+      "user": "Nick",
+      "opponent": "SMU",
+      "oppUser": "JoJo",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 31,
+      "oppPts": 14,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 17
+    },
+    {
+      "week": 8,
+      "team": "Wake Forest",
+      "user": "Wemple",
+      "opponent": "Wisconsin",
+      "oppUser": "Ceseque",
+      "homeAway": "Home",
+      "result": "W",
+      "teamPts": 35,
+      "oppPts": 28,
+      "oppRank": null,
+      "isH2H": true,
+      "margin": 7
     }
   ],
   "closestGames": [
@@ -2680,22 +2676,6 @@
   ],
   "blowouts": [
     {
-      "week": 3,
-      "team": "Fresno State",
-      "user": "Jhump",
-      "opponent": "Nebraska",
-      "oppUser": "Departed Coach",
-      "homeAway": "Away",
-      "result": "W",
-      "teamPts": 56,
-      "oppPts": 21,
-      "oppRank": null,
-      "isH2H": true,
-      "margin": 35,
-      "unassignedLoss": true,
-      "opponentSkillNote": "Lower-skill departed opponent"
-    },
-    {
       "week": 5,
       "team": "Tulane",
       "user": "Adam",
@@ -2764,6 +2744,20 @@
       "oppRank": null,
       "isH2H": true,
       "margin": 23
+    },
+    {
+      "week": 1,
+      "team": "USC",
+      "user": "Coltrain",
+      "opponent": "Oklahoma",
+      "oppUser": "Derrick",
+      "homeAway": "Away",
+      "result": "W",
+      "teamPts": 21,
+      "oppPts": 0,
+      "oppRank": 13,
+      "isH2H": true,
+      "margin": 21
     }
   ],
   "upcomingWeek7": [
@@ -2799,17 +2793,6 @@
       "time": "5:00 PM",
       "oppRank": null,
       "isH2H": false
-    },
-    {
-      "week": 7,
-      "team": "Duke",
-      "user": "Ben",
-      "opponent": "South Carolina",
-      "oppUser": "Bruce",
-      "homeAway": "Away",
-      "time": "8:00 PM",
-      "oppRank": 19,
-      "isH2H": true
     },
     {
       "week": 7,
@@ -2912,17 +2895,6 @@
     },
     {
       "week": 7,
-      "team": "South Carolina",
-      "user": "Bruce",
-      "opponent": "Duke",
-      "oppUser": "Ben",
-      "homeAway": "Away",
-      "time": "8:00 PM",
-      "oppRank": null,
-      "isH2H": true
-    },
-    {
-      "week": 7,
       "team": "Tennessee",
       "user": "Kurt",
       "opponent": "Houston",
@@ -3000,17 +2972,6 @@
     }
   ],
   "upcomingWeek8": [
-    {
-      "week": 8,
-      "team": "Arizona State",
-      "user": "Nick",
-      "opponent": "SMU",
-      "oppUser": "JoJo",
-      "homeAway": "Away",
-      "time": "Thu, 8:00 PM",
-      "oppRank": null,
-      "isH2H": true
-    },
     {
       "week": 8,
       "team": "Baylor",
@@ -3101,17 +3062,6 @@
     },
     {
       "week": 8,
-      "team": "SMU",
-      "user": "JoJo",
-      "opponent": "Arizona State",
-      "oppUser": "Nick",
-      "homeAway": "Home",
-      "time": "Thu, 8:00 PM",
-      "oppRank": 20,
-      "isH2H": true
-    },
-    {
-      "week": 8,
       "team": "South Carolina",
       "user": "Bruce",
       "opponent": "Tennessee",
@@ -3142,17 +3092,6 @@
       "time": "Thu, 9:00 PM",
       "oppRank": 16,
       "isH2H": false
-    },
-    {
-      "week": 8,
-      "team": "Wake Forest",
-      "user": "Wemple",
-      "opponent": "Wisconsin",
-      "oppUser": "Ceseque",
-      "homeAway": "?",
-      "time": "6:00 PM",
-      "oppRank": null,
-      "isH2H": true
     }
   ],
   "h2hUpcoming": [
@@ -3164,28 +3103,6 @@
       "oppUser": "Vince",
       "homeAway": "Away",
       "time": null,
-      "oppRank": null,
-      "isH2H": true
-    },
-    {
-      "week": 7,
-      "team": "Duke",
-      "user": "Ben",
-      "opponent": "South Carolina",
-      "oppUser": "Bruce",
-      "homeAway": "Away",
-      "time": "8:00 PM",
-      "oppRank": 19,
-      "isH2H": true
-    },
-    {
-      "week": 8,
-      "team": "Arizona State",
-      "user": "Nick",
-      "opponent": "SMU",
-      "oppUser": "JoJo",
-      "homeAway": "Away",
-      "time": "Thu, 8:00 PM",
       "oppRank": null,
       "isH2H": true
     },
@@ -3219,17 +3136,6 @@
       "oppUser": "Kurt",
       "homeAway": "Away",
       "time": "7:30 PM",
-      "oppRank": null,
-      "isH2H": true
-    },
-    {
-      "week": 8,
-      "team": "Wake Forest",
-      "user": "Wemple",
-      "opponent": "Wisconsin",
-      "oppUser": "Ceseque",
-      "homeAway": "?",
-      "time": "6:00 PM",
       "oppRank": null,
       "isH2H": true
     }
@@ -4709,7 +4615,7 @@
         "finalFours": 1
       }
     ],
-    "currentSeasonLabel": "CFB 27 — Season 1 (in progress)",
+    "currentSeasonLabel": "CFB 27 \u2014 Season 1 (in progress)",
     "currentRecordByUser": {
       "Jay": "6-0",
       "Jhump": "5-0",
@@ -4802,10 +4708,8 @@
         "runnerUps": 1,
         "finalFours": 2,
         "earlyRounds": 1,
-        "score": 113.2,
-        "rank": 1,
-        "gamesPlayed": 68,
-        "experienceBonus": 5.0
+        "score": 108.2,
+        "rank": 1
       },
       {
         "name": "Jared",
@@ -4819,10 +4723,8 @@
         "runnerUps": 5,
         "finalFours": 1,
         "earlyRounds": 2,
-        "score": 87.0,
-        "rank": 2,
-        "gamesPlayed": 71,
-        "experienceBonus": 5.0
+        "score": 82.0,
+        "rank": 2
       },
       {
         "name": "Jhump",
@@ -4836,10 +4738,8 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 2,
-        "score": 73.0,
-        "rank": 3,
-        "gamesPlayed": 30,
-        "experienceBonus": 3.0
+        "score": 70.0,
+        "rank": 3
       },
       {
         "name": "Vince",
@@ -4853,27 +4753,8 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 4,
-        "score": 61.0,
-        "rank": 4,
-        "gamesPlayed": 48,
-        "experienceBonus": 4.8
-      },
-      {
-        "name": "Ben",
-        "displayName": "Ben",
-        "retired": false,
-        "currentTeam": "Duke",
-        "win": 28,
-        "loss": 18,
-        "pct": 60.9,
-        "champs": 0,
-        "runnerUps": 1,
-        "finalFours": 1,
-        "earlyRounds": 3,
-        "score": 55.1,
-        "rank": 5,
-        "gamesPlayed": 46,
-        "experienceBonus": 4.6
+        "score": 56.2,
+        "rank": 4
       },
       {
         "name": "AJ",
@@ -4887,10 +4768,23 @@
         "runnerUps": 1,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 54.5,
-        "rank": 6,
-        "gamesPlayed": 20,
-        "experienceBonus": 2.0
+        "score": 52.5,
+        "rank": 5
+      },
+      {
+        "name": "Ben",
+        "displayName": "Ben",
+        "retired": false,
+        "currentTeam": "Duke",
+        "win": 28,
+        "loss": 18,
+        "pct": 60.9,
+        "champs": 0,
+        "runnerUps": 1,
+        "finalFours": 1,
+        "earlyRounds": 3,
+        "score": 50.5,
+        "rank": 6
       },
       {
         "name": "Brandon",
@@ -4904,10 +4798,8 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 53.1,
-        "rank": 7,
-        "gamesPlayed": 29,
-        "experienceBonus": 2.9
+        "score": 50.2,
+        "rank": 7
       },
       {
         "name": "Dom",
@@ -4921,10 +4813,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 52.5,
-        "rank": 8,
-        "gamesPlayed": 48,
-        "experienceBonus": 4.8
+        "score": 47.7,
+        "rank": 8
       },
       {
         "name": "Nick",
@@ -4938,10 +4828,8 @@
         "runnerUps": 0,
         "finalFours": 2,
         "earlyRounds": 4,
-        "score": 49.1,
-        "rank": 9,
-        "gamesPlayed": 56,
-        "experienceBonus": 5.0
+        "score": 44.1,
+        "rank": 9
       },
       {
         "name": "Isiah",
@@ -4955,10 +4843,8 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 42.7,
-        "rank": 10,
-        "gamesPlayed": 18,
-        "experienceBonus": 1.8
+        "score": 40.9,
+        "rank": 10
       },
       {
         "name": "Tipton",
@@ -4972,10 +4858,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 4,
-        "score": 41.4,
-        "rank": 11,
-        "gamesPlayed": 49,
-        "experienceBonus": 4.9
+        "score": 36.5,
+        "rank": 11
       },
       {
         "name": "Logan",
@@ -4989,44 +4873,8 @@
         "runnerUps": 1,
         "finalFours": 0,
         "earlyRounds": 3,
-        "score": 41.0,
-        "rank": 12,
-        "gamesPlayed": 47,
-        "experienceBonus": 4.7
-      },
-      {
-        "name": "Justin",
-        "displayName": "Justin",
-        "retired": false,
-        "currentTeam": "Michigan",
-        "win": 21,
-        "loss": 28,
-        "pct": 42.9,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 1,
-        "earlyRounds": 3,
-        "score": 38.9,
-        "rank": 13,
-        "gamesPlayed": 49,
-        "experienceBonus": 4.9
-      },
-      {
-        "name": "Tim",
-        "displayName": "Tim",
-        "retired": false,
-        "currentTeam": "Iowa",
-        "win": 26,
-        "loss": 30,
-        "pct": 46.4,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 4,
-        "score": 38.2,
-        "rank": 14,
-        "gamesPlayed": 56,
-        "experienceBonus": 5.0
+        "score": 36.3,
+        "rank": 12
       },
       {
         "name": "Jeremy",
@@ -5040,10 +4888,38 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 1,
-        "score": 37.0,
-        "rank": 15,
-        "gamesPlayed": 20,
-        "experienceBonus": 2.0
+        "score": 35.0,
+        "rank": 13
+      },
+      {
+        "name": "Justin",
+        "displayName": "Justin",
+        "retired": false,
+        "currentTeam": "Michigan",
+        "win": 21,
+        "loss": 28,
+        "pct": 42.9,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "earlyRounds": 3,
+        "score": 34.0,
+        "rank": 14
+      },
+      {
+        "name": "Tim",
+        "displayName": "Tim",
+        "retired": false,
+        "currentTeam": "Iowa",
+        "win": 26,
+        "loss": 30,
+        "pct": 46.4,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 4,
+        "score": 33.2,
+        "rank": 15
       },
       {
         "name": "Bruce",
@@ -5057,27 +4933,8 @@
         "runnerUps": 1,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 33.6,
-        "rank": 16,
-        "gamesPlayed": 41,
-        "experienceBonus": 4.1
-      },
-      {
-        "name": "Harmon",
-        "displayName": "Harmon",
-        "retired": false,
-        "currentTeam": "Michigan State",
-        "win": 17,
-        "loss": 30,
-        "pct": 36.2,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 4,
-        "score": 32.8,
-        "rank": 17,
-        "gamesPlayed": 47,
-        "experienceBonus": 4.7
+        "score": 29.5,
+        "rank": 16
       },
       {
         "name": "Tyler",
@@ -5091,78 +4948,23 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 32.8,
-        "rank": 18,
-        "gamesPlayed": 46,
-        "experienceBonus": 4.6
+        "score": 28.2,
+        "rank": 17
       },
       {
-        "name": "Austin",
-        "displayName": "Austin",
+        "name": "Harmon",
+        "displayName": "Harmon",
         "retired": false,
-        "currentTeam": "Miami",
-        "win": 18,
-        "loss": 32,
-        "pct": 36.0,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 1,
-        "earlyRounds": 1,
-        "score": 30.5,
-        "rank": 19,
-        "gamesPlayed": 50,
-        "experienceBonus": 5.0
-      },
-      {
-        "name": "JoJo",
-        "displayName": "Jojo",
-        "retired": false,
-        "currentTeam": "SMU",
-        "win": 18,
-        "loss": 27,
-        "pct": 40.0,
+        "currentTeam": "Michigan State",
+        "win": 17,
+        "loss": 30,
+        "pct": 36.2,
         "champs": 0,
         "runnerUps": 0,
         "finalFours": 0,
-        "earlyRounds": 2,
-        "score": 29.5,
-        "rank": 20,
-        "gamesPlayed": 45,
-        "experienceBonus": 4.5
-      },
-      {
-        "name": "Kurt",
-        "displayName": "Kurt",
-        "retired": false,
-        "currentTeam": "Tennessee",
-        "win": 15,
-        "loss": 29,
-        "pct": 34.1,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 3,
-        "score": 29.0,
-        "rank": 21,
-        "gamesPlayed": 44,
-        "experienceBonus": 4.4
-      },
-      {
-        "name": "Shawn",
-        "displayName": "Shawn",
-        "retired": false,
-        "currentTeam": null,
-        "win": 12,
-        "loss": 13,
-        "pct": 48.0,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 1,
-        "score": 29.0,
-        "rank": 22,
-        "gamesPlayed": 25,
-        "experienceBonus": 2.5
+        "earlyRounds": 4,
+        "score": 28.1,
+        "rank": 18
       },
       {
         "name": "Ceseque",
@@ -5176,27 +4978,38 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 28.3,
-        "rank": 23,
-        "gamesPlayed": 8,
-        "experienceBonus": 0.8
+        "score": 27.5,
+        "rank": 19
       },
       {
-        "name": "Coltrain",
-        "displayName": "Coltrain",
+        "name": "Shawn",
+        "displayName": "Shawn",
         "retired": false,
-        "currentTeam": "USC",
-        "win": 14,
-        "loss": 31,
-        "pct": 31.1,
+        "currentTeam": null,
+        "win": 12,
+        "loss": 13,
+        "pct": 48.0,
         "champs": 0,
         "runnerUps": 0,
         "finalFours": 0,
-        "earlyRounds": 3,
-        "score": 27.6,
-        "rank": 24,
-        "gamesPlayed": 45,
-        "experienceBonus": 4.5
+        "earlyRounds": 1,
+        "score": 26.5,
+        "rank": 20
+      },
+      {
+        "name": "Austin",
+        "displayName": "Austin",
+        "retired": false,
+        "currentTeam": "Miami",
+        "win": 18,
+        "loss": 32,
+        "pct": 36.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 1,
+        "earlyRounds": 1,
+        "score": 25.5,
+        "rank": 21
       },
       {
         "name": "Jake",
@@ -5210,10 +5023,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 27.4,
-        "rank": 25,
-        "gamesPlayed": 22,
-        "experienceBonus": 2.2
+        "score": 25.2,
+        "rank": 22
       },
       {
         "name": "Dguy",
@@ -5227,10 +5038,53 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 25.8,
-        "rank": 26,
-        "gamesPlayed": 8,
-        "experienceBonus": 0.8
+        "score": 25.0,
+        "rank": 23
+      },
+      {
+        "name": "JoJo",
+        "displayName": "Jojo",
+        "retired": false,
+        "currentTeam": "SMU",
+        "win": 18,
+        "loss": 27,
+        "pct": 40.0,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 2,
+        "score": 25.0,
+        "rank": 24
+      },
+      {
+        "name": "Kurt",
+        "displayName": "Kurt",
+        "retired": false,
+        "currentTeam": "Tennessee",
+        "win": 15,
+        "loss": 29,
+        "pct": 34.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 3,
+        "score": 24.6,
+        "rank": 25
+      },
+      {
+        "name": "Coltrain",
+        "displayName": "Coltrain",
+        "retired": false,
+        "currentTeam": "USC",
+        "win": 14,
+        "loss": 31,
+        "pct": 31.1,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 3,
+        "score": 23.1,
+        "rank": 26
       },
       {
         "name": "Chuckie",
@@ -5244,10 +5098,8 @@
         "runnerUps": 0,
         "finalFours": 1,
         "earlyRounds": 0,
-        "score": 24.3,
-        "rank": 27,
-        "gamesPlayed": 14,
-        "experienceBonus": 1.4
+        "score": 22.9,
+        "rank": 27
       },
       {
         "name": "Phil",
@@ -5261,27 +5113,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 1,
-        "score": 23.0,
-        "rank": 28,
-        "gamesPlayed": 5,
-        "experienceBonus": 0.5
-      },
-      {
-        "name": "Pat",
-        "displayName": "Pat",
-        "retired": false,
-        "currentTeam": "Texas",
-        "win": 15,
-        "loss": 30,
-        "pct": 33.3,
-        "champs": 0,
-        "runnerUps": 0,
-        "finalFours": 0,
-        "earlyRounds": 0,
-        "score": 21.1,
-        "rank": 29,
-        "gamesPlayed": 45,
-        "experienceBonus": 4.5
+        "score": 22.5,
+        "rank": 28
       },
       {
         "name": "Kyle",
@@ -5295,10 +5128,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 19.6,
-        "rank": 30,
-        "gamesPlayed": 8,
-        "experienceBonus": 0.8
+        "score": 18.8,
+        "rank": 29
       },
       {
         "name": "Fox",
@@ -5312,10 +5143,23 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 19.3,
-        "rank": 31,
-        "gamesPlayed": 11,
-        "experienceBonus": 1.1
+        "score": 18.2,
+        "rank": 30
+      },
+      {
+        "name": "Pat",
+        "displayName": "Pat",
+        "retired": false,
+        "currentTeam": "Texas",
+        "win": 15,
+        "loss": 30,
+        "pct": 33.3,
+        "champs": 0,
+        "runnerUps": 0,
+        "finalFours": 0,
+        "earlyRounds": 0,
+        "score": 16.6,
+        "rank": 31
       },
       {
         "name": "Chris",
@@ -5329,10 +5173,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 17.5,
-        "rank": 32,
-        "gamesPlayed": 9,
-        "experienceBonus": 0.9
+        "score": 16.6,
+        "rank": 32
       },
       {
         "name": "Goose",
@@ -5346,10 +5188,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 14.1,
-        "rank": 33,
-        "gamesPlayed": 16,
-        "experienceBonus": 1.6
+        "score": 12.5,
+        "rank": 33
       },
       {
         "name": "Swaggy",
@@ -5363,10 +5203,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 6.4,
-        "rank": 34,
-        "gamesPlayed": 9,
-        "experienceBonus": 0.9
+        "score": 5.5,
+        "rank": 34
       },
       {
         "name": "Dylan",
@@ -5380,10 +5218,8 @@
         "runnerUps": 0,
         "finalFours": 0,
         "earlyRounds": 0,
-        "score": 5.2,
-        "rank": 35,
-        "gamesPlayed": 13,
-        "experienceBonus": 1.3
+        "score": 3.9,
+        "rank": 35
       }
     ],
     "droughtClock": [
@@ -6304,8 +6140,125 @@
     }
   },
   "h2hTiebreaks": [
-    "Jay (LSU) jumps ahead of Tipton (Penn State) on the head-to-head win (scores: 17.3 vs 19.5)"
-  ]
+    "Jay (LSU) jumps ahead of Tipton (Penn State) on the head-to-head win (scores: 17.3 vs 18.8)"
+  ],
+  "teamStatic": {
+    "Arizona State": {
+      "conf": "ACC",
+      "natlRank": 20,
+      "confStanding": "2nd"
+    },
+    "Texas A&M": {
+      "conf": "MWC",
+      "natlRank": 5,
+      "confStanding": "6th"
+    },
+    "Duke": {
+      "conf": "Big Ten",
+      "natlRank": null,
+      "confStanding": "3rd"
+    },
+    "LSU": {
+      "conf": "SEC",
+      "natlRank": 3,
+      "confStanding": "2nd"
+    },
+    "Penn State": {
+      "conf": "Big 12",
+      "natlRank": 18,
+      "confStanding": "4th"
+    },
+    "USC": {
+      "conf": "MWC",
+      "natlRank": 17,
+      "confStanding": "1st"
+    },
+    "South Carolina": {
+      "conf": "Big Ten",
+      "natlRank": 19,
+      "confStanding": "4th"
+    },
+    "Tulane": {
+      "conf": "SEC",
+      "natlRank": null,
+      "confStanding": "8th"
+    },
+    "Baylor": {
+      "conf": "MWC",
+      "natlRank": null,
+      "confStanding": "2nd"
+    },
+    "NC State": {
+      "conf": "Big Ten",
+      "natlRank": null,
+      "confStanding": null
+    },
+    "Michigan": {
+      "conf": "Big 12",
+      "natlRank": 6,
+      "confStanding": "5th"
+    },
+    "Clemson": {
+      "conf": "Big Ten",
+      "natlRank": 23,
+      "confStanding": null
+    },
+    "Oklahoma": {
+      "conf": "SEC",
+      "natlRank": 13,
+      "confStanding": "1st"
+    },
+    "Fresno State": {
+      "conf": "Big 12",
+      "natlRank": null,
+      "confStanding": null
+    },
+    "Wake Forest": {
+      "conf": "SEC",
+      "natlRank": null,
+      "confStanding": "4th"
+    },
+    "Miami": {
+      "conf": "Big 12",
+      "natlRank": 4,
+      "confStanding": "7th"
+    },
+    "Michigan State": {
+      "conf": "Big 12",
+      "natlRank": null,
+      "confStanding": "6th"
+    },
+    "Texas": {
+      "conf": "ACC",
+      "natlRank": null,
+      "confStanding": "3rd"
+    },
+    "Wisconsin": {
+      "conf": "SEC",
+      "natlRank": null,
+      "confStanding": null
+    },
+    "Rutgers": {
+      "conf": "MWC",
+      "natlRank": null,
+      "confStanding": "9th"
+    },
+    "SMU": {
+      "conf": "ACC",
+      "natlRank": null,
+      "confStanding": null
+    },
+    "Tennessee": {
+      "conf": "Big Ten",
+      "natlRank": null,
+      "confStanding": null
+    },
+    "Iowa": {
+      "conf": "ACC",
+      "natlRank": null,
+      "confStanding": "7th"
+    }
+  }
 }
 </script>
 <script>
@@ -6336,34 +6289,6 @@ const TEAM_COLORS = {
   'Rutgers':       {bg:'#CC0033', text:'#FFFFFF', abbr:'RU'},
   'Miami':         {bg:'#005030', text:'#F47321', abbr:'MIA'},
   'Tulane':        {bg:'#00693E', text:'#63C7F2', abbr:'TUL'},
-  'USC Trojans':   {bg:'#990000', text:'#FFC72C', abbr:'USC'},
-  'Boise State':   {bg:'#0033A0', text:'#F16322', abbr:'BSU'},
-  'Arkansas':      {bg:'#9D2235', text:'#FFFFFF', abbr:'ARK'},
-  'Nebraska':      {bg:'#E41C38', text:'#FFFFFF', abbr:'NEB'},
-  'Utah':          {bg:'#CC0000', text:'#FFFFFF', abbr:'UTAH'},
-  'Florida':       {bg:'#0021A5', text:'#FA4616', abbr:'UF'},
-  'Ole Miss':      {bg:'#CE1126', text:'#FFFFFF', abbr:'MISS'},
-  'UCF':           {bg:'#000000', text:'#BA9B37', abbr:'UCF'},
-  'TCU':           {bg:'#4D1979', text:'#FFFFFF', abbr:'TCU'},
-  'Vanderbilt':    {bg:'#000000', text:'#B4975A', abbr:'VAN'},
-  'Kansas State':  {bg:'#512888', text:'#FFFFFF', abbr:'KSU'},
-  'California':    {bg:'#003262', text:'#FDB515', abbr:'CAL'},
-  'Georgia Tech':  {bg:'#B3A369', text:'#003057', abbr:'GT'},
-  'Gerogia Tech':  {bg:'#B3A369', text:'#003057', abbr:'GT'},
-  'Pittsburgh':    {bg:'#003594', text:'#FFB81C', abbr:'PITT'},
-  'Pittsburg':     {bg:'#003594', text:'#FFB81C', abbr:'PITT'},
-  'Auburn':        {bg:'#0C2340', text:'#E87722', abbr:'AUB'},
-  'UCLA':          {bg:'#2774AE', text:'#FFD100', abbr:'UCLA'},
-  'Louisville':    {bg:'#AD0000', text:'#000000', abbr:'LOU'},
-  'North Carolina':{bg:'#7BAFD4', text:'#13294B', abbr:'UNC'},
-  'Oregon':        {bg:'#154733', text:'#FEE123', abbr:'ORE'},
-  'West Virginia': {bg:'#002855', text:'#EAAA00', abbr:'WVU'},
-  'Washington':    {bg:'#4B2E83', text:'#B7A57A', abbr:'UW'},
-  'Northwestern':  {bg:'#4E2A84', text:'#FFFFFF', abbr:'NW'},
-  'Texas Tech':    {bg:'#CC0000', text:'#FFFFFF', abbr:'TTU'},
-  'Missouri':      {bg:'#000000', text:'#F1B82D', abbr:'MIZ'},
-  'Cincinnati':    {bg:'#E00122', text:'#000000', abbr:'CIN'},
-  'Colorado':      {bg:'#000000', text:'#CFB87C', abbr:'CU'},
 };
 function teamColors(team){ return TEAM_COLORS[team] || {bg:'var(--turf-2)', text:'var(--chalk)', abbr:'—'}; }
 function teamBadge(team, size, invert){
@@ -6373,93 +6298,6 @@ function teamBadge(team, size, invert){
   const bg = invert ? c.text : c.bg;
   const fg = invert ? c.bg : c.text;
   return `<span class="team-badge" style="width:${size}px; height:${size}px; background:${bg}; color:${fg}; font-size:${fontSize}px; border-color:rgba(255,255,255,0.25);">${esc(c.abbr)}</span>`;
-}
-
-const COACH_TEAM_HISTORY = [
-  {name:'Jhump', cfb25:['Clemson'], cfb26:['Cincinnati','Colorado'], cfb27:['Fresno State']},
-  {name:'Adam', cfb25:['USC Trojans'], cfb26:['Boise State'], cfb27:['Tulane']},
-  {name:'AJ', cfb25:[], cfb26:['Arkansas','Nebraska'], cfb27:[]},
-  {name:'Jared', cfb25:['Utah'], cfb26:['Northwestern'], cfb27:['Rutgers']},
-  {name:'Isiah', cfb25:['South Carolina'], cfb26:[], cfb27:[]},
-  {name:'Brandon', cfb25:['Tennessee','Miami'], cfb26:[], cfb27:[]},
-  {name:'Vince', cfb25:['UCF'], cfb26:['Missouri'], cfb27:['NC State']},
-  {name:'Ben', cfb25:['TCU'], cfb26:['Vanderbilt'], cfb27:['Duke']},
-  {name:'Dom', cfb25:['Florida'], cfb26:['TCU'], cfb27:['Baylor']},
-  {name:'Tyler M', cfb25:['Ole Miss'], cfb26:[], cfb27:[]},
-  {name:'Jeremy', cfb25:[], cfb26:['Texas A&M'], cfb27:[]},
-  {name:'Tipton', cfb25:['Kansas State','LSU'], cfb26:['Miami'], cfb27:['Penn State']},
-  {name:'Ceseque', cfb25:['Clemson'], cfb26:['Clemson'], cfb27:['Wisconsin']},
-  {name:'Dguy', cfb25:[], cfb26:['Louisville'], cfb27:[]},
-  {name:'Nick', cfb25:['California'], cfb26:['Georgia Tech'], cfb27:['Arizona State']},
-  {name:'Shawn', cfb25:[], cfb26:['Wisconsin'], cfb27:[]},
-  {name:'Tim', cfb25:['Northwestern'], cfb26:['Texas Tech'], cfb27:['Iowa']},
-  {name:'Jake', cfb25:['Michigan State'], cfb26:[], cfb27:[]},
-  {name:'Logan', cfb25:['Pittsburgh'], cfb26:['Missouri'], cfb27:['Clemson']},
-  {name:'Justin', cfb25:['Auburn'], cfb26:['SMU'], cfb27:['Michigan']},
-  {name:'Phil', cfb25:['Iowa'], cfb26:[], cfb27:[]},
-  {name:'JoJo', cfb25:['UCLA'], cfb26:['LSU'], cfb27:['SMU']},
-  {name:'Bruce', cfb25:['Nebraska'], cfb26:['Michigan'], cfb27:['South Carolina']},
-  {name:'Kyle', cfb25:[], cfb26:[], cfb27:[]},
-  {name:'Fox', cfb25:[], cfb26:[], cfb27:[]},
-  {name:'Harmon', cfb25:['Louisville'], cfb26:['Tennessee'], cfb27:['Michigan State']},
-  {name:'Austin', cfb25:['SMU'], cfb26:['NC State'], cfb27:['Miami']},
-  {name:'Chuckie', cfb25:[], cfb26:['UCLA'], cfb27:['Nebraska']},
-  {name:'Kurt', cfb25:['North Carolina'], cfb26:['Arizona State'], cfb27:['Tennessee']},
-  {name:'Pat', cfb25:['Arkansas'], cfb26:['Oregon'], cfb27:['Texas']},
-  {name:'Chris', cfb25:['West Virginia'], cfb26:[], cfb27:[]},
-  {name:'Coltrain', cfb25:['Texas Tech'], cfb26:['Washington'], cfb27:['USC']},
-  {name:'Goose', cfb25:[], cfb26:[], cfb27:[]},
-  {name:'Swaggy', cfb25:[], cfb26:['Penn State'], cfb27:[]},
-  {name:'Dylan', cfb25:['Oregon'], cfb26:[], cfb27:[]},
-  {name:'Jay', cfb25:[], cfb26:[], cfb27:['LSU']},
-  {name:'Wemple', cfb25:[], cfb26:[], cfb27:['Wake Forest']},
-  {name:'Derrick', cfb25:[], cfb26:[], cfb27:['Oklahoma']},
-];
-const TEAM_HISTORY_ALIASES = {
-  'Cesq':'Ceseque',
-  'Ceseque':'Ceseque',
-  'Derick':'Derrick',
-  'Derrick Durham':'Derrick',
-  'Chuck':'Chuckie',
-  'Tyler':'Tyler M'
-};
-function teamHistoryKey(name){ return TEAM_HISTORY_ALIASES[name] || name; }
-function allTimeTeamLogoStrip(name){
-  const history = COACH_TEAM_HISTORY.find(r=>r.name===teamHistoryKey(name));
-  if (!history) return '';
-  const eras = [
-    {label:'25', full:'CFB 25', teams:history.cfb25 || []},
-    {label:'26', full:'CFB 26', teams:history.cfb26 || []},
-    {label:'27', full:'CFB 27', teams:history.cfb27 || []},
-  ].filter(era=>era.teams.length);
-  if (!eras.length) return '';
-  return `<div class="hist-logo-strip" aria-label="${esc(name)} team history">${eras.map(era=>`
-    <span class="hist-era-group">
-      <span class="hist-era-label">${era.label}</span>
-      <span class="hist-era-badges">${era.teams.map(team=>`<span title="${era.full}: ${esc(team)}">${teamBadge(team, 27)}</span>`).join('')}</span>
-    </span>`).join('')}</div>`;
-}
-function seasonHistoryBadges(teams, era){
-  if (!teams || !teams.length) return `<div class="team-history-season" data-era="${era}"><span class="team-history-empty">—</span></div>`;
-  return `<div class="team-history-season" data-era="${era}">${teams.map(team=>{ const norm = team; return `<span title="${esc(norm)}">${teamBadge(norm, 30)}</span>`; }).join('')}</div>`;
-}
-function renderCoachTeamHistory(){
-  const root = document.getElementById('teamHistoryList');
-  if (!root) return;
-  root.innerHTML = `
-    <div class="team-history-header">
-      <div>Coach</div>
-      <div>CFB 25</div>
-      <div>CFB 26</div>
-      <div>CFB 27</div>
-    </div>
-    ${COACH_TEAM_HISTORY.map(r=>`
-      <div class="team-history-row">
-        <div class="team-history-name">${esc(r.name)}</div>
-        ${seasonHistoryBadges(r.cfb25, 'CFB 25')}
-        ${seasonHistoryBadges(r.cfb26, 'CFB 26')}
-        ${seasonHistoryBadges(r.cfb27, 'CFB 27')}
-      </div>`).join('')}`;
 }
 
 const TABS = [
@@ -6558,8 +6396,9 @@ function renderHero(){
     <div class="hero-stat"><div class="num display">${esc(s.num)}</div><div class="lbl">${esc(s.lbl)}</div></div>
   `).join('');
 
-  document.getElementById('footNote').textContent =
-    `Snapshot: Week ${DATA.meta.week} final / Week ${DATA.meta.nextWeek} on deck`;
+  document.getElementById('footNote').textContent = DATA.meta.liveSource
+    ? `Live from the Google Sheet · updated on page load`
+    : `Snapshot: Week ${DATA.meta.week} final / Week ${DATA.meta.nextWeek} on deck`;
 }
 
 // ---------- Ticker ----------
@@ -6578,54 +6417,24 @@ function renderTicker(){
 // ---------- Power poll ----------
 function renderPower(){
   const el = document.getElementById('powerList');
-  const modeEl = document.getElementById('powerMode');
-  const mode = modeEl ? modeEl.value : 'with-history';
-  const cfb27Only = mode === 'cfb27-only';
-  const description = document.getElementById('powerDescription');
-  const formulaNote = document.getElementById('powerFormulaNote');
-
-  if (description){
-    description.textContent = cfb27Only
-      ? "Coach-vs.-coach rankings using only CFB 27 results. CPU games and CFB 26 history do not count."
-      : "Coach-vs.-coach rankings based on user-game results. CPU games do not count.";
-  }
-  if (formulaNote){
-    formulaNote.innerHTML = cfb27Only
-      ? 'Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2)</span>'
-      : 'Score = <span class="mono">(wins × 3) − losses + (point differential × 0.4) + (wins × (83.2 − team overall) × 0.2) + ((CFB 26 weighted win% − 50) × 0.15)</span>';
-  }
-
   const tiebreakByUser = {};
   (DATA.h2hTiebreaks||[]).forEach(note=>{
     const m = note.match(/^(\S+)/);
     if (m) tiebreakByUser[m[1]] = note;
   });
-
-  const poll = DATA.power.map(p=>({
-    ...p,
-    displayScore: cfb27Only ? Number((Number(p.score) - Number(p.historicalBonus || 0)).toFixed(1)) : Number(p.score)
-  }));
-
-  if (cfb27Only){
-    poll.sort((a,b)=> b.displayScore-a.displayScore || b.diff-a.diff || a.user.localeCompare(b.user));
-  } else {
-    poll.sort((a,b)=> a.rank-b.rank);
-  }
-
-  el.innerHTML = poll.map((p,index)=>{
-    const displayRank = index + 1;
+  el.innerHTML = DATA.power.map(p=>{
     const diffClass = p.diff>=0 ? 'pos':'neg';
     const diffStr = p.diff>=0 ? `+${p.diff}`:`${p.diff}`;
     const streakClass = p.streak[0]==='W' ? 'w':'l';
     const bits = [];
     if (p.signatureWin) bits.push(`<span style="color:var(--win);">Best win: ${esc(p.signatureWin)}</span>`);
     if (p.worstLoss) bits.push(`<span style="color:var(--alert);">Worst loss: ${esc(p.worstLoss)}</span>`);
-    if (!cfb27Only && tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
+    if (tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
     const why = bits.join(' · ');
     const tc = teamColors(p.team);
     return `
-    <div class="poll-row ${displayRank<=3?'top3':''}" style="border-left-color:${tc.bg};">
-      <div class="poll-rank mono">${displayRank}</div>
+    <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
+      <div class="poll-rank mono">${p.rank}</div>
       <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
         ${teamBadge(p.team, 34)}
         <div style="min-width:0;">
@@ -6636,7 +6445,10 @@ function renderPower(){
       <div class="poll-record">
         <div class="rec mono">${esc(p.record)}</div>
         <div class="diff mono ${diffClass}">${diffStr} pts</div>
-        <div class="power-score">${p.displayScore.toFixed(1)} score</div>
+      </div>
+      <div class="poll-score">
+        <div class="score-val mono">${p.score>0?'+':''}${p.score}</div>
+        <div class="score-lbl">score</div>
       </div>
       <div><span class="streak-badge ${streakClass}">${esc(p.streak)}</span></div>
       <div class="poll-why">${why}</div>
@@ -6761,19 +6573,16 @@ function renderHistory(){
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
       <div class="poll-rank mono">${p.rank}</div>
-      <div class="poll-team">
-        <div class="hist-coach-wrap">
-          <div class="hist-coach-info">
-            <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
-            <div class="meta">${statusTag}</div>
-          </div>
-          ${allTimeTeamLogoStrip(p.name)}
+      <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
+        ${p.currentTeam ? teamBadge(p.currentTeam, 34) : ''}
+        <div style="min-width:0;">
+        <div class="name">${esc(p.name)} ${achievementBadge(p.name)}</div>
+        <div class="meta">${statusTag}</div>
         </div>
       </div>
       <div class="poll-record">
         <div class="rec mono">${p.win}-${p.loss}</div>
         <div class="diff mono ${p.pct>=50?'pos':'neg'}">${p.pct}%</div>
-        <div class="mono" style="font-size:10px; color:var(--chalk-dimmer); margin-top:3px;">${p.gamesPlayed || (p.win+p.loss)} GP</div>
       </div>
       <div><span class="streak-badge ${p.champs>0?'w':'l'}">${p.score} pts</span></div>
       <div class="poll-why">${why}</div>
@@ -6965,17 +6774,248 @@ function renderH2H(h){
   compute();
 }
 
-renderNav();
-renderHero();
-renderTicker();
-const powerModeEl = document.getElementById('powerMode');
-if (powerModeEl) powerModeEl.addEventListener('change', renderPower);
-renderPower();
-renderStandings();
-renderRecordBook();
-renderRecruiting();
-renderRosters();
-renderHistory();
+// =====================================================================
+// LIVE DATA — fetches game results from a published Google Sheet and
+// recomputes the Power Poll, Standings, ticker, and Record Book from
+// scratch in the browser. If the sheet isn't reachable (not set up yet,
+// offline, etc.) everything silently falls back to the snapshot baked
+// into this file at build time — the site never breaks either way.
+// =====================================================================
+
+// Fill this in once the Google Sheet is set up and shared — see the
+// Instructions tab in the companion CFBIndex_Games.xlsx template.
+const GOOGLE_SHEET_ID = "1mZJGqbG9eGk7lqOVbxskpmkVX3126nC0d-KPfI-QBmg";
+const GAMES_CSV_URL = GOOGLE_SHEET_ID
+  ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Games`
+  : null;
+
+// Same "team overall" parity ratings used for the roster-strength formula term.
+const TEAM_OVERALL = {
+  'Nick':81, 'Tim':82, 'JoJo':84, 'Pat':92, 'Ben':77, 'Vince':79, 'Bruce':85, 'Logan':84,
+  'Kurt':87, 'Jhump':74, 'Harmon':81, 'Tipton':84, 'Austin':89, 'Justin':89, 'Jared':78,
+  'Dom':81, 'Coltrain':87, 'Cory':91, 'Adam':73, 'Wemple':77, 'Ceseque':81, 'Jay':91, 'Derrick':87
+};
+const REPUTATION_BASED = new Set(['Wemple','Jay','Derrick','Cory']);
+
+// Minimal RFC4180-ish CSV parser — handles quoted fields with embedded commas/quotes.
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i=0; i<text.length; i++){
+    const c = text[i];
+    if (inQuotes){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ','){ row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r'){
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(field); field = '';
+        if (!(row.length===1 && row[0]==='')) rows.push(row);
+        row = [];
+      } else field += c;
+    }
+  }
+  if (field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+async function fetchLiveGames(){
+  if (!GAMES_CSV_URL) return null;
+  try {
+    const res = await fetch(GAMES_CSV_URL, {cache:'no-store'});
+    if (!res.ok) return null;
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return null;
+    const header = rows[0].map(h=>(h||'').trim().toLowerCase());
+    const idx = {
+      week: header.indexOf('week'), teamA: header.indexOf('team a'),
+      scoreA: header.indexOf('score a'), teamB: header.indexOf('team b'),
+      scoreB: header.indexOf('score b')
+    };
+    if (Object.values(idx).some(v=>v<0)) return null;
+    const games = [];
+    for (let i=1; i<rows.length; i++){
+      const r = rows[i];
+      const week = parseInt(r[idx.week]);
+      const teamA = (r[idx.teamA]||'').trim();
+      const scoreA = parseInt(r[idx.scoreA]);
+      const teamB = (r[idx.teamB]||'').trim();
+      const scoreB = parseInt(r[idx.scoreB]);
+      if (!teamA || !teamB || isNaN(week) || isNaN(scoreA) || isNaN(scoreB)) continue;
+      games.push({week, teamA, scoreA, teamB, scoreB});
+    }
+    return games.length ? games : null;
+  } catch(e){
+    console.warn('Live sheet fetch failed — falling back to the saved snapshot.', e);
+    return null;
+  }
+}
+
+function computeLiveState(games){
+  const teamSet = new Set(DATA.roster.map(r=>r.team));
+  const userForTeam = {}; DATA.roster.forEach(r=>userForTeam[r.team]=r.user);
+  const teamStatic = DATA.teamStatic || {};
+
+  const teamGames = {}; DATA.roster.forEach(r=> teamGames[r.team] = []);
+  const gameLog = [];
+
+  games.forEach(g=>{
+    if (!teamSet.has(g.teamA) || !teamSet.has(g.teamB)) return;
+    const resultA = g.scoreA > g.scoreB ? 'W' : 'L';
+    const resultB = resultA === 'W' ? 'L' : 'W';
+    teamGames[g.teamA].push({week:g.week, opponent:g.teamB, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB});
+    teamGames[g.teamB].push({week:g.week, opponent:g.teamA, result:resultB, teamPts:g.scoreB, oppPts:g.scoreA});
+    gameLog.push({
+      week:g.week, team:g.teamA, user:userForTeam[g.teamA], opponent:g.teamB, oppUser:userForTeam[g.teamB],
+      homeAway:null, result:resultA, teamPts:g.scoreA, oppPts:g.scoreB, oppRank:(teamStatic[g.teamB]||{}).natlRank,
+      isH2H:true, margin:Math.abs(g.scoreA-g.scoreB)
+    });
+  });
+
+  function streakFor(list){
+    if (!list.length) return '-';
+    const sorted = [...list].sort((a,b)=>a.week-b.week);
+    const cur = sorted[sorted.length-1].result;
+    let n=0;
+    for (let i=sorted.length-1;i>=0;i--){ if (sorted[i].result===cur) n++; else break; }
+    return cur+n;
+  }
+
+  const weightedByUser = {}; (DATA.historical.weighted||[]).forEach(w=> weightedByUser[w.name]=w.pct);
+  const ovrVals = Object.values(TEAM_OVERALL);
+  const AVG_OVR = ovrVals.reduce((a,b)=>a+b,0)/ovrVals.length;
+
+  let power = DATA.roster.map(r=>{
+    const team = r.team;
+    const list = (teamGames[team]||[]).slice().sort((a,b)=>a.week-b.week);
+    const wins = list.filter(g=>g.result==='W');
+    const losses = list.filter(g=>g.result==='L');
+    const pf = list.reduce((s,g)=>s+g.teamPts,0);
+    const pa = list.reduce((s,g)=>s+g.oppPts,0);
+    const diff = pf-pa;
+    let score = Math.round((wins.length*3 - losses.length*1 + diff*0.4)*10)/10;
+
+    let sig=null;
+    const rankedWins = wins.filter(g=> teamStatic[g.opponent] && teamStatic[g.opponent].natlRank);
+    if (rankedWins.length){
+      const bw = rankedWins.reduce((best,g)=> teamStatic[g.opponent].natlRank < teamStatic[best.opponent].natlRank ? g : best);
+      sig = `#${teamStatic[bw.opponent].natlRank} ${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
+    } else if (wins.length){
+      const bw = wins.reduce((best,g)=> (g.teamPts-g.oppPts) > (best.teamPts-best.oppPts) ? g : best);
+      sig = `${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
+    }
+    let worst=null;
+    if (losses.length){
+      const wl = losses.reduce((w,g)=> (g.oppPts-g.teamPts) > (w.oppPts-w.teamPts) ? g : w);
+      worst = `${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
+    }
+
+    const ovr = TEAM_OVERALL[r.user];
+    const deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
+    const rosterBonus = Math.round(wins.length*deviation*0.2*10)/10;
+    const histPct = weightedByUser[r.user];
+    const histBonus = (histPct!=null) ? Math.round((histPct-50)*0.2*10)/10 : 0;
+    score = Math.round((score+rosterBonus+histBonus)*10)/10;
+
+    const ts = teamStatic[team] || {};
+    return {
+      team, user:r.user, record:`${wins.length}-${losses.length}`, conf: ts.conf, natlRank: ts.natlRank,
+      diff, pf, pa, score, streak: streakFor(list), signatureWin: sig, worstLoss: worst,
+      h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus,
+      reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus
+    };
+  });
+
+  const h2hResult = {};
+  games.forEach(g=>{
+    if (!teamSet.has(g.teamA) || !teamSet.has(g.teamB)) return;
+    h2hResult[g.teamA+'|'+g.teamB] = g.scoreA>g.scoreB ? 'W':'L';
+    h2hResult[g.teamB+'|'+g.teamA] = g.scoreB>g.scoreA ? 'W':'L';
+  });
+
+  power.sort((a,b)=> b.score-a.score);
+  const THRESHOLD = 3.0;
+  const tiebreakNotes = [];
+  let changed = true, iterations = 0;
+  while (changed && iterations < 30){
+    changed = false; iterations++;
+    let didSwap = false;
+    for (let i=0; i<power.length && !didSwap; i++){
+      for (let j=i+1; j<power.length; j++){
+        const a=power[i], b=power[j];
+        if (Math.abs(a.score-b.score)<=THRESHOLD && h2hResult[b.team+'|'+a.team]==='W'){
+          power.splice(j,1); power.splice(i,0,b);
+          tiebreakNotes.push(`${b.user} (${b.team}) jumps ahead of ${a.user} (${a.team}) on the head-to-head win (scores: ${b.score} vs ${a.score})`);
+          changed = true; didSwap = true;
+          break;
+        }
+      }
+    }
+  }
+  power.forEach((p,i)=> p.rank=i+1);
+
+  const seen = new Set();
+  const dedupLog = [];
+  gameLog.slice().sort((a,b)=> a.week-b.week || a.team.localeCompare(b.team)).forEach(g=>{
+    const key = [g.team,g.opponent].sort().join('|')+'|'+g.week;
+    if (seen.has(key)) return;
+    seen.add(key);
+    dedupLog.push(g);
+  });
+
+  const closestGames = dedupLog.filter(g=>g.margin>0).sort((a,b)=>a.margin-b.margin).slice(0,6);
+  const blowouts = dedupLog.slice().sort((a,b)=>b.margin-a.margin).slice(0,6);
+  const hotStreaks = power.filter(p=>p.streak[0]==='W' && parseInt(p.streak.slice(1))>=3).sort((a,b)=>parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)));
+  const coldStreaks = power.filter(p=>p.streak[0]==='L' && parseInt(p.streak.slice(1))>=3).sort((a,b)=>parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)));
+
+  const standingsByConf = {};
+  DATA.roster.forEach(r=>{
+    const ts = teamStatic[r.team]||{};
+    const conf = ts.conf || 'Unassigned';
+    if (!standingsByConf[conf]) standingsByConf[conf]=[];
+    const p = power.find(x=>x.team===r.team);
+    standingsByConf[conf].push({team:r.team, user:r.user, record:p?p.record:'0-0', confStanding: ts.confStanding, natlRank: ts.natlRank, diff: p?p.diff:0});
+  });
+
+  return { power, gameLog: dedupLog, closestGames, blowouts, hotStreaks, coldStreaks, standingsByConf, h2hTiebreaks: tiebreakNotes, totalGames: dedupLog.length };
+}
+
+function renderAll(){
+  renderHero();
+  renderTicker();
+  renderPower();
+  renderStandings();
+  renderRecordBook();
+  renderRecruiting();
+  renderRosters();
+  renderHistory();
+}
+
+async function boot(){
+  renderNav();
+  renderAll(); // instant paint using the snapshot baked in at build time
+  const games = await fetchLiveGames();
+  if (games){
+    const live = computeLiveState(games);
+    DATA.power = live.power;
+    DATA.gameLog = live.gameLog;
+    DATA.closestGames = live.closestGames;
+    DATA.blowouts = live.blowouts;
+    DATA.hotStreaks = live.hotStreaks;
+    DATA.coldStreaks = live.coldStreaks;
+    DATA.standingsByConf = live.standingsByConf;
+    DATA.h2hTiebreaks = live.h2hTiebreaks;
+    DATA.meta.totalGames = live.totalGames;
+    DATA.meta.liveSource = true;
+    renderAll(); // silently re-paint with live numbers once they're in
+  }
+}
+boot();
 
 </script>
 </body>
