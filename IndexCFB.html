@@ -393,8 +393,8 @@
     <div class="algo-controls">
       <label for="algoSelect">Ranking</label>
       <select id="algoSelect">
-        <option value="full">Current algorithm</option>
         <option value="nohist">Without CFB 26 weighted win% history</option>
+        <option value="full">Current algorithm</option>
       </select>
     </div>
     <div class="card" id="powerList"></div>
@@ -6475,6 +6475,14 @@ function switchTab(id){
 // ---------- Hero ----------
 function renderHero(){
   const top = DATA.power[0];
+  const eyebrowEl = document.getElementById('heroEyebrow');
+  if (DATA.meta.liveSource && DATA.meta.lastSynced){
+    const d = DATA.meta.lastSynced;
+    const formatted = d.toLocaleString(undefined, {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+    eyebrowEl.textContent = `LIVE · LAST SYNCED ${formatted.toUpperCase()}`;
+  } else {
+    eyebrowEl.textContent = 'SHOWING SAVED SNAPSHOT';
+  }
   const mostGames = [...DATA.power].sort((a,b)=> (b.pf+b.pa)-(a.pf+a.pa))[0];
   const longestStreak = [...DATA.power].filter(p=>p.h2hGamesPlayed>0).sort((a,b)=>{
     const av = parseInt(a.streak.slice(1))*(a.streak[0]==='W'?1:-1);
@@ -6554,7 +6562,7 @@ function rankPower(baseList, includeHistorical){
   return list;
 }
 
-let powerAlgoMode = 'full'; // 'full' or 'nohist'
+let powerAlgoMode = 'nohist'; // 'full' or 'nohist' — nohist (no weighted win% history) is now the default
 
 function renderPower(){
   const el = document.getElementById('powerList');
@@ -7219,6 +7227,7 @@ async function boot(){
     DATA.h2hTiebreaks = live.h2hTiebreaks;
     DATA.meta.totalGames = live.totalGames;
     DATA.meta.liveSource = true;
+    DATA.meta.lastSynced = new Date();
     renderAll(); // silently re-paint with live numbers once they're in
   }
 }
