@@ -6531,9 +6531,10 @@ function rankPower(baseList, includeHistorical){
   const list = baseList.map(p=>{
     const coreScorePerGame = (p.coreScorePerGame!=null) ? p.coreScorePerGame : p.score;
     const rosterBonus = p.rosterBonus||0;
+    const sovBonus = p.sovBonus||0;
     const hb = includeHistorical ? (p.historicalBonus||0) : 0;
-    const displayScore = Math.round((coreScorePerGame + rosterBonus + hb)*10)/10;
-    return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus});
+    const displayScore = Math.round((coreScorePerGame + rosterBonus + sovBonus + hb)*10)/10;
+    return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus, sovBonus});
   });
 
   const h2hResult = {};
@@ -6592,6 +6593,7 @@ function renderPower(){
         <div class="math-line"><span>Record (${p.wins!=null?p.wins:'?'}-${p.losses!=null?p.losses:'?'}) &amp; point differential, home/away adjusted</span><b>${p.coreScoreRaw!=null?p.coreScoreRaw:'—'}</b></div>
         <div class="math-line"><span>÷ games played (${p.h2hGamesPlayed})</span><b>${p.coreScorePerGame}</b></div>
         <div class="math-line"><span>Roster-strength adjustment (${p.teamOverall||'—'} OVR)</span><b>${p.rosterBonus>=0?'+':''}${p.rosterBonus}</b></div>
+        <div class="math-line"><span>Strength of victory (quality of wins/losses)</span><b>${p.sovBonus>=0?'+':''}${p.sovBonus||0}</b></div>
         ${histLine}
         <div class="math-line total"><span>Final score</span><b>${p.score>=0?'+':''}${p.score}</b></div>
       </div>`;
@@ -7134,6 +7136,32 @@ function computeLiveState(games){
       reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus,
       wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScore*10)/10, coreScorePerGame: coreScorePerGame
     };
+  });
+
+  // ---- Strength of victory / bad-loss penalty ----
+  // Rankings obviously shift as results come in, so this can't reference "the" ranking directly —
+  // instead it uses a preliminary pass (record + roster-strength only, the official algorithm's
+  // own basis) purely to gauge how good each opponent was at the time this is calculated. Beating
+  // a team ranked near the top is worth more than beating a team near the bottom; losing to a
+  // bottom-ranked team costs more than losing to a top-ranked one.
+  const prelim = power.map(p=>({team:p.team, prelimScore: p.coreScorePerGame + p.rosterBonus}));
+  prelim.sort((a,b)=> b.prelimScore-a.prelimScore);
+  const prelimRank = {}; prelim.forEach((p,i)=> prelimRank[p.team]=i+1);
+  const N = power.length;
+  const SOV_WIN_WEIGHT = 2.5, SOV_LOSS_WEIGHT = 2.5;
+
+  power.forEach(p=>{
+    const list = (teamGames[p.team]||[]);
+    let sovBonus = 0;
+    list.forEach(g=>{
+      const oppRank = prelimRank[g.opponent];
+      if (!oppRank || N<=1) return; // opponent not a ranked current team (e.g. a retired opponent) — no SOV effect
+      const weakness = (oppRank-1)/(N-1); // 0 = opponent ranked #1, 1 = opponent ranked last
+      if (g.result==='W') sovBonus += (1-weakness) * SOV_WIN_WEIGHT;
+      else sovBonus -= weakness * SOV_LOSS_WEIGHT;
+    });
+    p.sovBonus = Math.round(sovBonus*10)/10;
+    p.score = Math.round((p.score + p.sovBonus)*10)/10;
   });
 
   const h2hResult = {};
