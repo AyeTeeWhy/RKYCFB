@@ -6474,7 +6474,7 @@ function switchTab(id){
 
 // ---------- Hero ----------
 function renderHero(){
-  const rankedForHero = rankPower(DATA.power, powerAlgoMode==='full');
+  const rankedForHero = rankPower(DATA.power, powerAlgoMode==='full').list;
   const top = rankedForHero[0];
   const eyebrowEl = document.getElementById('heroEyebrow');
   if (DATA.meta.liveSource && DATA.meta.lastSynced){
@@ -6544,7 +6544,8 @@ function rankPower(baseList, includeHistorical){
   });
 
   list.sort((a,b)=> b.score-a.score);
-  const THRESHOLD = 1.0;
+  const THRESHOLD = 2.0;
+  const tiebreaks = []; // {winnerUser, winnerTeam, loserUser, loserTeam}
   let changed = true, iterations = 0;
   while (changed && iterations < 30){
     changed = false; iterations++;
@@ -6554,6 +6555,7 @@ function rankPower(baseList, includeHistorical){
         const a=list[i], b=list[j];
         if (Math.abs(a.score-b.score)<=THRESHOLD && h2hResult[b.team+'|'+a.team]==='W'){
           list.splice(j,1); list.splice(i,0,b);
+          tiebreaks.push({winnerUser:b.user, winnerTeam:b.team, loserUser:a.user, loserTeam:a.team});
           changed = true; didSwap = true;
           break;
         }
@@ -6561,19 +6563,16 @@ function rankPower(baseList, includeHistorical){
     }
   }
   list.forEach((p,i)=> p.rank=i+1);
-  return list;
+  return {list, tiebreaks};
 }
 
 let powerAlgoMode = 'nohist'; // 'full' or 'nohist' — nohist (no weighted win% history) is now the default
 
 function renderPower(){
   const el = document.getElementById('powerList');
-  const ranked = rankPower(DATA.power, powerAlgoMode==='full');
+  const { list: ranked, tiebreaks } = rankPower(DATA.power, powerAlgoMode==='full');
   const tiebreakByUser = {};
-  (DATA.h2hTiebreaks||[]).forEach(note=>{
-    const m = note.match(/^(\S+)/);
-    if (m) tiebreakByUser[m[1]] = note;
-  });
+  tiebreaks.forEach(t=>{ tiebreakByUser[t.winnerUser] = t; });
   el.innerHTML = ranked.map(p=>{
     const diffClass = p.diff>=0 ? 'pos':'neg';
     const diffStr = p.diff>=0 ? `+${p.diff}`:`${p.diff}`;
@@ -6581,7 +6580,8 @@ function renderPower(){
     const bits = [];
     if (p.signatureWin) bits.push(`<span style="color:var(--win);">Best win: ${esc(p.signatureWin)}</span>`);
     if (p.worstLoss) bits.push(`<span style="color:var(--alert);">Worst loss: ${esc(p.worstLoss)}</span>`);
-    if (tiebreakByUser[p.user]) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: beat a close rival directly</span>`);
+    const tb = tiebreakByUser[p.user];
+    if (tb) bits.push(`<span style="color:var(--gold-bright);">Head-to-head tiebreak: ranked ahead of ${esc(tb.loserTeam)} on their head-to-head win</span>`);
     const why = bits.join(' · ');
     const tc = teamColors(p.team);
     const rowId = 'math-'+p.team.replace(/[^a-zA-Z0-9]/g,'');
@@ -7164,34 +7164,6 @@ function computeLiveState(games){
     p.score = Math.round((p.score + p.sovBonus)*10)/10;
   });
 
-  const h2hResult = {};
-  games.forEach(g=>{
-    if (!teamSet.has(g.teamA) || !teamSet.has(g.teamB)) return;
-    h2hResult[g.teamA+'|'+g.teamB] = g.scoreA>g.scoreB ? 'W':'L';
-    h2hResult[g.teamB+'|'+g.teamA] = g.scoreB>g.scoreA ? 'W':'L';
-  });
-
-  power.sort((a,b)=> b.score-a.score);
-  const THRESHOLD = 1.0; // rescaled for per-game-averaged scores (was 3.0 under the old cumulative scale)
-  const tiebreakNotes = [];
-  let changed = true, iterations = 0;
-  while (changed && iterations < 30){
-    changed = false; iterations++;
-    let didSwap = false;
-    for (let i=0; i<power.length && !didSwap; i++){
-      for (let j=i+1; j<power.length; j++){
-        const a=power[i], b=power[j];
-        if (Math.abs(a.score-b.score)<=THRESHOLD && h2hResult[b.team+'|'+a.team]==='W'){
-          power.splice(j,1); power.splice(i,0,b);
-          tiebreakNotes.push(`${b.user} (${b.team}) jumps ahead of ${a.user} (${a.team}) on the head-to-head win (scores: ${b.score} vs ${a.score})`);
-          changed = true; didSwap = true;
-          break;
-        }
-      }
-    }
-  }
-  power.forEach((p,i)=> p.rank=i+1);
-
   const seen = new Set();
   const dedupLog = [];
   gameLog.slice().sort((a,b)=> a.week-b.week || a.team.localeCompare(b.team)).forEach(g=>{
@@ -7215,7 +7187,7 @@ function computeLiveState(games){
     standingsByConf[conf].push({team:r.team, user:r.user, record:p?p.record:'0-0', confStanding: ts.confStanding, natlRank: ts.natlRank, diff: p?p.diff:0});
   });
 
-  return { power, gameLog: dedupLog, closestGames, blowouts, hotStreaks, coldStreaks, standingsByConf, h2hTiebreaks: tiebreakNotes, totalGames: dedupLog.length };
+  return { power, gameLog: dedupLog, closestGames, blowouts, hotStreaks, coldStreaks, standingsByConf, totalGames: dedupLog.length };
 }
 
 function setupAlgoToggle(){
@@ -7254,7 +7226,6 @@ async function boot(){
     DATA.hotStreaks = live.hotStreaks;
     DATA.coldStreaks = live.coldStreaks;
     DATA.standingsByConf = live.standingsByConf;
-    DATA.h2hTiebreaks = live.h2hTiebreaks;
     DATA.meta.totalGames = live.totalGames;
     DATA.meta.liveSource = true;
     DATA.meta.lastSynced = new Date();
