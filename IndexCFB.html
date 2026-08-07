@@ -7123,7 +7123,10 @@ function computeLiveState(games){
 
     const ovr = TEAM_OVERALL[r.user];
     const deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
-    const rosterBonus = Math.round(wins.length*deviation*0.2*10)/10;
+    // Applied across every game played, not just wins — a loaded roster should get penalized for
+    // losing too (that's more damning than a weak roster losing), same as it already gets
+    // discounted for winning. A weak roster losing gets a smaller penalty, or even a small credit.
+    const rosterBonus = Math.round(list.length*deviation*0.2*10)/10;
     const histPct = weightedByUser[r.user];
     const histBonus = (histPct!=null) ? Math.round((histPct-50)*0.2*10)/10 : 0;
     score = Math.round((score+rosterBonus+histBonus)*10)/10;
