@@ -6533,9 +6533,10 @@ function rankPower(baseList, includeHistorical){
     const rosterBonus = p.rosterBonus||0;
     const sovBonus = p.sovBonus||0;
     const cpuBonus = p.cpuBonus||0;
+    const achievementBonus = p.achievementBonus||0;
     const hb = includeHistorical ? (p.historicalBonus||0) : 0;
-    const displayScore = Math.round((coreScorePerGame + rosterBonus + sovBonus + cpuBonus + hb)*10)/10;
-    return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus, sovBonus, cpuBonus});
+    const displayScore = Math.round((coreScorePerGame + rosterBonus + sovBonus + cpuBonus + achievementBonus + hb)*10)/10;
+    return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus, sovBonus, cpuBonus, achievementBonus});
   });
 
   const h2hResult = {};
@@ -6596,6 +6597,7 @@ function renderPower(){
         <div class="math-line"><span>Roster-strength adjustment (${p.teamOverall||'—'} OVR)</span><b>${p.rosterBonus>=0?'+':''}${p.rosterBonus}</b></div>
         <div class="math-line"><span>Strength of victory (quality of wins/losses)</span><b>${p.sovBonus>=0?'+':''}${p.sovBonus||0}</b></div>
         <div class="math-line"><span>CPU losses (${p.totalRecord ? `${p.cpuLosses} of them — ${p.totalRecord} total record` : 'not tracked yet'})</span><b>${p.totalRecord ? `${p.cpuBonus>=0?'+':''}${p.cpuBonus}` : '—'}</b></div>
+        <div class="math-line"><span>Season achievements (${(p.achList&&p.achList.length) ? p.achList.map(k=>ACH_LABELS[k]).join(', ') : 'none yet'})</span><b>${p.achievementBonus?`+${p.achievementBonus}`:'+0'}</b></div>
         ${histLine}
         <div class="math-line total"><span>Final score</span><b>${p.score>=0?'+':''}${p.score}</b></div>
       </div>`;
@@ -6967,6 +6969,9 @@ const GAMES_CSV_URL = GOOGLE_SHEET_ID
 const TOTALS_CSV_URL = GOOGLE_SHEET_ID
   ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Totals`
   : null;
+const ACHIEVEMENTS_CSV_URL = GOOGLE_SHEET_ID
+  ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Achievements`
+  : null;
 
 // Same "team overall" parity ratings used for the roster-strength formula term.
 const TEAM_OVERALL = {
@@ -6975,6 +6980,7 @@ const TEAM_OVERALL = {
   'Dom':81, 'Coltrain':87, 'Cory':91, 'Adam':73, 'Wemple':77, 'Ceseque':81, 'Jay':91, 'Derrick':87
 };
 const REPUTATION_BASED = new Set(['Wemple','Jay','Derrick','Cory']);
+const ACH_LABELS = {confChamp:'Conference Champion', playoffAppearance:'Playoff Appearance', finalFour:'Final Four', runnerUp:'Runner Up', champion:'Champion'};
 // Teams belonging to a user who has since retired/left the league. Games against them still
 // count toward the CURRENT roster member's record — they just don't get their own ranked row.
 const RETIRED_OPPONENTS = new Set(['Nebraska']);
@@ -7070,8 +7076,44 @@ async function fetchTotals(){
   }
 }
 
-function computeLiveState(games, totals){
+// Fetches each coach's season achievement flags from the "Achievements" tab.
+// Returns {user: {confChamp, playoffAppearance, finalFour, runnerUp, champion}} (booleans) or null.
+async function fetchAchievements(){
+  if (!ACHIEVEMENTS_CSV_URL) return null;
+  try {
+    const res = await fetch(ACHIEVEMENTS_CSV_URL, {cache:'no-store'});
+    if (!res.ok) return null;
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return null;
+    const header = rows[0].map(h=>(h||'').trim().toLowerCase());
+    const idx = {
+      user: header.indexOf('user'), confChamp: header.indexOf('conference champion'),
+      playoff: header.indexOf('playoff appearance'), finalFour: header.indexOf('final four'),
+      runnerUp: header.indexOf('runner up'), champion: header.indexOf('champion')
+    };
+    if (Object.values(idx).some(v=>v<0)) return null;
+    const isYes = v => (v||'').trim().toLowerCase() === 'yes';
+    const out = {};
+    for (let i=1; i<rows.length; i++){
+      const r = rows[i];
+      const user = (r[idx.user]||'').trim();
+      if (!user) continue;
+      out[user] = {
+        confChamp: isYes(r[idx.confChamp]), playoffAppearance: isYes(r[idx.playoff]),
+        finalFour: isYes(r[idx.finalFour]), runnerUp: isYes(r[idx.runnerUp]), champion: isYes(r[idx.champion])
+      };
+    }
+    return Object.keys(out).length ? out : null;
+  } catch(e){
+    console.warn('Achievements sheet fetch failed — season achievement bonuses will be skipped.', e);
+    return null;
+  }
+}
+
+function computeLiveState(games, totals, achievements){
   totals = totals || {};
+  achievements = achievements || {};
   const teamSet = new Set(DATA.roster.map(r=>r.team));
   const userForTeam = {}; DATA.roster.forEach(r=>userForTeam[r.team]=r.user);
   const teamStatic = DATA.teamStatic || {};
@@ -7176,7 +7218,21 @@ function computeLiveState(games, totals){
       cpuBonus = Math.round((-cpuLosses*CPU_LOSS_WEIGHT)*10)/10;
     }
 
-    score = Math.round((score+rosterBonus+histBonus+cpuBonus)*10)/10;
+    // Season achievement bonuses (from the Achievements sheet) — not exclusive, a team can rack up
+    // several at once as they progress through the season (e.g. Champion also earned Playoff
+    // Appearance, Final Four, and Champion points along the way).
+    const ACH_WEIGHTS = {confChamp:2, playoffAppearance:2, finalFour:3, runnerUp:4, champion:7.5};
+    let achievementBonus = 0;
+    const ach = achievements[r.user];
+    const achList = [];
+    if (ach){
+      Object.keys(ACH_WEIGHTS).forEach(key=>{
+        if (ach[key]){ achievementBonus += ACH_WEIGHTS[key]; achList.push(key); }
+      });
+      achievementBonus = Math.round(achievementBonus*10)/10;
+    }
+
+    score = Math.round((score+rosterBonus+histBonus+cpuBonus+achievementBonus)*10)/10;
 
     const ts = teamStatic[team] || {};
     return {
@@ -7185,7 +7241,8 @@ function computeLiveState(games, totals){
       h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus, homeAwayBonus,
       reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus,
       wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScore*10)/10, coreScorePerGame: coreScorePerGame,
-      cpuBonus, cpuWins, cpuLosses, totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null
+      cpuBonus, cpuWins, cpuLosses, totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null,
+      achievementBonus, achList
     };
   });
 
@@ -7267,9 +7324,9 @@ async function boot(){
   renderNav();
   setupAlgoToggle();
   renderAll(); // instant paint using the snapshot baked in at build time
-  const [games, totals] = await Promise.all([fetchLiveGames(), fetchTotals()]);
+  const [games, totals, achievements] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements()]);
   if (games){
-    const live = computeLiveState(games, totals);
+    const live = computeLiveState(games, totals, achievements);
     DATA.power = live.power;
     DATA.gameLog = live.gameLog;
     DATA.closestGames = live.closestGames;
