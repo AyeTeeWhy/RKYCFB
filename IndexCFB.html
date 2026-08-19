@@ -147,6 +147,20 @@
   .math-line b{ color:var(--chalk); font-weight:700; }
   .math-line.total{ border-top:1px solid var(--line-2); margin-top:4px; padding-top:8px; }
   .math-line.total b{ color:var(--gold-bright); }
+
+  #retiredNote:empty{ display:none; }
+  .retired-title{
+    font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--chalk-dimmer); margin:20px 0 10px 4px;
+  }
+  .retired-list{ background:var(--turf); border:1px solid var(--line); border-radius:12px; overflow:hidden; opacity:0.75; }
+  .retired-row{
+    display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--line);
+  }
+  .retired-row:last-child{ border-bottom:none; }
+  .retired-name{ font-weight:600; font-size:13.5px; }
+  .retired-team{ font-size:12px; font-weight:600; }
+  .retired-rec{ margin-left:auto; font-size:12px; color:var(--chalk-dimmer); }
   .poll-row:last-child{ border-bottom:none; }
   .poll-row:hover{ background:var(--turf-2); }
   .poll-rank{ font-family:'Anton',sans-serif; font-size:26px; color:var(--chalk-dimmer); }
@@ -398,6 +412,7 @@
       </select>
     </div>
     <div class="card" id="powerList"></div>
+    <div id="retiredNote"></div>
   </section>
 
   <section class="page" id="page-standings">
@@ -6484,14 +6499,14 @@ function renderHero(){
   } else {
     eyebrowEl.textContent = 'SHOWING SAVED SNAPSHOT';
   }
-  const mostGames = [...DATA.power].sort((a,b)=> (b.pf+b.pa)-(a.pf+a.pa))[0];
-  const longestStreak = [...DATA.power].filter(p=>p.h2hGamesPlayed>0).sort((a,b)=>{
+  const mostGames = [...rankedForHero].sort((a,b)=> (b.pf+b.pa)-(a.pf+a.pa))[0];
+  const longestStreak = [...rankedForHero].filter(p=>p.h2hGamesPlayed>0).sort((a,b)=>{
     const av = parseInt(a.streak.slice(1))*(a.streak[0]==='W'?1:-1);
     const bv = parseInt(b.streak.slice(1))*(b.streak[0]==='W'?1:-1);
     return bv-av;
   })[0];
-  const undefeated = DATA.power.filter(p=>p.record.endsWith('-0') && p.h2hGamesPlayed>0);
-  const longestSkid = [...DATA.power].filter(p=>p.streak[0]==='L').sort((a,b)=> parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)))[0];
+  const undefeated = rankedForHero.filter(p=>p.record.endsWith('-0') && p.h2hGamesPlayed>0);
+  const longestSkid = [...rankedForHero].filter(p=>p.streak[0]==='L').sort((a,b)=> parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)))[0];
 
   document.getElementById('heroSub').textContent =
     `Live standings, power rankings, and history for the league — updated automatically as results come in.`;
@@ -6528,7 +6543,7 @@ function renderTicker(){
 // Re-sorts and re-applies the head-to-head tiebreak for a chosen scoring variant, without
 // needing to refetch or recompute anything from scratch. Used by the algorithm-variant dropdown.
 function rankPower(baseList, includeHistorical){
-  const list = baseList.map(p=>{
+  const mapped = baseList.map(p=>{
     const coreScorePerGame = (p.coreScorePerGame!=null) ? p.coreScorePerGame : p.score;
     const rosterBonus = p.rosterBonus||0;
     const sovBonus = p.sovBonus||0;
@@ -6538,6 +6553,10 @@ function rankPower(baseList, includeHistorical){
     const displayScore = Math.round((coreScorePerGame + rosterBonus + sovBonus + cpuBonus + achievementBonus + hb)*10)/10;
     return Object.assign({}, p, {score: displayScore, historicalApplied: includeHistorical, coreScorePerGame, rosterBonus, sovBonus, cpuBonus, achievementBonus});
   });
+
+  // Retired coaches keep every stat fully computed above — they just don't take a ranked spot.
+  const list = mapped.filter(p=>!p.retired);
+  const retired = mapped.filter(p=>p.retired).sort((a,b)=> b.score-a.score);
 
   const h2hResult = {};
   (DATA.gameLog||[]).forEach(g=>{
@@ -6565,14 +6584,14 @@ function rankPower(baseList, includeHistorical){
     }
   }
   list.forEach((p,i)=> p.rank=i+1);
-  return {list, tiebreaks};
+  return {list, tiebreaks, retired};
 }
 
 let powerAlgoMode = 'nohist'; // 'full' or 'nohist' — nohist (no weighted win% history) is now the default
 
 function renderPower(){
   const el = document.getElementById('powerList');
-  const { list: ranked, tiebreaks } = rankPower(DATA.power, powerAlgoMode==='full');
+  const { list: ranked, tiebreaks, retired } = rankPower(DATA.power, powerAlgoMode==='full');
   const tiebreakByUser = {};
   tiebreaks.forEach(t=>{ tiebreakByUser[t.winnerUser] = t; });
   el.innerHTML = ranked.map(p=>{
@@ -6632,6 +6651,27 @@ function renderPower(){
       btn.textContent = open ? 'hide the math' : 'show the math';
     });
   });
+
+  renderRetiredNote(retired);
+}
+
+function renderRetiredNote(retired){
+  const el = document.getElementById('retiredNote');
+  if (!el) return;
+  if (!retired || !retired.length){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="retired-title">Retired This Season</div>
+    <div class="retired-list">
+      ${retired.map(p=>{
+        const tc = teamColors(p.team);
+        return `<div class="retired-row">
+          ${teamBadge(p.team, 26)}
+          <span class="retired-name">${esc(p.user)}</span>
+          <span class="retired-team" style="color:${tc.bg};">${esc(p.team)}</span>
+          <span class="retired-rec mono">${esc(p.record)} · ${p.score>0?'+':''}${p.score} pts</span>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 // ---------- Standings ----------
@@ -6972,6 +7012,9 @@ const TOTALS_CSV_URL = GOOGLE_SHEET_ID
 const ACHIEVEMENTS_CSV_URL = GOOGLE_SHEET_ID
   ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Achievements`
   : null;
+const RETIRED_CSV_URL = GOOGLE_SHEET_ID
+  ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Retired`
+  : null;
 
 // Same "team overall" parity ratings used for the roster-strength formula term.
 const TEAM_OVERALL = {
@@ -7111,9 +7154,37 @@ async function fetchAchievements(){
   }
 }
 
-function computeLiveState(games, totals, achievements){
+// Fetches which users have retired mid-season from the "Retired" tab. Returns a Set of usernames,
+// or null if unreachable/not set up (in which case nobody is treated as retired).
+async function fetchRetired(){
+  if (!RETIRED_CSV_URL) return null;
+  try {
+    const res = await fetch(RETIRED_CSV_URL, {cache:'no-store'});
+    if (!res.ok) return null;
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return null;
+    const header = rows[0].map(h=>(h||'').trim().toLowerCase());
+    const idx = {user: header.indexOf('user'), retired: header.indexOf('retired')};
+    if (idx.user<0 || idx.retired<0) return null;
+    const set = new Set();
+    for (let i=1; i<rows.length; i++){
+      const r = rows[i];
+      const user = (r[idx.user]||'').trim();
+      const isRetired = (r[idx.retired]||'').trim().toLowerCase() === 'yes';
+      if (user && isRetired) set.add(user);
+    }
+    return set;
+  } catch(e){
+    console.warn('Retired sheet fetch failed — nobody will be treated as retired.', e);
+    return null;
+  }
+}
+
+function computeLiveState(games, totals, achievements, retiredSet){
   totals = totals || {};
   achievements = achievements || {};
+  retiredSet = retiredSet || new Set();
   const teamSet = new Set(DATA.roster.map(r=>r.team));
   const userForTeam = {}; DATA.roster.forEach(r=>userForTeam[r.team]=r.user);
   const teamStatic = DATA.teamStatic || {};
@@ -7242,7 +7313,7 @@ function computeLiveState(games, totals, achievements){
       reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus,
       wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScore*10)/10, coreScorePerGame: coreScorePerGame,
       cpuBonus, cpuWins, cpuLosses, totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null,
-      achievementBonus, achList
+      achievementBonus, achList, retired: retiredSet.has(r.user)
     };
   });
 
@@ -7324,9 +7395,9 @@ async function boot(){
   renderNav();
   setupAlgoToggle();
   renderAll(); // instant paint using the snapshot baked in at build time
-  const [games, totals, achievements] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements()]);
+  const [games, totals, achievements, retired] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements(), fetchRetired()]);
   if (games){
-    const live = computeLiveState(games, totals, achievements);
+    const live = computeLiveState(games, totals, achievements, retired);
     DATA.power = live.power;
     DATA.gameLog = live.gameLog;
     DATA.closestGames = live.closestGames;
