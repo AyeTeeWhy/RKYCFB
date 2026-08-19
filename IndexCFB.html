@@ -193,6 +193,13 @@
   }
   .conf-card-head .cname{ font-family:'Anton',sans-serif; font-size:19px; letter-spacing:0.02em; }
   .conf-card-head .ccount{ font-size:11px; color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; }
+  .tier-list{ display:flex; flex-direction:column; }
+  .tier-row{ display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--line); }
+  .tier-row:last-child{ border-bottom:none; }
+  .tier-rank{ font-size:12px; color:var(--chalk-dimmer); width:26px; flex-shrink:0; }
+  .tier-name{ font-weight:600; font-size:13.5px; }
+  .tier-school{ font-size:11.5px; font-weight:600; }
+  .tier-placeholder{ opacity:0.6; }
   table.standings{ width:100%; border-collapse:collapse; font-size:13px; }
   table.standings th{ text-align:left; padding:9px 20px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--chalk-dimmer); font-weight:600; border-bottom:1px solid var(--line); }
   table.standings td{ padding:10px 20px; border-bottom:1px solid var(--line); }
@@ -475,9 +482,18 @@
     </div>
   </section>
 
+  <section class="page" id="page-nextseason">
+    <div class="section-head">
+      <div class="section-eyebrow">05 — CFB 27 Next Season</div>
+      <h2 class="section-title display">Next season's tiers</h2>
+      <p class="section-desc">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
+    </div>
+    <div class="conf-grid" id="nextSeasonGrid"></div>
+  </section>
+
   <section class="page" id="page-rosters">
     <div class="section-head">
-      <div class="section-eyebrow">05 — Rosters</div>
+      <div class="section-eyebrow">06 — Rosters</div>
       <h2 class="section-title display">The 23</h2>
       <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
     </div>
@@ -486,7 +502,7 @@
 
   <section class="page" id="page-history">
     <div class="section-head">
-      <div class="section-eyebrow">06 — History</div>
+      <div class="section-eyebrow">07 — History</div>
       <h2 class="section-title display">Before Week 1</h2>
       <p class="section-desc" id="historyIntro"></p>
     </div>
@@ -6420,6 +6436,7 @@ const TABS = [
   {id:'standings', label:'Standings'},
   {id:'record', label:'CFB 27 Info'},
   {id:'recruiting', label:'CFB Recruiting'},
+  {id:'nextseason', label:'CFB 27 Next Season'},
   {id:'rosters', label:'Rosters'},
   {id:'history', label:'History'},
 ];
@@ -6675,6 +6692,56 @@ function renderRetiredNote(retired){
 }
 
 // ---------- Standings ----------
+// ---------- Next Season projection ----------
+// Purely derived from the current Power Poll ranking — no separate data source. Auto-updates
+// whenever the underlying rankings shift (new results, algorithm toggle, retirements, etc.).
+const NEXT_SEASON_TIERS = [
+  {conf:'ACC', tier:1, from:1, to:5},
+  {conf:'Big Ten', tier:2, from:6, to:10},
+  {conf:'Big 12', tier:3, from:11, to:12, placeholders:3},
+  {conf:'SEC', tier:4, from:13, to:17},
+  {conf:'MWC', tier:5, from:18, to:23},
+];
+
+function renderNextSeason(){
+  const el = document.getElementById('nextSeasonGrid');
+  if (!el) return;
+  const ranked = rankPower(DATA.power, powerAlgoMode==='full').list;
+
+  el.innerHTML = NEXT_SEASON_TIERS.map(t=>{
+    const slice = ranked.filter(p=>p.rank>=t.from && p.rank<=t.to);
+    const rows = slice.map(p=>{
+      const tc = teamColors(p.team);
+      return `
+      <div class="tier-row">
+        <span class="tier-rank mono">#${p.rank}</span>
+        ${teamBadge(p.team, 30)}
+        <div class="tier-team">
+          <div class="tier-name">${esc(p.user)}</div>
+          <div class="tier-school" style="color:${tc.bg};">${esc(p.team)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const placeholderRows = t.placeholders ? Array.from({length:t.placeholders}).map(()=>`
+      <div class="tier-row tier-placeholder">
+        <span class="tier-rank mono">—</span>
+        <span class="team-badge" style="width:30px; height:30px; background:var(--turf-2); color:var(--chalk-dimmer); border-color:var(--line-2); font-size:11px;">?</span>
+        <div class="tier-team">
+          <div class="tier-name" style="color:var(--chalk-dimmer);">New user — TBD</div>
+          <div class="tier-school" style="color:var(--chalk-dimmer);">Joining next season</div>
+        </div>
+      </div>`).join('') : '';
+    return `
+    <div class="card conf-card">
+      <div class="conf-card-head">
+        <span class="cname">${esc(t.conf)}</span>
+        <span class="ccount">TIER ${t.tier} · #${t.from}–${t.to}</span>
+      </div>
+      <div class="tier-list">${rows}${placeholderRows}</div>
+    </div>`;
+  }).join('');
+}
+
 function renderStandings(){
   const el = document.getElementById('confGrid');
   const order = ['SEC','Big 12','ACC','MWC','Big Ten'];
@@ -7377,6 +7444,7 @@ function setupAlgoToggle(){
     powerAlgoMode = sel.value === 'nohist' ? 'nohist' : 'full';
     renderHero();
     renderPower();
+    renderNextSeason();
   });
 }
 
@@ -7387,6 +7455,7 @@ function renderAll(){
   renderStandings();
   renderRecordBook();
   renderRecruiting();
+  renderNextSeason();
   renderRosters();
   renderHistory();
 }
