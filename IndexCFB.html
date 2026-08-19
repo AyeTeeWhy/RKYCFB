@@ -274,7 +274,8 @@
   .roster-card .info{ min-width:0; }
   .roster-card .u{ font-weight:700; font-size:15px; }
   .roster-card .t{ font-size:13px; color:var(--gold-bright); margin-top:2px; }
-  .roster-card .g{ font-size:11.5px; color:var(--chalk-dimmer); margin-top:8px; font-family:'JetBrains Mono',monospace; }
+  .roster-card .g{ font-size:12px; font-weight:700; color:var(--chalk-dimmer); margin-top:8px; font-family:'JetBrains Mono',monospace; letter-spacing:0.01em; }
+  .roster-card .ovr-line{ font-size:12px; font-weight:700; margin-top:6px; font-family:'JetBrains Mono',monospace; opacity:0.85; }
 
   /* potw */
   .potw-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:36px; }
@@ -616,8 +617,7 @@
   </div>
 </footer>
 
-<script id="dataBlob" type="application/json">
-{
+<script id="dataBlob" type="application/json">{
   "meta": {
     "week": 6,
     "nextWeek": 7,
@@ -3659,7 +3659,7 @@
     {
       "user": "Adam",
       "team": "Tulane",
-      "gamertag": "Aye Tee Why (active profile on screens)"
+      "gamertag": "Aye Tee Why"
     },
     {
       "user": "Nick",
@@ -3674,7 +3674,7 @@
     {
       "user": "Harmon",
       "team": "Michigan State",
-      "gamertag": "IIxHARMONzII (approximate reading, Members screen)"
+      "gamertag": "IIxHARMONzII"
     },
     {
       "user": "Dom",
@@ -6337,8 +6337,7 @@
       "confStanding": "7th"
     }
   }
-}
-</script>
+}</script>
 <script>
 const DATA = JSON.parse(document.getElementById('dataBlob').textContent);
 
@@ -6838,18 +6837,44 @@ function renderRecruiting(){
 }
 
 // ---------- Rosters ----------
+function overallDisplayHTML(user){
+  const bySeason = DATA.meta.overallBySeason;
+  const seasonLabel = DATA.meta.currentSeason;
+  const seasonNum = seasonLabel ? parseInt((seasonLabel.match(/\d+/)||[])[0]) : null;
+
+  if (bySeason && bySeason[user]){
+    const seasons = bySeason[user]; // {1:73, 2:77, ...}
+    const available = Object.keys(seasons).map(Number).sort((a,b)=>a-b);
+    if (!available.length) return '';
+    const curNum = (seasonNum!=null && seasons[seasonNum]!=null) ? seasonNum : available[available.length-1];
+    const curVal = seasons[curNum];
+    const priorNum = available.filter(n=>n<curNum).pop();
+    if (priorNum!=null){
+      const delta = curVal - seasons[priorNum];
+      const sign = delta>0 ? '+' : '';
+      const color = delta>0 ? 'var(--win)' : (delta<0 ? 'var(--alert)' : 'inherit');
+      return `${curVal} <span style="color:${color}; font-weight:800;">${sign}${delta}</span>`;
+    }
+    return `${curVal}`;
+  }
+  const fallback = TEAM_OVERALL[user];
+  return fallback!=null ? `${fallback}` : '';
+}
+
 function renderRosters(){
   renderSeasonBanner();
   const el = document.getElementById('rosterGrid');
   el.innerHTML = DATA.roster.map(r=>{
     const c = teamColors(r.team);
+    const overallHTML = overallDisplayHTML(r.user);
     return `
     <div class="card roster-card" style="background:${c.bg}; border-color:rgba(255,255,255,0.15);">
       ${teamBadge(r.team, 44, true)}
       <div class="info">
         <div class="u" style="color:${c.text};">${esc(r.user)} ${achievementBadge(r.user)}</div>
         <div class="t" style="color:${c.text}; opacity:0.85;">${esc(r.team)}</div>
-        <div class="g" style="color:${c.text}; opacity:0.6;">${esc(r.gamertag)}</div>
+        <div class="g" style="color:${c.text}; opacity:0.85;">${esc(r.gamertag)}</div>
+        ${overallHTML ? `<div class="ovr-line" style="color:${c.text};">OVR ${overallHTML}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -7342,7 +7367,9 @@ async function fetchTeamOverall(seasonLabel){
     });
 
     let overallIdx;
+    let usingSeasonCols = false;
     if (Object.keys(seasonCols).length){
+      usingSeasonCols = true;
       // Use the column matching the current season; if that exact one isn't there yet
       // (e.g. Season 3 started but nobody's added that column), fall back to the most
       // recent season column that does exist, rather than failing entirely.
@@ -7359,15 +7386,24 @@ async function fetchTeamOverall(seasonLabel){
     }
     if (overallIdx==null || overallIdx<0) return null;
 
-    const out = {};
+    const out = {};       // {user: resolved current-season overall} — what the algorithm uses
+    const bySeason = {};  // {user: {1: 73, 2: 77, ...}} — every season column found, for the Rosters page
     for (let i=1; i<rows.length; i++){
       const r = rows[i];
       const user = (r[userIdx]||'').trim();
+      if (!user) continue;
       const overall = parseInt(r[overallIdx]);
-      if (!user || isNaN(overall)) continue;
-      out[user] = overall;
+      if (!isNaN(overall)) out[user] = overall;
+      if (usingSeasonCols){
+        const seasons = {};
+        Object.keys(seasonCols).forEach(n=>{
+          const v = parseInt(r[seasonCols[n]]);
+          if (!isNaN(v)) seasons[n] = v;
+        });
+        if (Object.keys(seasons).length) bySeason[user] = seasons;
+      }
     }
-    return Object.keys(out).length ? out : null;
+    return Object.keys(out).length ? {effective: out, bySeason} : null;
   } catch(e){
     console.warn('TeamOverall sheet fetch failed — falling back to the hardcoded snapshot.', e);
     return null;
@@ -7380,7 +7416,7 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   retiredSet = retiredSet || new Set();
   liveOverall = liveOverall || {};
   // Live sheet values win when present; otherwise fall back to the hardcoded snapshot per person.
-  const effectiveOverall = Object.assign({}, TEAM_OVERALL, liveOverall);
+  const effectiveOverall = Object.assign({}, TEAM_OVERALL, liveOverall.effective || {});
   const teamSet = new Set(DATA.roster.map(r=>r.team));
   const userForTeam = {}; DATA.roster.forEach(r=>userForTeam[r.team]=r.user);
   const teamStatic = DATA.teamStatic || {};
@@ -7597,6 +7633,10 @@ async function boot(){
   const [games, totals, achievements, retired, liveOverall] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements(), fetchRetired(), fetchTeamOverall(season)]);
   let needsRepaint = false;
   if (season){ DATA.meta.currentSeason = season; needsRepaint = true; }
+  if (liveOverall && liveOverall.bySeason && Object.keys(liveOverall.bySeason).length){
+    DATA.meta.overallBySeason = liveOverall.bySeason;
+    needsRepaint = true;
+  }
   if (games){
     const live = computeLiveState(games, totals, achievements, retired, liveOverall);
     DATA.power = live.power;
