@@ -200,6 +200,27 @@
   .tier-name{ font-weight:600; font-size:13.5px; }
   .tier-school{ font-size:11.5px; font-weight:600; }
   .tier-placeholder{ opacity:0.6; }
+
+  #seasonBanner:empty{ display:none; }
+  .season-banner-inner{
+    display:inline-flex; align-items:center; gap:10px; padding:10px 20px 10px 16px; margin-bottom:22px;
+    background:linear-gradient(90deg, rgba(91,200,242,0.14), rgba(91,200,242,0.03));
+    border:1px solid rgba(91,200,242,0.35); border-radius:999px;
+  }
+  .season-banner-dot{
+    width:9px; height:9px; border-radius:50%; background:var(--gold); flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(91,200,242,0.6); animation:season-pulse 2s infinite;
+  }
+  @keyframes season-pulse{
+    0%{ box-shadow:0 0 0 0 rgba(91,200,242,0.55); }
+    70%{ box-shadow:0 0 0 8px rgba(91,200,242,0); }
+    100%{ box-shadow:0 0 0 0 rgba(91,200,242,0); }
+  }
+  .season-banner-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--chalk-dimmer);
+  }
+  .season-banner-value{ font-family:'Anton',sans-serif; font-size:18px; letter-spacing:0.02em; color:var(--gold-bright); }
   table.standings{ width:100%; border-collapse:collapse; font-size:13px; }
   table.standings th{ text-align:left; padding:9px 20px; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--chalk-dimmer); font-weight:600; border-bottom:1px solid var(--line); }
   table.standings td{ padding:10px 20px; border-bottom:1px solid var(--line); }
@@ -497,6 +518,7 @@
       <h2 class="section-title display">The 23</h2>
       <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
     </div>
+    <div id="seasonBanner"></div>
     <div class="roster-grid" id="rosterGrid"></div>
   </section>
 
@@ -6817,6 +6839,7 @@ function renderRecruiting(){
 
 // ---------- Rosters ----------
 function renderRosters(){
+  renderSeasonBanner();
   const el = document.getElementById('rosterGrid');
   el.innerHTML = DATA.roster.map(r=>{
     const c = teamColors(r.team);
@@ -6830,6 +6853,19 @@ function renderRosters(){
       </div>
     </div>`;
   }).join('');
+}
+
+function renderSeasonBanner(){
+  const el = document.getElementById('seasonBanner');
+  if (!el) return;
+  const season = DATA.meta.currentSeason;
+  if (!season){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="season-banner-inner">
+      <span class="season-banner-dot"></span>
+      <span class="season-banner-label">Now Playing</span>
+      <span class="season-banner-value">${esc(season)}</span>
+    </div>`;
 }
 
 // ---------- History ----------
@@ -7082,8 +7118,16 @@ const ACHIEVEMENTS_CSV_URL = GOOGLE_SHEET_ID
 const RETIRED_CSV_URL = GOOGLE_SHEET_ID
   ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Retired`
   : null;
+const SEASON_CSV_URL = GOOGLE_SHEET_ID
+  ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Season`
+  : null;
+const TEAM_OVERALL_CSV_URL = GOOGLE_SHEET_ID
+  ? `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=TeamOverall`
+  : null;
 
-// Same "team overall" parity ratings used for the roster-strength formula term.
+// Fallback only — used if the "Team Overall" sheet tab isn't reachable yet. Once the live sheet
+// is set up, these numbers come from there instead and can be updated season to season without
+// touching the site at all.
 const TEAM_OVERALL = {
   'Nick':81, 'Tim':82, 'JoJo':84, 'Pat':92, 'Ben':77, 'Vince':79, 'Bruce':85, 'Logan':84,
   'Kurt':87, 'Jhump':74, 'Harmon':81, 'Tipton':84, 'Austin':89, 'Justin':89, 'Jared':78,
@@ -7248,10 +7292,95 @@ async function fetchRetired(){
   }
 }
 
-function computeLiveState(games, totals, achievements, retiredSet){
+// Fetches each coach's current team-overall rating from the "TeamOverall" tab — this is what
+// lets roster strength update season to season without editing the site. Returns {user: overall}
+// or null if unreachable (falls back to the hardcoded TEAM_OVERALL snapshot in that case).
+// Fetches the current-season label from the "Season" tab (a single Label/Value row). Returns a
+// string like "Season 1", or null if unreachable/not set up.
+async function fetchSeason(){
+  if (!SEASON_CSV_URL) return null;
+  try {
+    const res = await fetch(SEASON_CSV_URL, {cache:'no-store'});
+    if (!res.ok) return null;
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return null;
+    const header = rows[0].map(h=>(h||'').trim().toLowerCase());
+    const idx = {label: header.indexOf('label'), value: header.indexOf('value')};
+    if (idx.label<0 || idx.value<0) return null;
+    for (let i=1; i<rows.length; i++){
+      const r = rows[i];
+      if ((r[idx.label]||'').trim().toLowerCase() === 'current season'){
+        const v = (r[idx.value]||'').trim();
+        return v || null;
+      }
+    }
+    return null;
+  } catch(e){
+    console.warn('Season sheet fetch failed — season banner will be skipped.', e);
+    return null;
+  }
+}
+
+async function fetchTeamOverall(seasonLabel){
+  if (!TEAM_OVERALL_CSV_URL) return null;
+  try {
+    const res = await fetch(TEAM_OVERALL_CSV_URL, {cache:'no-store'});
+    if (!res.ok) return null;
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return null;
+    const header = rows[0].map(h=>(h||'').trim().toLowerCase());
+    const userIdx = header.indexOf('user');
+    if (userIdx<0) return null;
+
+    // Find every "Season N Overall" column present, keyed by season number.
+    const seasonCols = {};
+    header.forEach((h,i)=>{
+      const m = h.match(/^season\s*(\d+)\s*overall$/);
+      if (m) seasonCols[parseInt(m[1])] = i;
+    });
+
+    let overallIdx;
+    if (Object.keys(seasonCols).length){
+      // Use the column matching the current season; if that exact one isn't there yet
+      // (e.g. Season 3 started but nobody's added that column), fall back to the most
+      // recent season column that does exist, rather than failing entirely.
+      const wanted = seasonLabel ? parseInt((seasonLabel.match(/\d+/)||[])[0]) : null;
+      const available = Object.keys(seasonCols).map(Number).sort((a,b)=>a-b);
+      let pick = null;
+      if (wanted!=null && seasonCols[wanted]!=null) pick = wanted;
+      else if (wanted!=null) pick = available.filter(n=>n<=wanted).pop() ?? available[available.length-1];
+      else pick = available[available.length-1];
+      overallIdx = seasonCols[pick];
+    } else {
+      // Old-style single "Overall" column, kept for backward compatibility.
+      overallIdx = header.indexOf('overall');
+    }
+    if (overallIdx==null || overallIdx<0) return null;
+
+    const out = {};
+    for (let i=1; i<rows.length; i++){
+      const r = rows[i];
+      const user = (r[userIdx]||'').trim();
+      const overall = parseInt(r[overallIdx]);
+      if (!user || isNaN(overall)) continue;
+      out[user] = overall;
+    }
+    return Object.keys(out).length ? out : null;
+  } catch(e){
+    console.warn('TeamOverall sheet fetch failed — falling back to the hardcoded snapshot.', e);
+    return null;
+  }
+}
+
+function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   totals = totals || {};
   achievements = achievements || {};
   retiredSet = retiredSet || new Set();
+  liveOverall = liveOverall || {};
+  // Live sheet values win when present; otherwise fall back to the hardcoded snapshot per person.
+  const effectiveOverall = Object.assign({}, TEAM_OVERALL, liveOverall);
   const teamSet = new Set(DATA.roster.map(r=>r.team));
   const userForTeam = {}; DATA.roster.forEach(r=>userForTeam[r.team]=r.user);
   const teamStatic = DATA.teamStatic || {};
@@ -7293,7 +7422,7 @@ function computeLiveState(games, totals, achievements, retiredSet){
   }
 
   const weightedByUser = {}; (DATA.historical.weighted||[]).forEach(w=> weightedByUser[w.name]=w.pct);
-  const ovrVals = Object.values(TEAM_OVERALL);
+  const ovrVals = Object.values(effectiveOverall);
   const AVG_OVR = ovrVals.reduce((a,b)=>a+b,0)/ovrVals.length;
 
   let power = DATA.roster.map(r=>{
@@ -7336,7 +7465,7 @@ function computeLiveState(games, totals, achievements, retiredSet){
       worst = `${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
     }
 
-    const ovr = TEAM_OVERALL[r.user];
+    const ovr = effectiveOverall[r.user];
     const deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
     // Applied across every game played, not just wins — a loaded roster should get penalized for
     // losing too (that's more damning than a weak roster losing), same as it already gets
@@ -7464,9 +7593,12 @@ async function boot(){
   renderNav();
   setupAlgoToggle();
   renderAll(); // instant paint using the snapshot baked in at build time
-  const [games, totals, achievements, retired] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements(), fetchRetired()]);
+  const season = await fetchSeason();
+  const [games, totals, achievements, retired, liveOverall] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements(), fetchRetired(), fetchTeamOverall(season)]);
+  let needsRepaint = false;
+  if (season){ DATA.meta.currentSeason = season; needsRepaint = true; }
   if (games){
-    const live = computeLiveState(games, totals, achievements, retired);
+    const live = computeLiveState(games, totals, achievements, retired, liveOverall);
     DATA.power = live.power;
     DATA.gameLog = live.gameLog;
     DATA.closestGames = live.closestGames;
@@ -7478,6 +7610,8 @@ async function boot(){
     DATA.meta.liveSource = true;
     DATA.meta.lastSynced = new Date();
     renderAll(); // silently re-paint with live numbers once they're in
+  } else if (needsRepaint){
+    renderRosters(); // season label can still update even if the Games fetch failed
   }
 }
 boot();
