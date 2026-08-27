@@ -165,6 +165,12 @@
   .poll-row:hover{ background:var(--turf-2); }
   .poll-rank{ font-family:'Anton',sans-serif; font-size:26px; color:var(--chalk-dimmer); }
   .poll-row.top3 .poll-rank{ color:var(--gold); }
+  .rank-change{
+    font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; text-align:center;
+    margin-top:2px; letter-spacing:0.01em;
+  }
+  .rank-change.up{ color:var(--win); }
+  .rank-change.down{ color:var(--alert); }
   .poll-team{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .poll-team .name{ font-weight:700; font-size:15.5px; }
   .poll-team .meta{ font-size:12.5px; color:var(--chalk-dim); }
@@ -6920,9 +6926,14 @@ function renderHistory(){
     else if (p.earlyRounds>0) why = `${p.earlyRounds} playoff appearance${p.earlyRounds>1?'s':''}, no deep runs yet — ${p.pct}% career.`;
     else why = `${p.win}-${p.loss} career, ${p.pct}% — hasn't made the playoffs on record.`;
     const tc = teamColors(p.currentTeam);
+    let rankChangeHTML = '';
+    if (p.rankChange){
+      const up = p.rankChange > 0;
+      rankChangeHTML = `<div class="rank-change ${up?'up':'down'}" title="${up?'Up':'Down'} ${Math.abs(p.rankChange)} spot${Math.abs(p.rankChange)>1?'s':''} since CFB 27 Season 1 was folded in">${up?'▲':'▼'}${Math.abs(p.rankChange)}</div>`;
+    }
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
-      <div class="poll-rank mono">${p.rank}</div>
+      <div class="poll-rank mono">${p.rank}${rankChangeHTML}</div>
       <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
         ${teamHistoryBadges(p.name) || (p.currentTeam ? teamBadge(p.currentTeam, 34) : '')}
         <div style="min-width:0;">
@@ -7655,6 +7666,15 @@ function blendCareerRecords(){
     const win = a.win + addW, loss = a.loss + addL, total = win + loss;
     return Object.assign({}, a, {win, loss, total, pct: total>0 ? Math.round((win/total*100)*10)/10 : a.pct});
   });
+  const existingAllTimeNames = new Set(DATA.historical.allTime.map(a=>a.name));
+  DATA.roster.forEach(r=>{
+    if (existingAllTimeNames.has(r.user)) return;
+    const win = winsByUser[r.user]||0, loss = lossesByUser[r.user]||0, total = win+loss;
+    DATA.historical.allTime.push({
+      name: r.user, displayName: r.user, retired: false, currentTeam: r.team,
+      win, loss, total, pct: total>0 ? Math.round((win/total*100)*10)/10 : 0
+    });
+  });
 
   // Fold this season's achievements into the same badge/playoff-tally system used for career
   // history (History tab, badges everywhere) — one CFB27 "season" entry per person, using
@@ -7691,8 +7711,34 @@ function blendCareerRecords(){
     const score = Math.round((pct*0.5 + champs*10 + runnerUps*7.5 + finalFours*5 + earlyRounds*2.5)*10)/10;
     return Object.assign({}, a, {win, loss, pct, champs, runnerUps, finalFours, earlyRounds, score});
   });
+
+  // Coaches with zero CFB 25/26 history (new to the league this season) never had a
+  // STATIC_HIST_POWER entry to begin with — add them fresh, starting purely from their CFB 27
+  // record and achievements, so they show up on the All-Time board too instead of being invisible.
+  const existingNames = new Set(hp.map(p=>p.name));
+  DATA.roster.forEach(r=>{
+    if (existingNames.has(r.user)) return;
+    const win = winsByUser[r.user]||0, loss = lossesByUser[r.user]||0, total = win+loss;
+    const pct = total>0 ? Math.round((win/total*100)*10)/10 : 0;
+    const bump = tierBump[r.user] || {champs:0, runnerUps:0, finalFours:0, earlyRounds:0};
+    const score = Math.round((pct*0.5 + bump.champs*10 + bump.runnerUps*7.5 + bump.finalFours*5 + bump.earlyRounds*2.5)*10)/10;
+    hp.push({
+      name: r.user, displayName: r.user, retired: false, currentTeam: r.team,
+      win, loss, pct, champs:bump.champs, runnerUps:bump.runnerUps, finalFours:bump.finalFours,
+      earlyRounds:bump.earlyRounds, score
+    });
+  });
+
   hp.sort((a,b)=> b.score-a.score);
   hp.forEach((p,i)=> p.rank=i+1);
+
+  // Rank each person would've held using only the pre-CFB27 baseline, so the difference (their
+  // movement once this season's results and achievements got folded in) can be shown per row.
+  // Newcomers have no pre-CFB27 rank to compare against, so they just show no change indicator.
+  const originalRank = {};
+  STATIC_HIST_POWER.slice().sort((a,b)=> b.score-a.score).forEach((p,i)=> originalRank[p.name]=i+1);
+  hp.forEach(p=>{ p.rankChange = originalRank[p.name] ? (originalRank[p.name] - p.rank) : 0; });
+
   DATA.historical.historicalPower = hp;
 }
 
