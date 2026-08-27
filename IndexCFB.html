@@ -7656,14 +7656,40 @@ function blendCareerRecords(){
     return Object.assign({}, a, {win, loss, total, pct: total>0 ? Math.round((win/total*100)*10)/10 : a.pct});
   });
 
+  // Fold this season's achievements into the same badge/playoff-tally system used for career
+  // history (History tab, badges everywhere) — one CFB27 "season" entry per person, using
+  // their single highest tier reached (Champion beats Runner Up beats Final Four beats just
+  // making the playoffs), matching how every past season is recorded one-tier-per-season.
+  const TIER_PRIORITY = [['champion','Champ'], ['runnerUp','Runner Up'], ['finalFour','Final Four'], ['playoffAppearance','2nd Round']];
+  const cfb27Season = [];
+  DATA.power.forEach(p=>{
+    const list = p.achList||[];
+    const hit = TIER_PRIORITY.find(([key])=> list.includes(key));
+    if (hit) cfb27Season.push({name:p.user, win:0, loss:0, round:hit[1]});
+  });
+  DATA.historical.fullBrackets['CFB27S1'] = cfb27Season;
+  _tallyCache = null; // badges everywhere re-tally fresh on next read
+
+  const tierBump = {};
+  cfb27Season.forEach(e=>{
+    const t = tierBump[e.name] || (tierBump[e.name] = {champs:0, runnerUps:0, finalFours:0, earlyRounds:0});
+    if (e.round==='Champ') t.champs++;
+    else if (e.round==='Runner Up') t.runnerUps++;
+    else if (e.round==='Final Four') t.finalFours++;
+    else t.earlyRounds++;
+  });
+
   // Keep the All-Time Power Poll (History tab) in sync too, since it shows the same win-loss
-  // and its score partly depends on win%.
+  // and its score partly depends on win% and playoff tiers.
   let hp = STATIC_HIST_POWER.map(a=>{
     const addW = winsByUser[a.name]||0, addL = lossesByUser[a.name]||0;
     const win = a.win + addW, loss = a.loss + addL, total = win + loss;
     const pct = total>0 ? Math.round((win/total*100)*10)/10 : a.pct;
-    const score = Math.round((pct*0.5 + a.champs*10 + a.runnerUps*7.5 + a.finalFours*5 + a.earlyRounds*2.5)*10)/10;
-    return Object.assign({}, a, {win, loss, pct, score});
+    const bump = tierBump[a.name] || {champs:0, runnerUps:0, finalFours:0, earlyRounds:0};
+    const champs = a.champs+bump.champs, runnerUps = a.runnerUps+bump.runnerUps,
+          finalFours = a.finalFours+bump.finalFours, earlyRounds = a.earlyRounds+bump.earlyRounds;
+    const score = Math.round((pct*0.5 + champs*10 + runnerUps*7.5 + finalFours*5 + earlyRounds*2.5)*10)/10;
+    return Object.assign({}, a, {win, loss, pct, champs, runnerUps, finalFours, earlyRounds, score});
   });
   hp.sort((a,b)=> b.score-a.score);
   hp.forEach((p,i)=> p.rank=i+1);
