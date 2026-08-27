@@ -6340,6 +6340,10 @@
 }</script>
 <script>
 const DATA = JSON.parse(document.getElementById('dataBlob').textContent);
+// Pristine baseline for career records (CFB 25/26 only) — every live blend recomputes from this,
+// never from DATA.historical.allTime itself, so re-running the blend never double-counts.
+const STATIC_ALLTIME = JSON.parse(JSON.stringify(DATA.historical.allTime));
+const STATIC_HIST_POWER = JSON.parse(JSON.stringify(DATA.historical.historicalPower));
 
 // School color pairs (background, text) for each team's box treatment
 const TEAM_COLORS = {
@@ -7635,6 +7639,37 @@ function renderAll(){
   renderHistory();
 }
 
+// Blends this season's user-vs-user record into the career win-loss totals (History tab's
+// Career Records table, Superlatives, and the Head-to-Head tool all read from this). Always
+// recomputes from the pristine STATIC_ALLTIME baseline, so calling this again later (e.g. after
+// more games get logged) never double-adds what was already blended in last time.
+function blendCareerRecords(){
+  const winsByUser = {}, lossesByUser = {};
+  DATA.power.forEach(p=>{
+    const w = parseInt(p.record.split('-')[0]), l = parseInt(p.record.split('-')[1]);
+    winsByUser[p.user] = w; lossesByUser[p.user] = l;
+  });
+  DATA.historical.allTime = STATIC_ALLTIME.map(a=>{
+    const addW = winsByUser[a.name]||0, addL = lossesByUser[a.name]||0;
+    if (!addW && !addL) return Object.assign({}, a);
+    const win = a.win + addW, loss = a.loss + addL, total = win + loss;
+    return Object.assign({}, a, {win, loss, total, pct: total>0 ? Math.round((win/total*100)*10)/10 : a.pct});
+  });
+
+  // Keep the All-Time Power Poll (History tab) in sync too, since it shows the same win-loss
+  // and its score partly depends on win%.
+  let hp = STATIC_HIST_POWER.map(a=>{
+    const addW = winsByUser[a.name]||0, addL = lossesByUser[a.name]||0;
+    const win = a.win + addW, loss = a.loss + addL, total = win + loss;
+    const pct = total>0 ? Math.round((win/total*100)*10)/10 : a.pct;
+    const score = Math.round((pct*0.5 + a.champs*10 + a.runnerUps*7.5 + a.finalFours*5 + a.earlyRounds*2.5)*10)/10;
+    return Object.assign({}, a, {win, loss, pct, score});
+  });
+  hp.sort((a,b)=> b.score-a.score);
+  hp.forEach((p,i)=> p.rank=i+1);
+  DATA.historical.historicalPower = hp;
+}
+
 async function boot(){
   renderNav();
   setupAlgoToggle();
@@ -7659,6 +7694,7 @@ async function boot(){
     DATA.meta.totalGames = live.totalGames;
     DATA.meta.liveSource = true;
     DATA.meta.lastSynced = new Date();
+    blendCareerRecords();
     renderAll(); // silently re-paint with live numbers once they're in
   } else if (needsRepaint){
     renderRosters(); // season label can still update even if the Games fetch failed
