@@ -7457,7 +7457,7 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     return cur+n;
   }
 
-  const weightedByUser = {}; (DATA.historical.weighted||[]).forEach(w=> weightedByUser[w.name]=w.pct);
+  const weightedByUser = {}; (DATA.historical.weighted||[]).forEach(w=> weightedByUser[w.name]=w);
   const ovrVals = Object.values(effectiveOverall);
   const AVG_OVR = ovrVals.reduce((a,b)=>a+b,0)/ovrVals.length;
 
@@ -7507,7 +7507,17 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     // shrink with how many games have been played. A below-average roster earns a flat bonus,
     // a loaded roster takes a flat discount, same number all season regardless of games played.
     const rosterBonus = Math.round(deviation*0.5588*10)/10;
-    const histPct = weightedByUser[r.user];
+    // Career track record now blends in this season's user-vs-user results as they're played,
+    // instead of freezing at CFB 26 — CFB 27 wins/losses get added straight into the same
+    // weighted pool (at a neutral tier weight, since there's no live opponent-tier system yet).
+    const hist = weightedByUser[r.user];
+    let histPct = null;
+    if (hist){
+      const combinedWin = hist.weightedWin + wins.length;
+      const combinedLoss = hist.weightedLoss + losses.length;
+      const combinedTotal = combinedWin + combinedLoss;
+      histPct = combinedTotal>0 ? Math.round((combinedWin/combinedTotal*100)*10)/10 : hist.pct;
+    }
     const histBonus = (histPct!=null) ? Math.round((histPct-50)*0.2*10)/10 : 0;
 
     // CPU record bonus: total record (from the Totals sheet) minus the user-vs-user record gives
