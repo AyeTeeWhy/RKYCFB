@@ -207,6 +207,53 @@
   .tier-school{ font-size:11.5px; font-weight:600; }
   .tier-placeholder{ opacity:0.6; }
 
+  /* Playoff Bracket */
+  #bracketWrap{ overflow-x:auto; padding-bottom:12px; }
+  .bkt-outer{ display:flex; gap:22px; align-items:center; min-width:1080px; }
+  .bkt-rounds{ display:flex; gap:22px; flex:1; }
+  .bkt-round{ display:flex; flex-direction:column; flex:1; min-width:190px; }
+  .bkt-round-label{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em;
+    color:var(--gold); text-align:center; margin-bottom:14px; font-weight:700;
+  }
+  .bkt-round-matches{ flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:22px; }
+  .bkt-champ-round{ min-width:200px; }
+  .bkt-champ-round .bkt-round-matches{ justify-content:center; }
+
+  .bkt-match{
+    position:relative; display:flex; flex-direction:column; border-radius:10px; overflow:hidden;
+    border:1px solid var(--line-2); box-shadow:0 6px 16px -8px rgba(0,0,0,0.5);
+  }
+  .bkt-round:not(:last-child) .bkt-match::after{
+    content:''; position:absolute; top:50%; right:-22px; width:22px; height:1px;
+    background:var(--line-2); transform:translateY(-50%);
+  }
+  .bkt-team{
+    display:flex; align-items:center; gap:7px; padding:8px 9px; border-bottom:1px solid rgba(0,0,0,0.35);
+  }
+  .bkt-team:last-child{ border-bottom:none; }
+  .bkt-team.bkt-winner{ box-shadow:inset 4px 0 0 var(--gold-bright); }
+  .bkt-seed{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:800; color:rgba(255,255,255,0.55);
+    width:14px; flex-shrink:0; text-align:center;
+  }
+  .bkt-info{ min-width:0; flex:1; }
+  .bkt-name{ font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bkt-school{ font-size:9.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bkt-score{ font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:800; color:#fff; flex-shrink:0; }
+
+  .bkt-trophy-card{
+    flex-shrink:0; width:200px; border-radius:14px; border:1px solid; padding:24px 16px;
+    display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
+  }
+  .bkt-trophy-name{ font-family:'Anton',sans-serif; font-size:19px; margin-top:10px; letter-spacing:0.02em; }
+  .bkt-trophy-sub{ font-size:11.5px; font-weight:600; margin-bottom:8px; }
+  .bkt-trophy-label{
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:800; letter-spacing:0.04em;
+    background:rgba(255,255,255,0.15); border-radius:4px; padding:5px 9px; color:#fff;
+  }
+  .bkt-trophy-loc{ font-size:10px; color:rgba(255,255,255,0.7); margin-top:10px; line-height:1.5; }
+
   #seasonBanner:empty{ display:none; }
   .season-banner-inner{
     display:inline-flex; align-items:center; gap:10px; padding:10px 20px 10px 16px; margin-bottom:22px;
@@ -450,18 +497,9 @@
     <div id="retiredNote"></div>
   </section>
 
-  <section class="page" id="page-standings">
-    <div class="section-head">
-      <div class="section-eyebrow">02 — Standings</div>
-      <h2 class="section-title display">The five conferences</h2>
-      <p class="section-desc">Whatever algorithm EA used to realign these conferences, it was not sober. Duke plays in the Big Ten now. Michigan's in the Big 12. Nobody asked questions.</p>
-    </div>
-    <div class="conf-grid" id="confGrid"></div>
-  </section>
-
   <section class="page" id="page-record">
     <div class="section-head">
-      <div class="section-eyebrow">03 — CFB 27 Info</div>
+      <div class="section-eyebrow">02 — CFB 27 Info</div>
       <h2 class="section-title display">Blowouts, nail-biters &amp; streaks</h2>
       <p class="section-desc">The extremes of the season so far — all games shown are between two actual coaches.</p>
     </div>
@@ -486,16 +524,8 @@
       </div>
     </div>
     <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Players of the Week</div>
-      <h2 class="section-title display" style="font-size:26px;">National honors</h2>
-    </div>
-    <div class="potw-grid" id="potwGrid"></div>
-  </section>
-
-  <section class="page" id="page-recruiting">
-    <div class="section-head">
-      <div class="section-eyebrow">04 — CFB Recruiting</div>
-      <h2 class="section-title display">Building for later</h2>
+      <div class="section-eyebrow">CFB Recruiting</div>
+      <h2 class="section-title display" style="font-size:26px;">Building for later</h2>
       <p class="section-desc">Class rankings and total NIL spend, for whoever's playing the long game.</p>
     </div>
     <div class="rec-grid">
@@ -512,16 +542,25 @@
 
   <section class="page" id="page-nextseason">
     <div class="section-head">
-      <div class="section-eyebrow">05 — CFB 27 Next Season</div>
+      <div class="section-eyebrow">03 — CFB 27 Next Season</div>
       <h2 class="section-title display">Next season's tiers</h2>
       <p class="section-desc">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
     </div>
     <div class="conf-grid" id="nextSeasonGrid"></div>
   </section>
 
+  <section class="page" id="page-bracket">
+    <div class="section-head">
+      <div class="section-eyebrow">04 — Playoff Bracket</div>
+      <h2 class="section-title display">CFB 27 Playoff</h2>
+      <p class="section-desc" id="bracketNote">Test bracket — random seeding, not real results yet. Once actual playoff teams are set, this gets swapped for the real thing.</p>
+    </div>
+    <div id="bracketWrap"></div>
+  </section>
+
   <section class="page" id="page-rosters">
     <div class="section-head">
-      <div class="section-eyebrow">06 — Rosters</div>
+      <div class="section-eyebrow">05 — Rosters</div>
       <h2 class="section-title display">The 23</h2>
       <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
     </div>
@@ -531,7 +570,7 @@
 
   <section class="page" id="page-history">
     <div class="section-head">
-      <div class="section-eyebrow">07 — History</div>
+      <div class="section-eyebrow">06 — History</div>
       <h2 class="section-title display">Before Week 1</h2>
       <p class="section-desc" id="historyIntro"></p>
     </div>
@@ -6464,10 +6503,9 @@ function teamHistoryBadges(name){
 
 const TABS = [
   {id:'power', label:'CFB 27 Power Poll'},
-  {id:'standings', label:'Standings'},
   {id:'record', label:'CFB 27 Info'},
-  {id:'recruiting', label:'CFB Recruiting'},
   {id:'nextseason', label:'CFB 27 Next Season'},
+  {id:'bracket', label:'Playoff Bracket'},
   {id:'rosters', label:'Rosters'},
   {id:'history', label:'History'},
 ];
@@ -6734,6 +6772,81 @@ const NEXT_SEASON_TIERS = [
   {conf:'MWC', tier:5, from:18, to:23},
 ];
 
+// ---------- Playoff Bracket (test data — random seeding until real playoff teams are known) ----------
+const BRACKET_TEST = {
+  firstRound: [
+    {a:{seed:8,user:'Coltrain',team:'USC',score:31}, b:{seed:9,user:'Derrick',team:'Oklahoma',score:20}, winner:'a'},
+    {a:{seed:7,user:'Jay',team:'LSU',score:38}, b:{seed:10,user:'Harmon',team:'Michigan State',score:14}, winner:'a'},
+    {a:{seed:6,user:'Ceseque',team:'Wisconsin',score:27}, b:{seed:11,user:'Tim',team:'Iowa',score:24}, winner:'a'},
+    {a:{seed:5,user:'Vince',team:'NC State',score:31}, b:{seed:12,user:'Jhump',team:'Fresno State',score:35}, winner:'b'},
+  ],
+  quarterfinal: [
+    {a:{seed:1,user:'Austin',team:'Miami',score:28}, b:{seed:8,user:'Coltrain',team:'USC',score:21}, winner:'a', bowl:'Cotton Bowl'},
+    {a:{seed:2,user:'Logan',team:'Clemson',score:20}, b:{seed:7,user:'Jay',team:'LSU',score:24}, winner:'b', bowl:'Capital One'},
+    {a:{seed:3,user:'Jared',team:'Rutgers',score:30}, b:{seed:6,user:'Ceseque',team:'Wisconsin',score:17}, winner:'a', bowl:'Allstate Sugar Bowl'},
+    {a:{seed:4,user:'JoJo',team:'SMU',score:33}, b:{seed:12,user:'Jhump',team:'Fresno State',score:28}, winner:'a', bowl:'Rose Bowl'},
+  ],
+  semifinal: [
+    {a:{seed:1,user:'Austin',team:'Miami',score:21}, b:{seed:4,user:'JoJo',team:'SMU',score:14}, winner:'a', bowl:'Peach Bowl'},
+    {a:{seed:3,user:'Jared',team:'Rutgers',score:24}, b:{seed:7,user:'Jay',team:'LSU',score:27}, winner:'b', bowl:'Fiesta Bowl'},
+  ],
+  championship: {a:{seed:1,user:'Austin',team:'Miami',score:28}, b:{seed:7,user:'Jay',team:'LSU',score:31}, winner:'b', location:'Tampa, FL', stadium:'Raymond James Stadium'}
+};
+
+function bracketTeamRow(side, isWinner){
+  const c = teamColors(side.team);
+  return `
+    <div class="bkt-team ${isWinner?'bkt-winner':''}" style="background:${c.bg};">
+      <span class="bkt-seed">${side.seed}</span>
+      ${teamBadge(side.team, 22, true)}
+      <div class="bkt-info">
+        <div class="bkt-name" style="color:${c.text};">${esc(side.seed)} ${esc(side.user)}</div>
+        <div class="bkt-school" style="color:${c.text}; opacity:0.85;">${esc(side.team)}</div>
+      </div>
+      <span class="bkt-score">${side.score}</span>
+    </div>`;
+}
+function bracketMatch(m){
+  return `
+    <div class="bkt-match">
+      ${bracketTeamRow(m.a, m.winner==='a')}
+      ${bracketTeamRow(m.b, m.winner==='b')}
+    </div>`;
+}
+function bracketRound(matches, label){
+  return `
+    <div class="bkt-round">
+      <div class="bkt-round-label">${esc(label)}</div>
+      <div class="bkt-round-matches">${matches.map(bracketMatch).join('')}</div>
+    </div>`;
+}
+function renderBracket(){
+  const el = document.getElementById('bracketWrap');
+  if (!el) return;
+  const b = BRACKET_TEST;
+  const champWinner = b.championship[b.championship.winner];
+  const cc = teamColors(champWinner.team);
+  el.innerHTML = `
+    <div class="bkt-outer">
+      <div class="bkt-rounds">
+        ${bracketRound(b.firstRound, 'First Round')}
+        ${bracketRound(b.quarterfinal, 'Quarterfinal')}
+        ${bracketRound(b.semifinal, 'Semifinal')}
+        <div class="bkt-round bkt-champ-round">
+          <div class="bkt-round-label">National Championship</div>
+          <div class="bkt-round-matches">${bracketMatch(b.championship)}</div>
+        </div>
+      </div>
+      <div class="bkt-trophy-card" style="background:${cc.bg}; border-color:rgba(255,255,255,0.2);">
+        ${teamBadge(champWinner.team, 64, true)}
+        <div class="bkt-trophy-name" style="color:${cc.text};">${esc(champWinner.user)}</div>
+        <div class="bkt-trophy-sub" style="color:${cc.text}; opacity:0.85;">${esc(champWinner.team)}</div>
+        <div class="bkt-trophy-label">CFB 27 NATIONAL CHAMPIONS</div>
+        <div class="bkt-trophy-loc">${esc(b.championship.location)}<br>${esc(b.championship.stadium)}</div>
+      </div>
+    </div>`;
+}
+
 function renderNextSeason(){
   const el = document.getElementById('nextSeasonGrid');
   if (!el) return;
@@ -6773,31 +6886,6 @@ function renderNextSeason(){
   }).join('');
 }
 
-function renderStandings(){
-  const el = document.getElementById('confGrid');
-  const order = ['SEC','Big 12','ACC','MWC','Big Ten'];
-  el.innerHTML = order.filter(c=>DATA.standingsByConf[c]).map(conf=>{
-    const teams = DATA.standingsByConf[conf];
-    const rows = teams.map(t=>`
-      <tr>
-        <td class="team-cell"><div class="t">${esc(t.team)}</div><div class="u">${esc(t.user)}</div></td>
-        <td class="rec">${esc(t.record)}</td>
-        <td class="rk">${t.natlRank?'#'+t.natlRank:'—'}</td>
-      </tr>`).join('');
-    return `
-    <div class="card conf-card">
-      <div class="conf-card-head">
-        <span class="cname">${esc(conf)}</span>
-        <span class="ccount">${teams.length} teams</span>
-      </div>
-      <table class="standings">
-        <thead><tr><th>Team</th><th style="text-align:right;">Record</th><th style="text-align:right;">Rank</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-  }).join('');
-}
-
 // ---------- Record book ----------
 function gameLine(g, showMargin){
   const winner = g.result==='W' ? g.user : g.oppUser;
@@ -6819,14 +6907,6 @@ function renderRecordBook(){
   document.getElementById('coldList').innerHTML = DATA.coldStreaks.map(p=>`
     <div class="rb-row"><div><span style="font-weight:700;">${esc(p.user)}</span> <span style="color:var(--chalk-dimmer);">— ${esc(p.team)}</span></div>
     <div class="m"><span class="streak-badge l">${esc(p.streak)}</span></div></div>`).join('') || '<div class="rb-row">Nobody\'s in a real skid. Yet.</div>';
-
-  document.getElementById('potwGrid').innerHTML = DATA.potw.map(p=>`
-    <div class="card potw-card">
-      <div class="wk">WEEK ${p.week} · NATIONAL</div>
-      <div class="pn">${esc(p.player)} <span style="color:var(--chalk-dimmer); font-weight:400;">${esc(p.pos)}</span></div>
-      <div class="pt">${p.isUserTeam ? `${esc(p.user)} — ${esc(p.team)}` : `${esc(p.team)} (CPU)`}</div>
-      <div class="pd">${esc(p.game)}</div>
-    </div>`).join('');
 }
 
 // ---------- Recruiting ----------
@@ -7609,8 +7689,9 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     dedupLog.push(g);
   });
 
-  const closestGames = dedupLog.filter(g=>g.margin>0).sort((a,b)=>a.margin-b.margin).slice(0,6);
-  const blowouts = dedupLog.slice().sort((a,b)=>b.margin-a.margin).slice(0,6);
+  const validForFeed = g => g.isH2H && g.team && g.opponent && g.user && g.oppUser;
+  const closestGames = dedupLog.filter(g=>validForFeed(g) && g.margin>0).sort((a,b)=>a.margin-b.margin).slice(0,6);
+  const blowouts = dedupLog.filter(validForFeed).sort((a,b)=>b.margin-a.margin).slice(0,6);
   const hotStreaks = power.filter(p=>p.streak[0]==='W' && parseInt(p.streak.slice(1))>=3).sort((a,b)=>parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)));
   const coldStreaks = power.filter(p=>p.streak[0]==='L' && parseInt(p.streak.slice(1))>=3).sort((a,b)=>parseInt(b.streak.slice(1))-parseInt(a.streak.slice(1)));
 
@@ -7642,10 +7723,10 @@ function renderAll(){
   renderHero();
   renderTicker();
   renderPower();
-  renderStandings();
   renderRecordBook();
   renderRecruiting();
   renderNextSeason();
+  renderBracket();
   renderRosters();
   renderHistory();
 }
