@@ -642,6 +642,20 @@
     <div class="card" id="histPowerList"></div>
 
     <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Best User-vs-User Playoff Games</div>
+      <h2 class="section-title display" style="font-size:26px;">Games worth remembering</h2>
+      <p class="section-desc">Real playoff results only (CFB 25 &amp; CFB 26) — ranked by closeness and how highly both coaches sit on the All-Time Power Poll, not just the scoreboard.</p>
+    </div>
+    <div id="bestGamesList"></div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <div class="section-eyebrow">Biggest Playoff Upsets</div>
+      <h2 class="section-title display" style="font-size:26px;">Bracket-busters</h2>
+      <p class="section-desc">A lower-ranked All-Time coach beating a higher-ranked one — the bigger the rank gap, the bigger the upset.</p>
+    </div>
+    <div id="upsetsList"></div>
+
+    <div class="section-head" style="margin-top:44px;">
       <div class="section-eyebrow">Superlatives</div>
       <h2 class="section-title display" style="font-size:26px;">The awards nobody asked for</h2>
     </div>
@@ -6904,7 +6918,7 @@ function bracketTeamRow(side, isWinner){
       <span class="bkt-seed">${side.seed}</span>
       ${teamBadge(side.team, 22, true)}
       <div class="bkt-info">
-        <div class="bkt-name" style="color:${c.text};">${esc(side.seed)} ${esc(side.user)}</div>
+        <div class="bkt-name" style="color:${c.text};">${side.seed?esc(side.seed)+' ':''}${esc(side.user)}</div>
         <div class="bkt-school" style="color:${c.text}; opacity:0.85;">${esc(side.team)}</div>
       </div>
       <span class="bkt-score">${side.score}</span>
@@ -7168,9 +7182,80 @@ function renderSeasonBanner(){
 }
 
 // ---------- History ----------
+// ---------- Playoff Highlights (best user-vs-user games & biggest upsets) ----------
+// Pulls from every real playoff bracket on record (CFB25 + CFB26 — CFB27's bracket is still
+// test data with random seeding, so it's excluded until real results are in). Both "best games"
+// and "upsets" factor in each coach's current All-Time Power Poll rank, not just the scoreboard.
+function collectPlayoffGames(bracketsObj, era){
+  const games = [];
+  Object.keys(bracketsObj).forEach(seasonKey=>{
+    const season = bracketsObj[seasonKey];
+    ['firstRound','quarterfinal','semifinal'].forEach(phase=>{
+      season[phase].forEach(m=>{
+        games.push({era, season: seasonKey, phase, a:m.a, b:m.b, winner:m.winner});
+      });
+    });
+    games.push({era, season: seasonKey, phase:'championship', a:season.championship.a, b:season.championship.b, winner:season.championship.winner});
+  });
+  return games;
+}
+const PHASE_LABEL = {firstRound:'First Round', quarterfinal:'Quarterfinal', semifinal:'Semifinal', championship:'Championship'};
+
+function computePlayoffHighlights(){
+  const rankByUser = {};
+  (DATA.historical.historicalPower||[]).forEach(p=>{ rankByUser[p.name] = p.rank; });
+  const worstRank = (DATA.historical.historicalPower||[]).length + 5; // fallback for anyone unranked
+
+  const allGames = [...collectPlayoffGames(CFB25_BRACKETS,'CFB 25'), ...collectPlayoffGames(CFB26_BRACKETS,'CFB 26')];
+  const userGames = allGames.filter(g=> g.a.user!=='CPU' && g.b.user!=='CPU');
+
+  const enriched = userGames.map(g=>{
+    const rankA = rankByUser[g.a.user] ?? worstRank;
+    const rankB = rankByUser[g.b.user] ?? worstRank;
+    const margin = Math.abs(g.a.score-g.b.score);
+    const winnerUser = g[g.winner].user, loserUser = g[g.winner==='a'?'b':'a'].user;
+    const winnerRank = g.winner==='a'?rankA:rankB, loserRank = g.winner==='a'?rankB:rankA;
+    return {
+      ...g, margin,
+      qualityScore: Math.round(((44-rankA) + (44-rankB) - margin*0.5)*10)/10,
+      upsetGap: winnerRank - loserRank, // positive = winner ranked worse (higher number) than loser — a real upset
+      winnerUser, loserUser
+    };
+  });
+
+  const bestGames = [...enriched].sort((x,y)=> y.qualityScore-x.qualityScore).slice(0,5);
+  const upsets = enriched.filter(g=>g.upsetGap>0).sort((x,y)=> y.upsetGap-x.upsetGap || y.margin-x.margin).slice(0,5);
+  return {bestGames, upsets};
+}
+
+function playoffHighlightRow(g, showUpsetTag){
+  const ca = teamColors(g.a.team), cb = teamColors(g.b.team);
+  const tag = showUpsetTag ? `<span class="tag" style="margin-left:8px;">${esc(g.winnerUser)} was ${g.upsetGap} spot${g.upsetGap>1?'s':''} worse-ranked than ${esc(g.loserUser)}</span>` : '';
+  return `
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px; color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; margin-bottom:6px;">
+        ${esc(g.era)} ${esc(g.season.replace('S','Season '))} · ${esc(PHASE_LABEL[g.phase])}${tag}
+      </div>
+      <div class="bkt-match">
+        ${bracketTeamRow({seed:'', user:g.a.user, team:g.a.team, score:g.a.score}, g.winner==='a')}
+        ${bracketTeamRow({seed:'', user:g.b.user, team:g.b.team, score:g.b.score}, g.winner==='b')}
+      </div>
+    </div>`;
+}
+
+function renderPlayoffHighlights(){
+  const bestEl = document.getElementById('bestGamesList');
+  const upsetEl = document.getElementById('upsetsList');
+  if (!bestEl || !upsetEl) return;
+  const {bestGames, upsets} = computePlayoffHighlights();
+  bestEl.innerHTML = bestGames.map(g=>playoffHighlightRow(g,false)).join('') || '<div class="rb-row">Not enough user-vs-user playoff games on record yet.</div>';
+  upsetEl.innerHTML = upsets.map(g=>playoffHighlightRow(g,true)).join('') || '<div class="rb-row">No real upsets on record yet.</div>';
+}
+
 function renderHistory(){
   const h = DATA.historical;
   if (!h) return;
+  renderPlayoffHighlights();
 
   const totalKnownSeasons = h.cfb25Seasons.length + h.cfb26Seasons.length;
   document.getElementById('historyIntro').textContent =
