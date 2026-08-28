@@ -254,6 +254,14 @@
   }
   .bkt-trophy-loc{ font-size:10px; color:rgba(255,255,255,0.7); margin-top:10px; line-height:1.5; }
 
+  .season-tabs{ display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+  .season-tabs button{
+    background:var(--turf-2); color:var(--chalk-dimmer); border:1px solid var(--line-2); border-radius:8px;
+    padding:8px 16px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; cursor:pointer;
+  }
+  .season-tabs button.active{ background:var(--gold); color:#0a0a0c; border-color:var(--gold); }
+  .season-tabs button:hover:not(.active){ border-color:var(--gold); color:var(--chalk); }
+
   #seasonBanner:empty{ display:none; }
   .season-banner-inner{
     display:inline-flex; align-items:center; gap:10px; padding:10px 20px 10px 16px; margin-bottom:22px;
@@ -558,9 +566,32 @@
     <div id="bracketWrap"></div>
   </section>
 
+  <section class="page" id="page-cfb26">
+    <div class="section-head">
+      <div class="section-eyebrow">05 — CFB 26</div>
+      <h2 class="section-title display">CFB 26 Playoffs</h2>
+      <p class="section-desc">All four seasons of the CFB 26 era, real results — some teams weren't tied to a user and are marked CPU.</p>
+    </div>
+    <div class="season-tabs" id="cfb26SeasonTabs">
+      <button data-season="S1" class="active">Season 1</button>
+      <button data-season="S2">Season 2</button>
+      <button data-season="S3">Season 3</button>
+      <button data-season="S4">Season 4</button>
+    </div>
+    <div id="cfb26BracketWrap"></div>
+  </section>
+
+  <section class="page" id="page-cfb25">
+    <div class="section-head">
+      <div class="section-eyebrow">06 — CFB 25</div>
+      <h2 class="section-title display">CFB 25 Playoffs</h2>
+      <p class="section-desc">Coming soon — send over the bracket screenshots whenever you're ready and this gets the same treatment as CFB 26.</p>
+    </div>
+  </section>
+
   <section class="page" id="page-rosters">
     <div class="section-head">
-      <div class="section-eyebrow">05 — Rosters</div>
+      <div class="section-eyebrow">07 — Rosters</div>
       <h2 class="section-title display">The 23</h2>
       <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
     </div>
@@ -570,7 +601,7 @@
 
   <section class="page" id="page-history">
     <div class="section-head">
-      <div class="section-eyebrow">06 — History</div>
+      <div class="section-eyebrow">08 — History</div>
       <h2 class="section-title display">Before Week 1</h2>
       <p class="section-desc" id="historyIntro"></p>
     </div>
@@ -6441,6 +6472,8 @@ const TEAM_COLORS = {
   'Oregon':        {bg:'#154733', text:'#FEE123', abbr:'ORE'},
   'Washington':    {bg:'#4B2E83', text:'#B7A57A', abbr:'WASH'},
   'West Virginia': {bg:'#002855', text:'#EAAA00', abbr:'WVU'},
+  'Iowa State':    {bg:'#C8102E', text:'#F1BE48', abbr:'ISU'},
+  'Maryland':      {bg:'#E03A3E', text:'#FFD520', abbr:'UMD'},
 };
 function teamColors(team){ return TEAM_COLORS[team] || {bg:'var(--turf-2)', text:'var(--chalk)', abbr:'—'}; }
 function teamBadge(team, size, invert){
@@ -6503,9 +6536,11 @@ function teamHistoryBadges(name){
 
 const TABS = [
   {id:'power', label:'CFB 27 Power Poll'},
-  {id:'record', label:'CFB 27 Info'},
+  {id:'record', label:'CFB 27'},
   {id:'nextseason', label:'CFB 27 Next Season'},
   {id:'bracket', label:'Playoff Bracket'},
+  {id:'cfb26', label:'CFB 26'},
+  {id:'cfb25', label:'CFB 25'},
   {id:'rosters', label:'Rosters'},
   {id:'history', label:'History'},
 ];
@@ -6773,6 +6808,7 @@ const NEXT_SEASON_TIERS = [
 ];
 
 // ---------- Playoff Bracket (test data — random seeding until real playoff teams are known) ----------
+const CFB26_BRACKETS = {"S1": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "Duke", "score": 0}, "b": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 30}, "winner": "b"}, {"a": {"seed": 9, "user": "CPU", "team": "West Virginia", "score": 0}, "b": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 31}, "winner": "b"}, {"a": {"seed": 11, "user": "CPU", "team": "Iowa State", "score": 21}, "b": {"seed": 6, "user": "Swaggy", "team": "Penn State", "score": 40}, "winner": "b"}, {"a": {"seed": 10, "user": "Ben", "team": "Vanderbilt", "score": 21}, "b": {"seed": 7, "user": "Harmon", "team": "Tennessee", "score": 24}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 38}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 0}, "winner": "a", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 0}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 38}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "Swaggy", "team": "Penn State", "score": 7}, "b": {"seed": 3, "user": "Jeremy", "team": "Texas A&M", "score": 14}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 7, "user": "Harmon", "team": "Tennessee", "score": 7}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 14}, "winner": "b", "bowl": "Cotton Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 28}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 21}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 3, "user": "Jeremy", "team": "Texas A&M", "score": 7}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 13}, "winner": "b", "bowl": "Fiesta Bowl"}], "championship": {"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 35}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 21}, "winner": "a", "location": "Miami, FL", "stadium": "Hard Rock Stadium"}}, "S2": {"firstRound": [{"a": {"seed": 12, "user": "JoJo", "team": "LSU", "score": 10}, "b": {"seed": 5, "user": "CPU", "team": "Missouri", "score": 16}, "winner": "b"}, {"a": {"seed": 9, "user": "CPU", "team": "UCF", "score": 24}, "b": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 21}, "winner": "a"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 20}, "b": {"seed": 6, "user": "CPU", "team": "Wisconsin", "score": 17}, "winner": "a"}, {"a": {"seed": 10, "user": "Bruce", "team": "Michigan", "score": 21}, "b": {"seed": 7, "user": "Coltrain", "team": "Washington", "score": 24}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "CPU", "team": "Missouri", "score": 24}, "b": {"seed": 4, "user": "Jeremy", "team": "Texas A&M", "score": 14}, "winner": "a", "bowl": "Cotton Bowl"}, {"a": {"seed": 9, "user": "CPU", "team": "UCF", "score": 21}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 24}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 27}, "b": {"seed": 3, "user": "Dom", "team": "TCU", "score": 24}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 7, "user": "Coltrain", "team": "Washington", "score": 31}, "b": {"seed": 2, "user": "Jhump", "team": "Cincinnati", "score": 35}, "winner": "b", "bowl": "Peach Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "CPU", "team": "Missouri", "score": 24}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 21}, "winner": "a", "bowl": "Rose Bowl"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 31}, "b": {"seed": 2, "user": "Jhump", "team": "Cincinnati", "score": 28}, "winner": "a", "bowl": "Allstate Sugar Bowl"}], "championship": {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 30}, "b": {"seed": 5, "user": "CPU", "team": "Missouri", "score": 7}, "winner": "a", "location": "Las Vegas, NV", "stadium": "UNLV"}}, "S3": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "North Carolina", "score": 0}, "b": {"seed": 5, "user": "JoJo", "team": "LSU", "score": 77}, "winner": "b"}, {"a": {"seed": 9, "user": "Jhump", "team": "Cincinnati", "score": 34}, "b": {"seed": 8, "user": "Jared", "team": "Northwestern", "score": 36}, "winner": "b"}, {"a": {"seed": 11, "user": "CPU", "team": "Maryland", "score": 14}, "b": {"seed": 6, "user": "CPU", "team": "UCF", "score": 34}, "winner": "b"}, {"a": {"seed": 10, "user": "CPU", "team": "Kansas State", "score": 21}, "b": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 28}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "JoJo", "team": "LSU", "score": 42}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 45}, "winner": "b", "bowl": "Fiesta Bowl"}, {"a": {"seed": 8, "user": "Jared", "team": "Northwestern", "score": 14}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 16}, "winner": "b", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 6, "user": "CPU", "team": "UCF", "score": 28}, "b": {"seed": 3, "user": "Tim", "team": "Texas Tech", "score": 21}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 17}, "b": {"seed": 2, "user": "Dom", "team": "TCU", "score": 28}, "winner": "b", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 25}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 34}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "CPU", "team": "UCF", "score": 10}, "b": {"seed": 2, "user": "Dom", "team": "TCU", "score": 28}, "winner": "b", "bowl": "Cotton Bowl"}], "championship": {"a": {"seed": 2, "user": "Dom", "team": "TCU", "score": 21}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 19}, "winner": "a", "location": "New Orleans, LA", "stadium": "Caesars Superdome"}}, "S4": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "Missouri", "score": 27}, "b": {"seed": 5, "user": "Ceseque", "team": "Clemson", "score": 42}, "winner": "b"}, {"a": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 28}, "b": {"seed": 8, "user": "JoJo", "team": "LSU", "score": 14}, "winner": "a"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 45}, "b": {"seed": 6, "user": "Tipton", "team": "Miami", "score": 21}, "winner": "a"}, {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 87}, "b": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 50}, "winner": "a"}], "quarterfinal": [{"a": {"seed": 5, "user": "Ceseque", "team": "Clemson", "score": 17}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 45}, "winner": "b", "bowl": "Cotton Bowl"}, {"a": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 31}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 24}, "winner": "a", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 22}, "b": {"seed": 3, "user": "Harmon", "team": "Tennessee", "score": 14}, "winner": "a", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 42}, "b": {"seed": 2, "user": "AJ", "team": "Nebraska", "score": 35}, "winner": "a", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 27}, "b": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 35}, "winner": "b", "bowl": "Peach Bowl"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 9}, "b": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 35}, "winner": "b", "bowl": "Fiesta Bowl"}], "championship": {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 35}, "b": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 10}, "winner": "a", "location": "Tampa, FL", "stadium": "Raymond James Stadium"}}};
 const BRACKET_TEST = {
   firstRound: [
     {a:{seed:8,user:'Coltrain',team:'USC',score:31}, b:{seed:9,user:'Derrick',team:'Oklahoma',score:20}, winner:'a'},
@@ -6820,10 +6856,9 @@ function bracketRound(matches, label){
       <div class="bkt-round-matches">${matches.map(bracketMatch).join('')}</div>
     </div>`;
 }
-function renderBracket(){
-  const el = document.getElementById('bracketWrap');
+function renderBracketInto(elId, b, champLabel){
+  const el = document.getElementById(elId);
   if (!el) return;
-  const b = BRACKET_TEST;
   const champWinner = b.championship[b.championship.winner];
   const cc = teamColors(champWinner.team);
   el.innerHTML = `
@@ -6841,10 +6876,31 @@ function renderBracket(){
         ${teamBadge(champWinner.team, 64, true)}
         <div class="bkt-trophy-name" style="color:${cc.text};">${esc(champWinner.user)}</div>
         <div class="bkt-trophy-sub" style="color:${cc.text}; opacity:0.85;">${esc(champWinner.team)}</div>
-        <div class="bkt-trophy-label">CFB 27 NATIONAL CHAMPIONS</div>
+        <div class="bkt-trophy-label">${esc(champLabel)}</div>
         <div class="bkt-trophy-loc">${esc(b.championship.location)}<br>${esc(b.championship.stadium)}</div>
       </div>
     </div>`;
+}
+function renderBracket(){
+  renderBracketInto('bracketWrap', BRACKET_TEST, 'CFB 27 NATIONAL CHAMPIONS');
+}
+
+let cfb26SeasonShown = 'S1';
+function renderCFB26Bracket(){
+  const el = document.getElementById('cfb26BracketWrap');
+  if (!el) return;
+  renderBracketInto('cfb26BracketWrap', CFB26_BRACKETS[cfb26SeasonShown], `CFB 26 ${cfb26SeasonShown.replace('S','SEASON ')} CHAMPIONS`);
+}
+function setupCFB26SeasonTabs(){
+  const wrap = document.getElementById('cfb26SeasonTabs');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      cfb26SeasonShown = btn.dataset.season;
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      renderCFB26Bracket();
+    });
+  });
 }
 
 function renderNextSeason(){
@@ -7727,6 +7783,7 @@ function renderAll(){
   renderRecruiting();
   renderNextSeason();
   renderBracket();
+  renderCFB26Bracket();
   renderRosters();
   renderHistory();
 }
@@ -7826,6 +7883,7 @@ function blendCareerRecords(){
 async function boot(){
   renderNav();
   setupAlgoToggle();
+  setupCFB26SeasonTabs();
   renderAll(); // instant paint using the snapshot baked in at build time
   const season = await fetchSeason();
   const [games, totals, achievements, retired, liveOverall] = await Promise.all([fetchLiveGames(), fetchTotals(), fetchAchievements(), fetchRetired(), fetchTeamOverall(season)]);
