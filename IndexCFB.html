@@ -83,12 +83,19 @@
   }
   h1.hero-title em{ font-style:normal; color:var(--gold); }
   .hero-sub{ font-size:16px; line-height:1.6; color:var(--chalk-dim); max-width:56ch; margin:0 0 32px; }
-  .hero-mini-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:760px; }
+  .hero-mini-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; width:100%; }
   .hero-mini-col-label{
     font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.07em;
     color:var(--gold); margin-bottom:10px;
   }
   .hero-mini-list{ display:flex; flex-direction:column; gap:6px; }
+  /* Softens every full team-color background across the site (roster cards, bracket teams,
+     hero rows, H2H columns, etc.) without touching the underlying color values — text and
+     border accents that use the same colors stay at full strength for readability. */
+  .hero-mini-row, .bkt-team, .bkt-trophy-card, .roster-card, .h2h-col, .hero-champ{
+    filter: saturate(68%) brightness(0.9);
+  }
+
   .hero-mini-row{
     display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px;
     border:1px solid rgba(255,255,255,0.12);
@@ -97,7 +104,7 @@
   .hero-mini-name{ font-size:13px; font-weight:700; }
   .hero-mini-team{ font-size:10.5px; font-weight:600; opacity:0.85; }
   .hero-champ{
-    max-width:760px; margin-top:22px; display:flex; align-items:center; justify-content:center; gap:14px;
+    width:100%; margin-top:22px; display:flex; align-items:center; justify-content:center; gap:14px;
     padding:14px 24px; border-radius:12px; border:1px solid rgba(255,255,255,0.15);
   }
   .hero-champ-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; opacity:0.75; }
@@ -352,7 +359,7 @@
   .roster-card .u{ font-weight:700; font-size:15px; }
   .roster-card .t{ font-size:13px; color:var(--gold-bright); margin-top:2px; }
   .roster-card .g{ font-size:12px; font-weight:700; color:var(--chalk-dimmer); margin-top:8px; font-family:'JetBrains Mono',monospace; letter-spacing:0.01em; }
-  .roster-card .ovr-line{ font-size:12px; font-weight:700; margin-top:6px; font-family:'JetBrains Mono',monospace; opacity:0.85; }
+  .roster-card .ovr-line{ font-size:17px; font-weight:800; margin-top:8px; font-family:'JetBrains Mono',monospace; opacity:0.95; }
 
   /* potw */
   .potw-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:36px; }
@@ -525,67 +532,75 @@
   <section class="page" id="page-record">
     <div class="section-head">
       <div class="section-eyebrow">02 — CFB 27</div>
-      <h2 class="section-title display">Blowouts, nail-biters &amp; streaks</h2>
-      <p class="section-desc">The extremes of the season so far — all games shown are between two actual coaches.</p>
+      <h2 class="section-title display">CFB 27</h2>
+      <p class="section-desc">Season stats, recruiting, the playoff bracket, and the rosters — all in one place.</p>
     </div>
-    <div class="rb-grid">
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Biggest Blowouts</span></div>
-        <div class="rb-list" id="blowoutList"></div>
-      </div>
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Nail-Biters</span></div>
-        <div class="rb-list" id="closeList"></div>
-      </div>
+    <div class="season-tabs" id="cfb27SubTabs">
+      <button data-panel="blowouts">Blowouts, Nail-Biters &amp; Streaks</button>
+      <button data-panel="recruiting">Recruiting</button>
+      <button data-panel="playoffs" class="active">CFB 27 Playoffs</button>
+      <button data-panel="rosters">Rosters</button>
+      <button data-panel="nextseason">Next Season</button>
     </div>
-    <div class="rb-grid">
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">On a Heater</span></div>
-        <div class="rb-list streak-list" id="hotList"></div>
-      </div>
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">In a Skid</span></div>
-        <div class="rb-list streak-list" id="coldList"></div>
-      </div>
-    </div>
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">CFB Recruiting</div>
-      <h2 class="section-title display" style="font-size:26px;">Building for later</h2>
-      <p class="section-desc">Class rankings and total NIL spend, for whoever's playing the long game.</p>
-    </div>
-    <div class="rec-grid">
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Recruiting Class Rank</span></div>
-        <table class="datatable" id="classTable"></table>
-      </div>
-      <div class="card">
-        <div class="conf-card-head"><span class="cname" style="font-size:15px;">NIL Spend</span></div>
-        <table class="datatable" id="nilTable"></table>
-      </div>
-    </div>
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Playoff Bracket</div>
-      <h2 class="section-title display" style="font-size:26px;">CFB 27 Playoffs</h2>
-      <p class="section-desc" id="bracketNote">Test bracket — random seeding, not real results yet. Once actual playoff teams are set, this gets swapped for the real thing.</p>
-    </div>
-    <div class="season-tabs" id="cfb27SeasonTabs">
-      <button data-season="S1" class="active">Season 1</button>
-    </div>
-    <div id="bracketWrap"></div>
-  </section>
 
-  <section class="page" id="page-nextseason">
-    <div class="section-head">
-      <div class="section-eyebrow">03 — CFB 27 Next Season</div>
-      <h2 class="section-title display">Next season's tiers</h2>
-      <p class="section-desc">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
+    <div class="cfb27-subpanel" id="panel-blowouts" style="display:none;">
+      <div class="rb-grid">
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">Biggest Blowouts</span></div>
+          <div class="rb-list" id="blowoutList"></div>
+        </div>
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">Nail-Biters</span></div>
+          <div class="rb-list" id="closeList"></div>
+        </div>
+      </div>
+      <div class="rb-grid">
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">On a Heater</span></div>
+          <div class="rb-list streak-list" id="hotList"></div>
+        </div>
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">In a Skid</span></div>
+          <div class="rb-list streak-list" id="coldList"></div>
+        </div>
+      </div>
     </div>
-    <div class="conf-grid" id="nextSeasonGrid"></div>
+
+    <div class="cfb27-subpanel" id="panel-recruiting" style="display:none;">
+      <div class="rec-grid">
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">Recruiting Class Rank</span></div>
+          <table class="datatable" id="classTable"></table>
+        </div>
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">NIL Spend</span></div>
+          <table class="datatable" id="nilTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="cfb27-subpanel" id="panel-playoffs">
+      <p class="section-desc" id="bracketNote" style="margin-bottom:18px;">Test bracket — random seeding, not real results yet. Once actual playoff teams are set, this gets swapped for the real thing.</p>
+      <div class="season-tabs" id="cfb27SeasonTabs">
+        <button data-season="S1" class="active">Season 1</button>
+      </div>
+      <div id="bracketWrap"></div>
+    </div>
+
+    <div class="cfb27-subpanel" id="panel-rosters" style="display:none;">
+      <div id="seasonBanner"></div>
+      <div class="roster-grid" id="rosterGrid"></div>
+    </div>
+
+    <div class="cfb27-subpanel" id="panel-nextseason" style="display:none;">
+      <p class="section-desc" style="margin-bottom:18px;">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
+      <div class="conf-grid" id="nextSeasonGrid"></div>
+    </div>
   </section>
 
   <section class="page" id="page-cfb26">
     <div class="section-head">
-      <div class="section-eyebrow">04 — CFB 26</div>
+      <div class="section-eyebrow">03 — CFB 26</div>
       <h2 class="section-title display">CFB 26 Playoffs</h2>
       <p class="section-desc">All four seasons of the CFB 26 era, real results — some teams weren't tied to a user and are marked CPU.</p>
     </div>
@@ -600,7 +615,7 @@
 
   <section class="page" id="page-cfb25">
     <div class="section-head">
-      <div class="section-eyebrow">05 — CFB 25</div>
+      <div class="section-eyebrow">04 — CFB 25</div>
       <h2 class="section-title display">CFB 25 Playoffs</h2>
       <p class="section-desc">All six seasons of the CFB 25 era, real results — some teams weren't tied to a user and are marked CPU.</p>
     </div>
@@ -615,19 +630,9 @@
     <div id="cfb25BracketWrap"></div>
   </section>
 
-  <section class="page" id="page-rosters">
-    <div class="section-head">
-      <div class="section-eyebrow">06 — Rosters</div>
-      <h2 class="section-title display">The 23</h2>
-      <p class="section-desc">Every coach, their team, and their gamertag for the record.</p>
-    </div>
-    <div id="seasonBanner"></div>
-    <div class="roster-grid" id="rosterGrid"></div>
-  </section>
-
   <section class="page" id="page-history">
     <div class="section-head">
-      <div class="section-eyebrow">07 — History</div>
+      <div class="section-eyebrow">05 — History</div>
       <h2 class="section-title display">Before Week 1</h2>
       <p class="section-desc" id="historyIntro"></p>
     </div>
@@ -6571,10 +6576,8 @@ function teamHistoryBadges(name){
 const TABS = [
   {id:'power', label:'CFB 27 Power Poll'},
   {id:'record', label:'CFB 27'},
-  {id:'nextseason', label:'CFB 27 Next Season'},
   {id:'cfb26', label:'CFB 26'},
   {id:'cfb25', label:'CFB 25'},
-  {id:'rosters', label:'Rosters'},
   {id:'history', label:'History'},
 ];
 
@@ -6678,17 +6681,17 @@ function renderHero(){
     </div>`;
   }
 
-  const top4Power = rankedForHero.slice(0,4);
-  const top4AllTime = (DATA.historical.historicalPower||[]).slice(0,4);
+  const topPower = rankedForHero.slice(0,6);
+  const topAllTime = (DATA.historical.historicalPower||[]).slice(0,6);
 
   document.getElementById('heroMiniGrid').innerHTML = `
     <div>
-      <div class="hero-mini-col-label">CFB 27 Power Poll — Top 4</div>
-      <div class="hero-mini-list">${top4Power.map((p,i)=>miniRow(i+1, p.user, p.team)).join('')}</div>
+      <div class="hero-mini-col-label">CFB 27 Power Poll — Top 6</div>
+      <div class="hero-mini-list">${topPower.map((p,i)=>miniRow(i+1, p.user, p.team)).join('')}</div>
     </div>
     <div>
-      <div class="hero-mini-col-label">All-Time Power Poll — Top 4</div>
-      <div class="hero-mini-list">${top4AllTime.map((p,i)=>miniRow(i+1, p.name, p.currentTeam||'Retired')).join('')}</div>
+      <div class="hero-mini-col-label">All-Time Power Poll — Top 6</div>
+      <div class="hero-mini-list">${topAllTime.map((p,i)=>miniRow(i+1, p.name, p.currentTeam||'Retired')).join('')}</div>
     </div>`;
 
   const champ = (DATA.historical.droughtClock||[]).find(d=>d.status==='champion' && d.seasonsSince===0);
@@ -6962,6 +6965,19 @@ function setupCFB27SeasonTabs(){
   });
 }
 
+function setupCFB27SubTabs(){
+  const wrap = document.getElementById('cfb27SubTabs');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.cfb27-subpanel').forEach(p=>{
+        p.style.display = (p.id === 'panel-'+btn.dataset.panel) ? '' : 'none';
+      });
+    });
+  });
+}
+
 let cfb26SeasonShown = 'S1';
 function renderCFB26Bracket(){
   const el = document.getElementById('cfb26BracketWrap');
@@ -7078,6 +7094,22 @@ function renderRecruiting(){
 }
 
 // ---------- Rosters ----------
+function getCurrentOverall(user){
+  const bySeason = DATA.meta.overallBySeason;
+  const seasonLabel = DATA.meta.currentSeason;
+  const seasonNum = seasonLabel ? parseInt((seasonLabel.match(/\d+/)||[])[0]) : null;
+
+  if (bySeason && bySeason[user]){
+    const seasons = bySeason[user]; // {1:73, 2:77, ...}
+    const available = Object.keys(seasons).map(Number).sort((a,b)=>a-b);
+    if (!available.length) return null;
+    const curNum = (seasonNum!=null && seasons[seasonNum]!=null) ? seasonNum : available[available.length-1];
+    return seasons[curNum];
+  }
+  const fallback = TEAM_OVERALL[user];
+  return fallback!=null ? fallback : null;
+}
+
 function overallDisplayHTML(user){
   const bySeason = DATA.meta.overallBySeason;
   const seasonLabel = DATA.meta.currentSeason;
@@ -7105,7 +7137,8 @@ function overallDisplayHTML(user){
 function renderRosters(){
   renderSeasonBanner();
   const el = document.getElementById('rosterGrid');
-  el.innerHTML = DATA.roster.map(r=>{
+  const sortedRoster = [...DATA.roster].sort((a,b)=> (getCurrentOverall(b.user)??-1) - (getCurrentOverall(a.user)??-1));
+  el.innerHTML = sortedRoster.map(r=>{
     const c = teamColors(r.team);
     const overallHTML = overallDisplayHTML(r.user);
     return `
@@ -7980,6 +8013,7 @@ async function boot(){
   renderNav();
   setupAlgoToggle();
   setupCFB27SeasonTabs();
+  setupCFB27SubTabs();
   setupCFB26SeasonTabs();
   setupCFB25SeasonTabs();
   renderAll(); // instant paint using the snapshot baked in at build time
