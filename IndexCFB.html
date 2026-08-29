@@ -637,97 +637,102 @@
       <p class="section-desc" id="historyIntro"></p>
     </div>
 
-    <div class="section-eyebrow" style="margin-bottom:6px;">All-Time Power Poll</div>
-    <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5)</span>. Same spirit as the current Power Poll, but built for a career instead of a week — hardware counts for a lot more than a good record.</div>
-    <div class="card" id="histPowerList"></div>
-
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Playoff Highlights</div>
-      <h2 class="section-title display" style="font-size:26px;">Games worth remembering, and bracket-busters</h2>
-      <p class="section-desc">Real playoff results only (CFB 25 &amp; CFB 26). Left: ranked by closeness and how highly both coaches sit on the All-Time Power Poll. Right: a lower-ranked coach beating a higher-ranked one, biggest rank gap first.</p>
-    </div>
-    <div class="hero-mini-grid" style="max-width:none;">
-      <div>
-        <div class="hero-mini-col-label">Best User-vs-User Games</div>
-        <div id="bestGamesList"></div>
-      </div>
-      <div>
-        <div class="hero-mini-col-label">Biggest Playoff Upsets</div>
-        <div id="upsetsList"></div>
-      </div>
+    <div class="season-tabs" id="historySubTabs">
+      <button data-panel="alltime" class="active">All-Time Power Poll</button>
+      <button data-panel="highlights">Greatest Games &amp; Upsets</button>
+      <button data-panel="awards">Awards</button>
+      <button data-panel="h2h">Head to Head</button>
+      <button data-panel="misc">Misc</button>
     </div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Superlatives</div>
-      <h2 class="section-title display" style="font-size:26px;">The awards nobody asked for</h2>
+    <div class="history-subpanel" id="hpanel-alltime">
+      <div class="formula-note">Historical Score = <span class="mono">(career win% × 0.5) + (championships × 10) + (runner-ups × 7.5) + (Final Fours × 5) + (playoff appearances × 2.5)</span>. Same spirit as the current Power Poll, but built for a career instead of a week — hardware counts for a lot more than a good record.</div>
+      <div class="card" id="histPowerList"></div>
     </div>
-    <div class="award-grid" id="awardGrid"></div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Grudge Lookup</div>
-      <h2 class="section-title display" style="font-size:26px;">Head-to-head</h2>
-      <p class="section-desc">Pick two coaches. See who actually has who's number.</p>
-    </div>
-    <div class="h2h-controls">
-      <select id="h2hA"></select>
-      <span class="h2h-vs">VS</span>
-      <select id="h2hB"></select>
-    </div>
-    <div class="card h2h-result" id="h2hResult"></div>
-
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Championship Era</div>
-      <h2 class="section-title display" style="font-size:26px;">Every title game</h2>
-    </div>
-    <div class="era-grid">
-      <div class="card era-card">
-        <div class="conf-card-head"><span class="cname">CFB 25</span><span class="ccount">Seasons 1–6</span></div>
-        <div id="cfb25List"></div>
-      </div>
-      <div class="card era-card">
-        <div class="conf-card-head"><span class="cname">CFB 26</span><span class="ccount">Seasons 1–4</span></div>
-        <div id="cfb26List"></div>
-      </div>
-      <div class="card era-card">
-        <div class="conf-card-head"><span class="cname">CFB 27</span><span class="ccount">Season 1</span></div>
-        <div id="cfb27List"></div>
+    <div class="history-subpanel" id="hpanel-highlights" style="display:none;">
+      <p class="section-desc" style="margin-bottom:18px;">Real playoff results only (CFB 25 &amp; CFB 26). Left: ranked by closeness and how highly both coaches sit on the All-Time Power Poll. Right: a lower-ranked coach beating a higher-ranked one, biggest rank gap first.</p>
+      <div class="hero-mini-grid" style="max-width:none;">
+        <div>
+          <div class="hero-mini-col-label">Best User-vs-User Games</div>
+          <div id="bestGamesList"></div>
+        </div>
+        <div>
+          <div class="hero-mini-col-label">Biggest Playoff Upsets</div>
+          <div id="upsetsList"></div>
+        </div>
       </div>
     </div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Title Drought Clock</div>
-      <h2 class="section-title display" style="font-size:26px;">Who's actually won it</h2>
-      <p class="section-desc" id="droughtIntro"></p>
-    </div>
-    <div class="card">
-      <div id="droughtList"></div>
+    <div class="history-subpanel" id="hpanel-awards" style="display:none;">
+      <div class="award-grid" id="awardGrid"></div>
     </div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Then vs Now</div>
-      <h2 class="section-title display" style="font-size:26px;">Career average vs this season</h2>
-      <p class="section-desc">Green means playing above their career norm right now. Red means the opposite. Only shown for coaches with both a career record and games logged this season.</p>
-    </div>
-    <div class="card">
-      <div id="trajList"></div>
-    </div>
-
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Career Records</div>
-      <h2 class="section-title display" style="font-size:26px;">All-time win %, CFB 25 &amp; 26</h2>
-      <p class="section-desc">Every coach who's ever drafted a team in this league — active roster and retired alike, ranked by lifetime win percentage. A completely new player-to-team draft happened between CFB 25 and CFB 26, but this tracks the person, not the jersey.</p>
-    </div>
-    <div class="card">
-      <table class="datatable" id="allTimeTable"></table>
+    <div class="history-subpanel" id="hpanel-h2h" style="display:none;">
+      <p class="section-desc" style="margin-bottom:18px;">Pick two coaches. See who actually has who's number — this season and every real playoff meeting on record.</p>
+      <div class="h2h-controls">
+        <select id="h2hA"></select>
+        <span class="h2h-vs">VS</span>
+        <select id="h2hB"></select>
+      </div>
+      <div class="card h2h-result" id="h2hResult"></div>
     </div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <div class="section-eyebrow">Strength-Adjusted</div>
-      <h2 class="section-title display" style="font-size:26px;">Weighted win %, CFB 26</h2>
-      <p class="section-desc">Same idea, but wins over strong opponents count for more than wins over weak ones. CFB 26 only — no CFB 25 or CFB 27 data has been run through this one yet.</p>
-    </div>
-    <div class="card">
-      <table class="datatable" id="weightedTable"></table>
+    <div class="history-subpanel" id="hpanel-misc" style="display:none;">
+      <div class="section-head">
+        <div class="section-eyebrow">Championship Era</div>
+        <h2 class="section-title display" style="font-size:26px;">Every title game</h2>
+      </div>
+      <div class="era-grid">
+        <div class="card era-card">
+          <div class="conf-card-head"><span class="cname">CFB 25</span><span class="ccount">Seasons 1–6</span></div>
+          <div id="cfb25List"></div>
+        </div>
+        <div class="card era-card">
+          <div class="conf-card-head"><span class="cname">CFB 26</span><span class="ccount">Seasons 1–4</span></div>
+          <div id="cfb26List"></div>
+        </div>
+        <div class="card era-card">
+          <div class="conf-card-head"><span class="cname">CFB 27</span><span class="ccount">Season 1</span></div>
+          <div id="cfb27List"></div>
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:44px;">
+        <div class="section-eyebrow">Title Drought Clock</div>
+        <h2 class="section-title display" style="font-size:26px;">Who's actually won it</h2>
+        <p class="section-desc" id="droughtIntro"></p>
+      </div>
+      <div class="card">
+        <div id="droughtList"></div>
+      </div>
+
+      <div class="section-head" style="margin-top:44px;">
+        <div class="section-eyebrow">Then vs Now</div>
+        <h2 class="section-title display" style="font-size:26px;">Career average vs this season</h2>
+        <p class="section-desc">Green means playing above their career norm right now. Red means the opposite. Only shown for coaches with both a career record and games logged this season.</p>
+      </div>
+      <div class="card">
+        <div id="trajList"></div>
+      </div>
+
+      <div class="section-head" style="margin-top:44px;">
+        <div class="section-eyebrow">Career Records</div>
+        <h2 class="section-title display" style="font-size:26px;">All-time win %, CFB 25 &amp; 26</h2>
+        <p class="section-desc">Every coach who's ever drafted a team in this league — active roster and retired alike, ranked by lifetime win percentage. A completely new player-to-team draft happened between CFB 25 and CFB 26, but this tracks the person, not the jersey.</p>
+      </div>
+      <div class="card">
+        <table class="datatable" id="allTimeTable"></table>
+      </div>
+
+      <div class="section-head" style="margin-top:44px;">
+        <div class="section-eyebrow">Strength-Adjusted</div>
+        <h2 class="section-title display" style="font-size:26px;">Weighted win %, CFB 26</h2>
+        <p class="section-desc">Same idea, but wins over strong opponents count for more than wins over weak ones. CFB 26 only — no CFB 25 or CFB 27 data has been run through this one yet.</p>
+      </div>
+      <div class="card">
+        <table class="datatable" id="weightedTable"></table>
+      </div>
     </div>
   </section>
 
@@ -6994,6 +6999,19 @@ function setupCFB27SubTabs(){
   });
 }
 
+function setupHistorySubTabs(){
+  const wrap = document.getElementById('historySubTabs');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.history-subpanel').forEach(p=>{
+        p.style.display = (p.id === 'hpanel-'+btn.dataset.panel) ? '' : 'none';
+      });
+    });
+  });
+}
+
 let cfb26SeasonShown = 'S1';
 function renderCFB26Bracket(){
   const el = document.getElementById('cfb26BracketWrap');
@@ -7238,7 +7256,7 @@ function computePlayoffHighlights(){
 
   const bestGames = [...enriched].sort((x,y)=> y.qualityScore-x.qualityScore).slice(0,5);
   const upsets = enriched.filter(g=>g.upsetGap>0).sort((x,y)=> y.upsetGap-x.upsetGap || y.margin-x.margin).slice(0,5);
-  return {bestGames, upsets};
+  return {bestGames, upsets, allGames: enriched};
 }
 
 function playoffHighlightRow(g){
@@ -7372,6 +7390,16 @@ function renderAwards(h){
   const away = h.allTime.filter(a=>!a.currentTeam && a.total>=15).sort((a,b)=>b.pct-a.pct)[0];
   const rockBottom = [...h.allTime].filter(a=>a.currentTeam).sort((a,b)=>a.pct-b.pct)[0];
 
+  const {upsets, allGames} = computePlayoffHighlights();
+  const biggestUpset = upsets[0];
+  const clutchTally = {};
+  allGames.filter(g=>g.margin<=4).forEach(g=>{
+    clutchTally[g.a.user] = (clutchTally[g.a.user]||0)+1;
+    clutchTally[g.b.user] = (clutchTally[g.b.user]||0)+1;
+  });
+  const clutchEntries = Object.entries(clutchTally).sort((a,b)=>b[1]-a[1]);
+  const clutch = clutchEntries[0];
+
   const awards = [
     {icon:'🏆', title:'The Untouchable', name:untouchable.name, team: alltimeByName[untouchable.name]?.currentTeam,
      reason:`${untouchable.champs} championships. Nobody else in league history has more than 2.`},
@@ -7385,6 +7413,10 @@ function renderAwards(h){
      reason:`${away.pct}% career win rate — best of anyone not currently in the league.`} : null,
     rockBottom ? {icon:'🪨', title:'Rock Bottom', name:rockBottom.name, team: rockBottom.currentTeam,
      reason:`${rockBottom.pct}% career win rate, worst among this season's 23 coaches.`} : null,
+    biggestUpset ? {icon:'😱', title:'Giant Killer', name:biggestUpset.winnerUser, team: alltimeByName[biggestUpset.winnerUser]?.currentTeam,
+     reason:`Beat ${esc(biggestUpset.loserUser)} as a ${biggestUpset.upsetGap}-spot underdog on the All-Time board — the biggest playoff upset on record.`} : null,
+    clutch ? {icon:'💎', title:'Clutch Gene', name:clutch[0], team: alltimeByName[clutch[0]]?.currentTeam,
+     reason:`${clutch[1]} playoff games decided by 4 points or less — nobody else has been in that many nail-biters.`} : null,
   ].filter(Boolean);
 
   document.getElementById('awardGrid').innerHTML = awards.map(a=>`
@@ -7438,6 +7470,35 @@ function renderTrajectory(h){
 }
 
 // ---------- Head-to-head ----------
+// Finds every real playoff meeting between two users (CFB25 + CFB26 only — CFB27's bracket is
+// still test data). Used by the Head-to-Head tool so playoff history counts, not just this
+// season's games.
+function getPlayoffMeetings(userA, userB){
+  const matches = n => n===userA || n===userB;
+  const out = [];
+  [['CFB 25',CFB25_BRACKETS], ['CFB 26',CFB26_BRACKETS]].forEach(([era, brackets])=>{
+    Object.keys(brackets).forEach(seasonKey=>{
+      const season = brackets[seasonKey];
+      const phased = [
+        ...season.firstRound.map(m=>({m, phase:'firstRound'})),
+        ...season.quarterfinal.map(m=>({m, phase:'quarterfinal'})),
+        ...season.semifinal.map(m=>({m, phase:'semifinal'})),
+        {m: season.championship, phase:'championship'},
+      ];
+      phased.forEach(({m, phase})=>{
+        if (matches(m.a.user) && matches(m.b.user) && m.a.user!==m.b.user){
+          const winnerSide = m[m.winner];
+          out.push({
+            label: `${era} ${seasonKey.replace('S','Season ')} · ${PHASE_LABEL[phase]}`,
+            winner: winnerSide.user, wScore: winnerSide.score, lScore: m[m.winner==='a'?'b':'a'].score
+          });
+        }
+      });
+    });
+  });
+  return out;
+}
+
 function renderH2H(h){
   const users = DATA.roster.map(r=>r.user).sort();
   const selA = document.getElementById('h2hA');
@@ -7465,6 +7526,13 @@ function renderH2H(h){
       return `<div class="h2h-meeting">Week ${g.week}: <b>${esc(winner)}</b> won, ${wScore}-${lScore}</div>`;
     }).join('') : `<div class="h2h-empty">Haven't played each other yet this season.</div>`;
 
+    const playoffMeetings = getPlayoffMeetings(a, b);
+    const playoffMeetingsHtml = playoffMeetings.length ? `
+      <div style="margin-top:10px;">
+        <div style="font-size:11px; color:var(--chalk-dimmer); font-family:'JetBrains Mono',monospace; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">Playoff history</div>
+        ${playoffMeetings.map(g=>`<div class="h2h-meeting">${esc(g.label)}: <b>${esc(g.winner)}</b> won, ${g.wScore}-${g.lScore}</div>`).join('')}
+      </div>` : '';
+
     const aHist = h.allTime.find(x=>x.name===a);
     const bHist = h.allTime.find(x=>x.name===b);
     const aTitle = h.titleLeaderboard.find(x=>x.name===a) || {champs:0,runnerUps:0,finalFours:0};
@@ -7486,6 +7554,7 @@ function renderH2H(h){
 
     document.getElementById('h2hResult').innerHTML = `
       ${meetingsHtml}
+      ${playoffMeetingsHtml}
       <div class="h2h-compare">
         ${col(a, teamA, aHist, aTitle)}
         ${col(b, teamB, bHist, bTitle)}
@@ -8111,6 +8180,7 @@ async function boot(){
   setupAlgoToggle();
   setupCFB27SeasonTabs();
   setupCFB27SubTabs();
+  setupHistorySubTabs();
   setupCFB26SeasonTabs();
   setupCFB25SeasonTabs();
   renderAll(); // instant paint using the snapshot baked in at build time
