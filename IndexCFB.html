@@ -106,9 +106,30 @@
   /* Softens every full team-color background across the site (roster cards, bracket teams,
      hero rows, H2H columns, etc.) without touching the underlying color values — text and
      border accents that use the same colors stay at full strength for readability. */
-  .hero-mini-row, .bkt-team, .bkt-trophy-card, .roster-card, .h2h-col, .hero-champ{
+  .hero-mini-row, .bkt-team, .bkt-trophy-card, .roster-card, .h2h-col, .hero-champ, .sched-side{
     filter: saturate(68%) brightness(0.9);
   }
+  .sched-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .sched-row{
+    display:flex; align-items:stretch; border-radius:10px; overflow:hidden;
+    border:1px solid var(--line-2); box-shadow:0 4px 12px -8px rgba(0,0,0,0.5); position:relative;
+  }
+  .sched-side{
+    flex:1; display:flex; align-items:center; gap:8px; padding:9px 10px;
+  }
+  .sched-side .bkt-name{ font-size:12px; font-weight:700; }
+  .sched-side .bkt-school{ font-size:9.5px; font-weight:600; opacity:0.85; }
+  .sched-vs{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; width:44px; flex-shrink:0;
+    background:var(--turf-2); gap:2px;
+  }
+  .sched-vs .vs-text{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:800; color:var(--chalk-dimmer); }
+  .sched-tag{
+    font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:800;
+    letter-spacing:0.03em; padding:1px 5px; border-radius:4px; text-transform:uppercase; white-space:nowrap;
+  }
+  .sched-tag.conf{ background:var(--gold); color:var(--ink); }
+  .sched-tag.nonconf{ background:var(--turf-3); color:var(--chalk-dimmer); }
 
   .hero-mini-row{
     display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px;
@@ -610,6 +631,21 @@
     <div class="cfb27-subpanel" id="panel-nextseason" style="display:none;">
       <p class="section-desc" style="margin-bottom:18px;">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
       <div class="conf-grid" id="nextSeasonGrid"></div>
+
+      <div class="section-head" style="margin-top:44px;">
+        <div class="section-eyebrow">Projected Schedule</div>
+        <h2 class="section-title display" style="font-size:26px;">6 games each, one per week</h2>
+        <p class="section-desc">Everyone plays every conference-mate once (4 games for the 5-team conferences, 3 for the 4-team ones), plus enough cross-conference games to reach 6 — built to avoid a rematch from this season wherever the schedule allows.</p>
+      </div>
+      <div class="season-tabs" id="scheduleWeekTabs">
+        <button data-week="0" class="active">Week 1</button>
+        <button data-week="1">Week 2</button>
+        <button data-week="2">Week 3</button>
+        <button data-week="3">Week 4</button>
+        <button data-week="4">Week 5</button>
+        <button data-week="5">Week 6</button>
+      </div>
+      <div id="scheduleWeekList"></div>
     </div>
   </section>
 
@@ -1202,6 +1238,7 @@ function renderRetiredNote(retired){
 // ---------- Next Season projection ----------
 // Purely derived from the current Power Poll ranking — no separate data source. Auto-updates
 // whenever the underlying rankings shift (new results, algorithm toggle, retirements, etc.).
+const NEXT_SEASON_SCHEDULE = {"weeks": [[["Derrick", "Justin", "conf"], ["Coltrain", "Dom", "conf"], ["JoJo", "Kurt", "conf"], ["Austin", "Ceseque", "conf"], ["Nick", "Jay", "conf"], ["Logan", "Wemple", "conf"], ["Adam", "Vince", "conf"], ["Jared", "Tim", "conf"], ["Ben", "Tipton", "conf"], ["Cory", "Harmon", "nonconf"], ["Bruce", "Pat", "nonconf"]], [["Bruce", "Derrick", "nonconf"], ["Nick", "Tipton", "conf"], ["Jared", "Wemple", "nonconf"], ["JoJo", "Tim", "conf"], ["Coltrain", "Vince", "conf"], ["Adam", "Dom", "conf"], ["Kurt", "Pat", "nonconf"], ["Harmon", "Ceseque", "conf"], ["Logan", "Justin", "conf"], ["Austin", "Ben", "nonconf"], ["Cory", "Jay", "conf"]], [["Nick", "Ben", "conf"], ["Austin", "Harmon", "conf"], ["Dom", "Jay", "nonconf"], ["Justin", "Wemple", "conf"], ["Pat", "Ceseque", "conf"], ["Jared", "JoJo", "conf"], ["Logan", "Derrick", "conf"], ["Kurt", "Tim", "conf"], ["Adam", "Coltrain", "conf"], ["Bruce", "Vince", "conf"], ["Cory", "Tipton", "conf"]], [["Harmon", "Kurt", "nonconf"], ["Austin", "Derrick", "nonconf"], ["JoJo", "Wemple", "nonconf"], ["Dom", "Vince", "conf"], ["Justin", "Pat", "nonconf"], ["Cory", "Logan", "nonconf"], ["Ceseque", "Tim", "nonconf"], ["Coltrain", "Bruce", "conf"], ["Ben", "Jay", "conf"], ["Jared", "Nick", "nonconf"], ["Adam", "Tipton", "nonconf"]], [["Adam", "JoJo", "nonconf"], ["Ceseque", "Coltrain", "nonconf"], ["Tim", "Vince", "nonconf"], ["Austin", "Pat", "conf"], ["Logan", "Nick", "nonconf"], ["Harmon", "Jared", "nonconf"], ["Justin", "Kurt", "nonconf"], ["Derrick", "Wemple", "conf"], ["Bruce", "Dom", "conf"], ["Ben", "Cory", "conf"], ["Tipton", "Jay", "conf"]], [["Adam", "Bruce", "conf"], ["Jared", "Kurt", "conf"], ["Austin", "JoJo", "nonconf"], ["Justin", "Vince", "nonconf"], ["Ben", "Logan", "nonconf"], ["Harmon", "Pat", "conf"], ["Nick", "Cory", "conf"], ["Coltrain", "Wemple", "nonconf"], ["Ceseque", "Dom", "nonconf"], ["Derrick", "Tipton", "nonconf"], ["Jay", "Tim", "nonconf"]]]};
 const NEXT_SEASON_TIERS = [
   {conf:'ACC', tier:1, from:1, to:5},
   {conf:'Big Ten', tier:2, from:6, to:10},
@@ -1382,6 +1419,46 @@ function renderNextSeason(){
       <div class="tier-list">${rows}${placeholderRows}</div>
     </div>`;
   }).join('');
+
+  renderScheduleWeek();
+}
+
+let scheduleWeekShown = 0;
+function renderScheduleWeek(){
+  const el = document.getElementById('scheduleWeekList');
+  if (!el || typeof NEXT_SEASON_SCHEDULE === 'undefined') return;
+  const week = NEXT_SEASON_SCHEDULE.weeks[scheduleWeekShown] || [];
+  const teamByUser = {}; DATA.roster.forEach(r=> teamByUser[r.user]=r.team);
+  el.innerHTML = `<div class="sched-grid">${week.map(([a,b,kind])=>{
+    const teamA = teamByUser[a], teamB = teamByUser[b];
+    const ca = teamColors(teamA), cb = teamColors(teamB);
+    return `
+    <div class="sched-row">
+      <div class="sched-side" style="background:${ca.bg};">
+        ${teamBadge(teamA, 22, true)}
+        <div><div class="bkt-name" style="color:${ca.text};">${esc(a)}</div><div class="bkt-school" style="color:${ca.text};">${esc(teamA)}</div></div>
+      </div>
+      <div class="sched-vs">
+        <span class="vs-text">VS</span>
+        <span class="sched-tag ${kind}">${kind==='conf' ? 'Conf' : 'Non-Conf'}</span>
+      </div>
+      <div class="sched-side" style="background:${cb.bg};">
+        ${teamBadge(teamB, 22, true)}
+        <div><div class="bkt-name" style="color:${cb.text};">${esc(b)}</div><div class="bkt-school" style="color:${cb.text};">${esc(teamB)}</div></div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function setupScheduleWeekTabs(){
+  const wrap = document.getElementById('scheduleWeekTabs');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      scheduleWeekShown = parseInt(btn.dataset.week);
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      renderScheduleWeek();
+    });
+  });
 }
 
 // ---------- Record book ----------
@@ -2508,6 +2585,7 @@ async function boot(){
   setupAlgoToggle();
   setupCFB27SeasonTabs();
   setupCFB27SubTabs();
+  setupScheduleWeekTabs();
   setupHistorySubTabs();
   setupCFB26SeasonTabs();
   setupCFB25SeasonTabs();
