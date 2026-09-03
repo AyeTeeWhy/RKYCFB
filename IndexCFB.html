@@ -131,6 +131,18 @@
   .sched-tag.conf{ background:var(--gold); color:var(--ink); }
   .sched-tag.nonconf{ background:var(--turf-3); color:var(--chalk-dimmer); }
 
+  .sos-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+  .sos-box{
+    background:var(--turf-2); border:1px solid var(--line-2); border-radius:10px; padding:14px 16px;
+  }
+  .sos-label{
+    font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--gold); margin-bottom:10px; line-height:1.4;
+  }
+  .sos-row{ display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:4px 0; }
+  .sos-row span{ color:var(--chalk-dimmer); }
+  .sos-row b{ font-family:'JetBrains Mono',monospace; color:var(--chalk); }
+
   .hero-mini-row{
     display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px;
     border:1px solid rgba(255,255,255,0.12);
@@ -1417,6 +1429,26 @@ function renderNextSeason(){
   if (select && select.value) renderScheduleForUser(select.value);
 }
 
+function computeStrengthOfSchedule(user){
+  const official = rankPower(DATA.power, false).list;
+  const weighted = rankPower(DATA.power, true).list;
+  const byUserOff = {}; official.forEach(p=> byUserOff[p.user]={rank:p.rank, score:p.score});
+  const byUserWt = {}; weighted.forEach(p=> byUserWt[p.user]={rank:p.rank, score:p.score});
+
+  const opponents = scheduleUserOpponents(user).map(g=>g.opp);
+  function avg(arr){ return arr.reduce((a,b)=>a+b,0) / arr.length; }
+
+  const offRanks = opponents.map(o=> byUserOff[o]?.rank).filter(r=>r!=null);
+  const offScores = opponents.map(o=> byUserOff[o]?.score).filter(s=>s!=null);
+  const wtRanks = opponents.map(o=> byUserWt[o]?.rank).filter(r=>r!=null);
+  const wtScores = opponents.map(o=> byUserWt[o]?.score).filter(s=>s!=null);
+
+  return {
+    official: { avgRank: Math.round(avg(offRanks)*10)/10, avgScore: Math.round(avg(offScores)*10)/10 },
+    weighted: { avgRank: Math.round(avg(wtRanks)*10)/10, avgScore: Math.round(avg(wtScores)*10)/10 },
+  };
+}
+
 function scheduleUserOpponents(user){
   if (typeof NEXT_SEASON_SCHEDULE === 'undefined') return [];
   const games = [];
@@ -1437,10 +1469,23 @@ function renderScheduleForUser(user){
   const opponents = scheduleUserOpponents(user);
   const myTeam = teamByUser[user];
   const myColor = teamColors(myTeam);
+  const sos = computeStrengthOfSchedule(user);
   el.innerHTML = `
     <div style="margin-bottom:14px; display:flex; align-items:center; gap:10px;">
       ${teamBadge(myTeam, 34, true)}
       <div><div class="bkt-name" style="font-size:16px;">${esc(user)}</div><div class="bkt-school">${esc(myTeam)}</div></div>
+    </div>
+    <div class="sos-grid">
+      <div class="sos-box">
+        <div class="sos-label">Strength of Schedule — Current Algorithm (Official)</div>
+        <div class="sos-row"><span>Avg. opponent rank</span><b>#${sos.official.avgRank}</b></div>
+        <div class="sos-row"><span>Avg. opponent score</span><b>${sos.official.avgScore}</b></div>
+      </div>
+      <div class="sos-box">
+        <div class="sos-label">Strength of Schedule — With CFB 26 Weighted History</div>
+        <div class="sos-row"><span>Avg. opponent rank</span><b>#${sos.weighted.avgRank}</b></div>
+        <div class="sos-row"><span>Avg. opponent score</span><b>${sos.weighted.avgScore}</b></div>
+      </div>
     </div>
     <div class="sched-grid" style="grid-template-columns:1fr;">
       ${opponents.map(g=>{
