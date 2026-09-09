@@ -217,6 +217,10 @@
   .math-line b{ color:var(--chalk); font-weight:700; }
   .math-line.total{ border-top:1px solid var(--line-2); margin-top:4px; padding-top:8px; }
   .math-line.total b{ color:var(--gold-bright); }
+  .math-season-head{
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:800; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--gold); margin-bottom:4px;
+  }
 
   #retiredNote:empty{ display:none; }
   .retired-title{
@@ -950,6 +954,15 @@ function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// Colors a number green if positive, red if negative, neutral chalk if exactly zero — used
+// throughout the "show the math" panels so every contribution's sign is visible at a glance.
+function numSpan(val){
+  const v = val==null ? 0 : val;
+  const color = v > 0 ? 'var(--win)' : (v < 0 ? 'var(--alert)' : 'var(--chalk)');
+  const sign = v > 0 ? '+' : '';
+  return `<b style="color:${color};">${sign}${v}</b>`;
+}
+
 // Full per-person playoff tally (Champion / Runner-up / Final Four / made the playoffs but exited 1st-2nd round),
 // built once from the full bracket history and cached.
 let _tallyCache = null;
@@ -1172,23 +1185,42 @@ function renderPower(){
     const tc = teamColors(p.team);
     const rowId = 'math-'+p.team.replace(/[^a-zA-Z0-9]/g,'');
     const histLine = p.historicalApplied
-      ? `<div class="math-line"><span>Career track record (${p.historicalWinPct!=null?p.historicalWinPct+'%':'n/a'} weighted)</span><b>${p.historicalBonus>=0?'+':''}${p.historicalBonus}</b></div>`
+      ? `<div class="math-line"><span>Career track record (${p.historicalWinPct!=null?p.historicalWinPct+'%':'n/a'} weighted)</span>${numSpan(p.historicalBonus)}</div>`
       : `<div class="math-line" style="color:var(--chalk-dimmer);"><span>Career track record</span><b>not applied (toggled off)</b></div>`;
-    const seasonSplitLine = (p.season1 && p.season2) ? `
-        <div class="math-line" style="margin-top:6px; padding-top:8px; border-top:1px dashed var(--line-2); color:var(--gold);"><span>Season 1 (${p.season1.games} games, ${p.season1.wins}-${p.season1.losses})</span><b>${p.season1.score>=0?'+':''}${p.season1.score}</b></div>
-        <div class="math-line" style="color:var(--gold);"><span>Season 2 (${p.season2.games} games, ${p.season2.wins}-${p.season2.losses})</span><b>${p.season2.score>=0?'+':''}${p.season2.score}</b></div>
-        <div class="math-line" style="color:var(--chalk-dimmer); font-size:11px;"><span>Blended by games played — everything above is the combined result</span><b></b></div>` : '';
-    const mathPanel = `
+
+    function seasonBreakdown(s, label, seasonNum){
+      if (!s) return '';
+      return `
+        <div class="math-season-head">${label} — ${s.games} game${s.games!==1?'s':''}, ${s.wins}-${s.losses}</div>
+        <div class="math-line"><span>Record (${s.wins}-${s.losses}) &amp; point differential, home/away adjusted</span>${numSpan(s.coreScoreRaw)}</div>
+        <div class="math-line"><span>÷ games played (${s.games})</span>${numSpan(s.coreScorePerGame)}</div>
+        <div class="math-line"><span>Roster-strength adjustment (${s.overall||'—'} OVR)</span>${numSpan(s.rosterBonus)}</div>
+        <div class="math-line"><span>Strength of victory (quality of wins/losses)</span>${numSpan(s.sovBonus||0)}</div>
+        <div class="math-line"><span>CPU losses (${s.totalRecord ? `${s.cpuLosses} of them — ${s.totalRecord} total record` : 'not tracked yet'})</span>${s.totalRecord ? numSpan(s.cpuBonus) : '<b>—</b>'}</div>
+        <div class="math-line"><span>Season achievements (${(s.achList&&s.achList.length) ? s.achList.map(k=>ACH_LABELS[k]).join(', ') : 'none yet'})</span>${numSpan(s.achievementBonus||0)}</div>
+        <div class="math-line total"><span>Season ${seasonNum} final score</span>${numSpan(s.score)}</div>`;
+    }
+
+    const mathPanel = (p.season1 && p.season2) ? `
+      <div class="math-panel" id="${rowId}">
+        ${seasonBreakdown(p.season1, 'Season 1', 1)}
+        <div style="height:14px;"></div>
+        ${seasonBreakdown(p.season2, 'Season 2', 2)}
+        <div class="math-line" style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--line-2);"><span>Season 1 (${p.season1.games} games, ${p.season1.wins}-${p.season1.losses})</span>${numSpan(p.season1.score)}</div>
+        <div class="math-line"><span>Season 2 (${p.season2.games} games, ${p.season2.wins}-${p.season2.losses})</span>${numSpan(p.season2.score)}</div>
+        <div class="math-line" style="color:var(--chalk-dimmer); font-size:11px;"><span>Blended by games played — Season 1 currently carries more weight since it has more games</span><b></b></div>
+        ${histLine}
+        <div class="math-line total"><span>Final blended score</span>${numSpan(p.score)}</div>
+      </div>` : `
       <div class="math-panel" id="${rowId}">
         <div class="math-line"><span>Record (${p.wins!=null?p.wins:'?'}-${p.losses!=null?p.losses:'?'}) &amp; point differential, home/away adjusted</span><b>${p.coreScoreRaw!=null?p.coreScoreRaw:'—'}</b></div>
         <div class="math-line"><span>÷ games played (${p.h2hGamesPlayed})</span><b>${p.coreScorePerGame}</b></div>
-        <div class="math-line"><span>Roster-strength adjustment (${p.teamOverall||'—'} OVR)</span><b>${p.rosterBonus>=0?'+':''}${p.rosterBonus}</b></div>
-        <div class="math-line"><span>Strength of victory (quality of wins/losses)</span><b>${p.sovBonus>=0?'+':''}${p.sovBonus||0}</b></div>
-        <div class="math-line"><span>CPU losses (${p.totalRecord ? `${p.cpuLosses} of them — ${p.totalRecord} total record` : 'not tracked yet'})</span><b>${p.totalRecord ? `${p.cpuBonus>=0?'+':''}${p.cpuBonus}` : '—'}</b></div>
-        <div class="math-line"><span>Season achievements (${(p.achList&&p.achList.length) ? p.achList.map(k=>ACH_LABELS[k]).join(', ') : 'none yet'})</span><b>${p.achievementBonus?`+${p.achievementBonus}`:'+0'}</b></div>
+        <div class="math-line"><span>Roster-strength adjustment (${p.teamOverall||'—'} OVR)</span>${numSpan(p.rosterBonus)}</div>
+        <div class="math-line"><span>Strength of victory (quality of wins/losses)</span>${numSpan(p.sovBonus||0)}</div>
+        <div class="math-line"><span>CPU losses (${p.totalRecord ? `${p.cpuLosses} of them — ${p.totalRecord} total record` : 'not tracked yet'})</span>${p.totalRecord ? numSpan(p.cpuBonus) : '<b>—</b>'}</div>
+        <div class="math-line"><span>Season achievements (${(p.achList&&p.achList.length) ? p.achList.map(k=>ACH_LABELS[k]).join(', ') : 'none yet'})</span>${numSpan(p.achievementBonus||0)}</div>
         ${histLine}
-        <div class="math-line total"><span>Final score</span><b>${p.score>=0?'+':''}${p.score}</b></div>
-        ${seasonSplitLine}
+        <div class="math-line total"><span>Final score</span>${numSpan(p.score)}</div>
       </div>`;
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
@@ -1289,6 +1321,9 @@ const S1_ACHIEVEMENTS = (function(){
 // Losses minus that season's real user-vs-user losses) — the live Totals sheet now tracks only
 // Season 2 going forward, so this snapshot preserves Season 1's number permanently.
 const S1_CPU_LOSSES = {"Adam":4,"Austin":0,"Ben":3,"Bruce":4,"Ceseque":0,"Coltrain":1,"Cory":3,"Derrick":2,"Dom":1,"Harmon":0,"Jared":0,"Jay":0,"Jhump":1,"JoJo":2,"Justin":0,"Kurt":3,"Logan":0,"Nick":1,"Pat":0,"Tim":0,"Tipton":0,"Vince":2,"Wemple":0};
+// Season 1's total record (all games, incl. CPU) as it stood at season's end — used to display
+// "X-Y total record" in Season 1's own CPU-losses breakdown line.
+const S1_TOTAL_RECORD = {"Ben": {"wins": 8, "losses": 5}, "Jhump": {"wins": 10, "losses": 2}, "Jared": {"wins": 8, "losses": 5}, "Adam": {"wins": 5, "losses": 7}, "Nick": {"wins": 13, "losses": 2}, "Vince": {"wins": 8, "losses": 5}, "Harmon": {"wins": 9, "losses": 4}, "Dom": {"wins": 11, "losses": 3}, "Wemple": {"wins": 9, "losses": 5}, "Tim": {"wins": 8, "losses": 5}, "Bruce": {"wins": 9, "losses": 5}, "Tipton": {"wins": 13, "losses": 2}, "Coltrain": {"wins": 12, "losses": 3}, "Ceseque": {"wins": 8, "losses": 5}, "JoJo": {"wins": 7, "losses": 6}, "Logan": {"wins": 10, "losses": 3}, "Austin": {"wins": 10, "losses": 3}, "Jay": {"wins": 14, "losses": 0}, "Pat": {"wins": 11, "losses": 4}, "Kurt": {"wins": 5, "losses": 7}, "Justin": {"wins": 10, "losses": 3}, "Cory": {"wins": 9, "losses": 4}, "Derrick": {"wins": 7, "losses": 6}};
 
 function bracketTeamRow(side, isWinner){
   const c = teamColors(side.team);
@@ -2410,7 +2445,7 @@ function computeSeasonFirstPass(seasonNum, teamGames, roster, effectiveOverall, 
     const deviation = seasonOvr ? Math.round((avgOvrForSeason-seasonOvr)*10)/10 : 0;
     const rosterBonus = Math.round(deviation*0.5588*10)/10;
 
-    return {team, user:r.user, list, wins, losses, diff, pf, pa, coreScorePerGame, rosterBonus, seasonOvr, deviation, homeAwayBonus};
+    return {team, user:r.user, list, wins, losses, diff, pf, pa, coreScore, coreScorePerGame, rosterBonus, seasonOvr, deviation, homeAwayBonus};
   });
 }
 
@@ -2418,7 +2453,7 @@ function computeSeasonFirstPass(seasonNum, teamGames, roster, effectiveOverall, 
 // pass — used for Season 2 so "beat the #1 team" reflects the real current blended standing
 // (informed by Season 1 too), not a ranking limited to Season 2's own small sample so far.
 // Season 1 always uses its own internal ranking, since that's frozen/historical.
-function computeSeasonSubScores(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason, cpuLossesForSeason, achievementsForSeason, externalPrelimRank){
+function computeSeasonSubScores(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason, cpuLossesForSeason, achievementsForSeason, externalPrelimRank, totalRecordForSeason){
   const firstPass = computeSeasonFirstPass(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason);
 
   // Preliminary ranking for judging opponent quality in the SOV pass — either this season's own
@@ -2462,10 +2497,13 @@ function computeSeasonSubScores(seasonNum, teamGames, roster, effectiveOverall, 
 
     const subScore = Math.round((p.coreScorePerGame + p.rosterBonus + sovBonus + cpuBonus + achievementBonus)*10)/10;
 
+    const totRec = totalRecordForSeason ? totalRecordForSeason[p.user] : null;
+
     results[p.user] = {
       gamesPlayed: p.list.length, wins: p.wins.length, losses: p.losses.length, diff: p.diff, pf: p.pf, pa: p.pa,
-      coreScorePerGame: p.coreScorePerGame, rosterBonus: p.rosterBonus, deviation: p.deviation, seasonOvr: p.seasonOvr,
+      coreScoreRaw: Math.round(p.coreScore*10)/10, coreScorePerGame: p.coreScorePerGame, rosterBonus: p.rosterBonus, deviation: p.deviation, seasonOvr: p.seasonOvr,
       sovBonus, cpuBonus, cpuLosses, achievementBonus, achList, subScore, homeAwayBonus: p.homeAwayBonus, list: p.list,
+      totalRecord: totRec ? `${totRec.wins}-${totRec.losses}` : null,
     };
   });
   return results;
@@ -2551,7 +2589,7 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     }
   });
 
-  const s1Sub = computeSeasonSubScores(1, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[1], S1_CPU_LOSSES, S1_ACHIEVEMENTS);
+  const s1Sub = computeSeasonSubScores(1, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[1], S1_CPU_LOSSES, S1_ACHIEVEMENTS, null, S1_TOTAL_RECORD);
 
   // Season 2's strength-of-victory should judge opponents by the REAL current blended standing
   // (informed by Season 1 too), not a ranking limited to Season 2's small sample so far — beating
@@ -2569,7 +2607,12 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   blendedPrelim.sort((a,b)=> b.blended-a.blended);
   const blendedPrelimRank = {}; blendedPrelim.forEach((p,i)=> blendedPrelimRank[p.team]=i+1);
 
-  const s2Sub = computeSeasonSubScores(2, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[2], s2CpuLosses, achievements, blendedPrelimRank);
+  const s2TotalRecord = {};
+  DATA.roster.forEach(r=>{
+    const tot = totals[r.user];
+    if (tot) s2TotalRecord[r.user] = {wins: tot.totalWins, losses: tot.totalLosses};
+  });
+  const s2Sub = computeSeasonSubScores(2, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[2], s2CpuLosses, achievements, blendedPrelimRank, s2TotalRecord);
 
   function blend(field){
     return (s1,s2,g1,g2)=> (g1+g2)>0 ? Math.round(((s1[field]*g1 + s2[field]*g2)/(g1+g2))*10)/10 : 0;
@@ -2636,8 +2679,8 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
       wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScorePerGame*list.length*10)/10, coreScorePerGame: coreScorePerGame,
       cpuBonus, cpuWins: null, cpuLosses: (s1.cpuLosses||0)+(s2.cpuLosses||0), totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null,
       achievementBonus, achList, retired: retiredSet.has(r.user), sovBonus,
-      season1: {games:g1, score:s1.subScore, coreScorePerGame:s1.coreScorePerGame, rosterBonus:s1.rosterBonus, sovBonus:s1.sovBonus, cpuBonus:s1.cpuBonus, achievementBonus:s1.achievementBonus, wins:s1.wins, losses:s1.losses, overall:s1.seasonOvr},
-      season2: {games:g2, score:s2.subScore, coreScorePerGame:s2.coreScorePerGame, rosterBonus:s2.rosterBonus, sovBonus:s2.sovBonus, cpuBonus:s2.cpuBonus, achievementBonus:s2.achievementBonus, wins:s2.wins, losses:s2.losses, overall:s2.seasonOvr},
+      season1: {games:g1, score:s1.subScore, coreScoreRaw:s1.coreScoreRaw, coreScorePerGame:s1.coreScorePerGame, rosterBonus:s1.rosterBonus, sovBonus:s1.sovBonus, cpuBonus:s1.cpuBonus, cpuLosses:s1.cpuLosses, totalRecord:s1.totalRecord, achievementBonus:s1.achievementBonus, achList:s1.achList, wins:s1.wins, losses:s1.losses, overall:s1.seasonOvr},
+      season2: {games:g2, score:s2.subScore, coreScoreRaw:s2.coreScoreRaw, coreScorePerGame:s2.coreScorePerGame, rosterBonus:s2.rosterBonus, sovBonus:s2.sovBonus, cpuBonus:s2.cpuBonus, cpuLosses:s2.cpuLosses, totalRecord:s2.totalRecord, achievementBonus:s2.achievementBonus, achList:s2.achList, wins:s2.wins, losses:s2.losses, overall:s2.seasonOvr},
     };
   });
 
