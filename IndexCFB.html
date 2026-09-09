@@ -1174,6 +1174,10 @@ function renderPower(){
     const histLine = p.historicalApplied
       ? `<div class="math-line"><span>Career track record (${p.historicalWinPct!=null?p.historicalWinPct+'%':'n/a'} weighted)</span><b>${p.historicalBonus>=0?'+':''}${p.historicalBonus}</b></div>`
       : `<div class="math-line" style="color:var(--chalk-dimmer);"><span>Career track record</span><b>not applied (toggled off)</b></div>`;
+    const seasonSplitLine = (p.season1 && p.season2) ? `
+        <div class="math-line" style="margin-top:6px; padding-top:8px; border-top:1px dashed var(--line-2); color:var(--gold);"><span>Season 1 (${p.season1.games} games, ${p.season1.wins}-${p.season1.losses})</span><b>${p.season1.score>=0?'+':''}${p.season1.score}</b></div>
+        <div class="math-line" style="color:var(--gold);"><span>Season 2 (${p.season2.games} games, ${p.season2.wins}-${p.season2.losses})</span><b>${p.season2.score>=0?'+':''}${p.season2.score}</b></div>
+        <div class="math-line" style="color:var(--chalk-dimmer); font-size:11px;"><span>Blended by games played — everything above is the combined result</span><b></b></div>` : '';
     const mathPanel = `
       <div class="math-panel" id="${rowId}">
         <div class="math-line"><span>Record (${p.wins!=null?p.wins:'?'}-${p.losses!=null?p.losses:'?'}) &amp; point differential, home/away adjusted</span><b>${p.coreScoreRaw!=null?p.coreScoreRaw:'—'}</b></div>
@@ -1184,6 +1188,7 @@ function renderPower(){
         <div class="math-line"><span>Season achievements (${(p.achList&&p.achList.length) ? p.achList.map(k=>ACH_LABELS[k]).join(', ') : 'none yet'})</span><b>${p.achievementBonus?`+${p.achievementBonus}`:'+0'}</b></div>
         ${histLine}
         <div class="math-line total"><span>Final score</span><b>${p.score>=0?'+':''}${p.score}</b></div>
+        ${seasonSplitLine}
       </div>`;
     return `
     <div class="poll-row ${p.rank<=3?'top3':''}" style="border-left-color:${tc.bg};">
@@ -1256,6 +1261,34 @@ const NEXT_SEASON_TIERS = [
 const CFB26_BRACKETS = {"S1": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "Duke", "score": 0}, "b": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 30}, "winner": "b"}, {"a": {"seed": 9, "user": "CPU", "team": "West Virginia", "score": 0}, "b": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 31}, "winner": "b"}, {"a": {"seed": 11, "user": "CPU", "team": "Iowa State", "score": 21}, "b": {"seed": 6, "user": "CPU", "team": "Penn State", "score": 40}, "winner": "b"}, {"a": {"seed": 10, "user": "Ben", "team": "Vanderbilt", "score": 21}, "b": {"seed": 7, "user": "Harmon", "team": "Tennessee", "score": 24}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 38}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 0}, "winner": "a", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 0}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 38}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "CPU", "team": "Penn State", "score": 7}, "b": {"seed": 3, "user": "Jeremy", "team": "Texas A&M", "score": 14}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 7, "user": "Harmon", "team": "Tennessee", "score": 7}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 14}, "winner": "b", "bowl": "Cotton Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 28}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 21}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 3, "user": "Jeremy", "team": "Texas A&M", "score": 7}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 13}, "winner": "b", "bowl": "Fiesta Bowl"}], "championship": {"a": {"seed": 5, "user": "Jhump", "team": "Cincinnati", "score": 35}, "b": {"seed": 2, "user": "Bruce", "team": "Michigan", "score": 21}, "winner": "a", "location": "Miami, FL", "stadium": "Hard Rock Stadium"}}, "S2": {"firstRound": [{"a": {"seed": 12, "user": "JoJo", "team": "LSU", "score": 10}, "b": {"seed": 5, "user": "Logan", "team": "Missouri", "score": 16}, "winner": "b"}, {"a": {"seed": 9, "user": "Vince", "team": "UCF", "score": 24}, "b": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 28}, "winner": "b"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 20}, "b": {"seed": 6, "user": "Shawn", "team": "Wisconsin", "score": 17}, "winner": "a"}, {"a": {"seed": 10, "user": "Bruce", "team": "Michigan", "score": 21}, "b": {"seed": 7, "user": "Coltrain", "team": "Washington", "score": 24}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Logan", "team": "Missouri", "score": 24}, "b": {"seed": 4, "user": "Jeremy", "team": "Texas A&M", "score": 14}, "winner": "a", "bowl": "Cotton Bowl"}, {"a": {"seed": 8, "user": "Tim", "team": "Texas Tech", "score": 21}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 24}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 27}, "b": {"seed": 3, "user": "Dom", "team": "TCU", "score": 24}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 7, "user": "Coltrain", "team": "Washington", "score": 31}, "b": {"seed": 2, "user": "Jhump", "team": "Cincinnati", "score": 35}, "winner": "b", "bowl": "Peach Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Logan", "team": "Missouri", "score": 24}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 21}, "winner": "a", "bowl": "Rose Bowl"}, {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 31}, "b": {"seed": 2, "user": "Jhump", "team": "Cincinnati", "score": 28}, "winner": "a", "bowl": "Allstate Sugar Bowl"}], "championship": {"a": {"seed": 11, "user": "Adam", "team": "Boise State", "score": 30}, "b": {"seed": 5, "user": "Logan", "team": "Missouri", "score": 7}, "winner": "a", "location": "Las Vegas, NV", "stadium": "UNLV"}}, "S3": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "North Carolina", "score": 0}, "b": {"seed": 5, "user": "JoJo", "team": "LSU", "score": 77}, "winner": "b"}, {"a": {"seed": 9, "user": "Jhump", "team": "Cincinnati", "score": 34}, "b": {"seed": 8, "user": "Jared", "team": "Northwestern", "score": 36}, "winner": "b"}, {"a": {"seed": 11, "user": "CPU", "team": "Maryland", "score": 14}, "b": {"seed": 6, "user": "Vince", "team": "UCF", "score": 34}, "winner": "b"}, {"a": {"seed": 10, "user": "Tipton", "team": "Kansas State", "score": 21}, "b": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 28}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "JoJo", "team": "LSU", "score": 42}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 45}, "winner": "b", "bowl": "Fiesta Bowl"}, {"a": {"seed": 8, "user": "Jared", "team": "Northwestern", "score": 14}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 16}, "winner": "b", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 6, "user": "Vince", "team": "UCF", "score": 28}, "b": {"seed": 3, "user": "Tim", "team": "Texas Tech", "score": 21}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 17}, "b": {"seed": 2, "user": "Dom", "team": "TCU", "score": 28}, "winner": "b", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 25}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 34}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "Vince", "team": "UCF", "score": 10}, "b": {"seed": 2, "user": "Dom", "team": "TCU", "score": 28}, "winner": "b", "bowl": "Cotton Bowl"}], "championship": {"a": {"seed": 2, "user": "Dom", "team": "TCU", "score": 21}, "b": {"seed": 1, "user": "AJ", "team": "Arkansas", "score": 19}, "winner": "a", "location": "New Orleans, LA", "stadium": "Caesars Superdome"}}, "S4": {"firstRound": [{"a": {"seed": 12, "user": "Logan", "team": "Missouri", "score": 27}, "b": {"seed": 5, "user": "Ceseque", "team": "Clemson", "score": 42}, "winner": "b"}, {"a": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 28}, "b": {"seed": 8, "user": "JoJo", "team": "LSU", "score": 14}, "winner": "a"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 45}, "b": {"seed": 6, "user": "Tipton", "team": "Miami", "score": 21}, "winner": "a"}, {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 87}, "b": {"seed": 7, "user": "Ben", "team": "Vanderbilt", "score": 50}, "winner": "a"}], "quarterfinal": [{"a": {"seed": 5, "user": "Ceseque", "team": "Clemson", "score": 17}, "b": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 45}, "winner": "b", "bowl": "Cotton Bowl"}, {"a": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 31}, "b": {"seed": 1, "user": "Nick", "team": "Georgia Tech", "score": 24}, "winner": "a", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 22}, "b": {"seed": 3, "user": "Harmon", "team": "Tennessee", "score": 14}, "winner": "a", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 42}, "b": {"seed": 2, "user": "AJ", "team": "Nebraska", "score": 35}, "winner": "a", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Adam", "team": "Boise State", "score": 27}, "b": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 35}, "winner": "b", "bowl": "Peach Bowl"}, {"a": {"seed": 11, "user": "Chuckie", "team": "UCLA", "score": 9}, "b": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 35}, "winner": "b", "bowl": "Fiesta Bowl"}], "championship": {"a": {"seed": 10, "user": "Jhump", "team": "Colorado", "score": 35}, "b": {"seed": 9, "user": "Jared", "team": "Northwestern", "score": 10}, "winner": "a", "location": "Tampa, FL", "stadium": "Raymond James Stadium"}}};
 const CFB25_BRACKETS = {"S1": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "Memphis", "score": 28}, "b": {"seed": 5, "user": "CPU", "team": "Michigan", "score": 35}, "winner": "b"}, {"a": {"seed": 9, "user": "Harmon", "team": "Louisville", "score": 33}, "b": {"seed": 8, "user": "CPU", "team": "Arizona", "score": 28}, "winner": "a"}, {"a": {"seed": 11, "user": "CPU", "team": "Florida", "score": 35}, "b": {"seed": 6, "user": "Brandon", "team": "Miami", "score": 31}, "winner": "a"}, {"a": {"seed": 10, "user": "CPU", "team": "Texas A&M", "score": 10}, "b": {"seed": 7, "user": "Dylan", "team": "Oregon", "score": 27}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "CPU", "team": "Michigan", "score": 17}, "b": {"seed": 4, "user": "Kurt", "team": "North Carolina", "score": 10}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 9, "user": "Harmon", "team": "Louisville", "score": 27}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 30}, "winner": "b", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 11, "user": "CPU", "team": "Florida", "score": 35}, "b": {"seed": 3, "user": "CPU", "team": "Georgia", "score": 34}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 7, "user": "Dylan", "team": "Oregon", "score": 20}, "b": {"seed": 2, "user": "Adam", "team": "USC", "score": 38}, "winner": "b", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "CPU", "team": "Michigan", "score": 7}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 30}, "winner": "b", "bowl": "Cotton Bowl"}, {"a": {"seed": 11, "user": "CPU", "team": "Florida", "score": 3}, "b": {"seed": 2, "user": "Adam", "team": "USC", "score": 49}, "winner": "b", "bowl": "Capital One Orange Bowl"}], "championship": {"a": {"seed": 2, "user": "Adam", "team": "USC", "score": 21}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 7}, "winner": "a", "location": "Atlanta, GA", "stadium": "Mercedes-Benz Stadium"}}, "S2": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "San Jose State", "score": 6}, "b": {"seed": 5, "user": "Harmon", "team": "Louisville", "score": 23}, "winner": "b"}, {"a": {"seed": 9, "user": "Austin", "team": "SMU", "score": 21}, "b": {"seed": 8, "user": "CPU", "team": "Georgia", "score": 24}, "winner": "b"}, {"a": {"seed": 11, "user": "Chris", "team": "West Virginia", "score": 23}, "b": {"seed": 6, "user": "Isiah", "team": "South Carolina", "score": 63}, "winner": "b"}, {"a": {"seed": 10, "user": "CPU", "team": "Oregon", "score": 17}, "b": {"seed": 7, "user": "Vince", "team": "Missouri", "score": 24}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Harmon", "team": "Louisville", "score": 7}, "b": {"seed": 4, "user": "Jared", "team": "Utah", "score": 41}, "winner": "b", "bowl": "Cotton Bowl"}, {"a": {"seed": 8, "user": "CPU", "team": "Georgia", "score": 24}, "b": {"seed": 1, "user": "Nick", "team": "California", "score": 14}, "winner": "a", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "Isiah", "team": "South Carolina", "score": 0}, "b": {"seed": 3, "user": "Adam", "team": "USC", "score": 31}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 7, "user": "Vince", "team": "Missouri", "score": 14}, "b": {"seed": 2, "user": "Justin", "team": "Auburn", "score": 28}, "winner": "b", "bowl": "Allstate Sugar Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Jared", "team": "Utah", "score": 38}, "b": {"seed": 8, "user": "CPU", "team": "Georgia", "score": 28}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 3, "user": "Adam", "team": "USC", "score": 27}, "b": {"seed": 2, "user": "Justin", "team": "Auburn", "score": 14}, "winner": "a", "bowl": "Peach Bowl"}], "championship": {"a": {"seed": 3, "user": "Adam", "team": "USC", "score": 21}, "b": {"seed": 4, "user": "Jared", "team": "Utah", "score": 14}, "winner": "a", "location": "Miami, FL", "stadium": "Hard Rock Stadium"}}, "S3": {"firstRound": [{"a": {"seed": 12, "user": "Coltrain", "team": "Texas Tech", "score": 10}, "b": {"seed": 5, "user": "CPU", "team": "Oregon", "score": 15}, "winner": "b"}, {"a": {"seed": 9, "user": "Kurt", "team": "North Carolina", "score": 14}, "b": {"seed": 8, "user": "Brandon", "team": "Tennessee", "score": 52}, "winner": "b"}, {"a": {"seed": 11, "user": "Justin", "team": "Auburn", "score": 0}, "b": {"seed": 6, "user": "Adam", "team": "USC", "score": 24}, "winner": "b"}, {"a": {"seed": 10, "user": "Tim", "team": "Northwestern", "score": 7}, "b": {"seed": 7, "user": "Isiah", "team": "South Carolina", "score": 49}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "CPU", "team": "Oregon", "score": 35}, "b": {"seed": 4, "user": "Phil", "team": "Iowa", "score": 14}, "winner": "a", "bowl": "Cotton Bowl"}, {"a": {"seed": 8, "user": "Brandon", "team": "Tennessee", "score": 28}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 24}, "winner": "a", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "Adam", "team": "USC", "score": 52}, "b": {"seed": 3, "user": "Vince", "team": "Missouri", "score": 34}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 7, "user": "Isiah", "team": "South Carolina", "score": 31}, "b": {"seed": 2, "user": "Nick", "team": "California", "score": 28}, "winner": "a", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "CPU", "team": "Oregon", "score": 0}, "b": {"seed": 8, "user": "Brandon", "team": "Tennessee", "score": 21}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 6, "user": "Adam", "team": "USC", "score": 21}, "b": {"seed": 7, "user": "Isiah", "team": "South Carolina", "score": 14}, "winner": "a", "bowl": "Allstate Sugar Bowl"}], "championship": {"a": {"seed": 8, "user": "Brandon", "team": "Tennessee", "score": 21}, "b": {"seed": 6, "user": "Adam", "team": "USC", "score": 17}, "winner": "a", "location": "Inglewood, CA", "stadium": "SoFi Stadium"}}, "S4": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "NC State", "score": 14}, "b": {"seed": 5, "user": "Vince", "team": "Missouri", "score": 49}, "winner": "b"}, {"a": {"seed": 9, "user": "Tipton", "team": "LSU", "score": 24}, "b": {"seed": 8, "user": "Jared", "team": "Utah", "score": 28}, "winner": "b"}, {"a": {"seed": 11, "user": "Coltrain", "team": "Texas Tech", "score": 10}, "b": {"seed": 6, "user": "Ben", "team": "TCU", "score": 20}, "winner": "b"}, {"a": {"seed": 10, "user": "Tyler M", "team": "Ole Miss", "score": 19}, "b": {"seed": 7, "user": "Nick", "team": "California", "score": 21}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Vince", "team": "Missouri", "score": 38}, "b": {"seed": 4, "user": "CPU", "team": "Minnesota", "score": 0}, "winner": "a", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 8, "user": "Jared", "team": "Utah", "score": 24}, "b": {"seed": 1, "user": "CPU", "team": "Alabama", "score": 21}, "winner": "a", "bowl": "Peach Bowl"}, {"a": {"seed": 6, "user": "Ben", "team": "TCU", "score": 49}, "b": {"seed": 3, "user": "CPU", "team": "Toledo", "score": 28}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 7, "user": "Nick", "team": "California", "score": 28}, "b": {"seed": 2, "user": "CPU", "team": "Kentucky", "score": 3}, "winner": "a", "bowl": "Rose Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Vince", "team": "Missouri", "score": 31}, "b": {"seed": 8, "user": "Jared", "team": "Utah", "score": 21}, "winner": "a", "bowl": "Cotton Bowl"}, {"a": {"seed": 6, "user": "Ben", "team": "TCU", "score": 20}, "b": {"seed": 7, "user": "Nick", "team": "California", "score": 7}, "winner": "a", "bowl": "Capital One Orange Bowl"}], "championship": {"a": {"seed": 6, "user": "Ben", "team": "TCU", "score": 31}, "b": {"seed": 5, "user": "Vince", "team": "Missouri", "score": 34}, "winner": "b", "location": "Houston, TX", "stadium": "NRG Stadium"}}, "S5": {"firstRound": [{"a": {"seed": 12, "user": "Logan", "team": "Pittsburgh", "score": 21}, "b": {"seed": 5, "user": "Tyler M", "team": "Ole Miss", "score": 24}, "winner": "b"}, {"a": {"seed": 9, "user": "Jake", "team": "Michigan State", "score": 42}, "b": {"seed": 8, "user": "Brandon", "team": "Miami", "score": 47}, "winner": "b"}, {"a": {"seed": 11, "user": "Vince", "team": "Missouri", "score": 14}, "b": {"seed": 6, "user": "Jared", "team": "Utah", "score": 38}, "winner": "b"}, {"a": {"seed": 10, "user": "Dom", "team": "Florida", "score": 21}, "b": {"seed": 7, "user": "Justin", "team": "Auburn", "score": 17}, "winner": "a"}], "quarterfinal": [{"a": {"seed": 5, "user": "Tyler M", "team": "Ole Miss", "score": 24}, "b": {"seed": 4, "user": "Kurt", "team": "North Carolina", "score": 21}, "winner": "a", "bowl": "Cotton Bowl"}, {"a": {"seed": 8, "user": "Brandon", "team": "Miami", "score": 17}, "b": {"seed": 1, "user": "Adam", "team": "USC", "score": 38}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 6, "user": "Jared", "team": "Utah", "score": 27}, "b": {"seed": 3, "user": "Tipton", "team": "LSU", "score": 15}, "winner": "a", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 10, "user": "Dom", "team": "Florida", "score": 25}, "b": {"seed": 2, "user": "Ben", "team": "TCU", "score": 28}, "winner": "b", "bowl": "Allstate Sugar Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Tyler M", "team": "Ole Miss", "score": 9}, "b": {"seed": 1, "user": "Adam", "team": "USC", "score": 23}, "winner": "b", "bowl": "Fiesta Bowl"}, {"a": {"seed": 6, "user": "Jared", "team": "Utah", "score": 45}, "b": {"seed": 2, "user": "Ben", "team": "TCU", "score": 14}, "winner": "a", "bowl": "Peach Bowl"}], "championship": {"a": {"seed": 1, "user": "Adam", "team": "USC", "score": 31}, "b": {"seed": 6, "user": "Jared", "team": "Utah", "score": 7}, "winner": "a", "location": "Arlington, TX", "stadium": "AT&T Stadium"}}, "S6": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "San Jose State", "score": 14}, "b": {"seed": 5, "user": "Dom", "team": "Florida", "score": 56}, "winner": "b"}, {"a": {"seed": 9, "user": "Nick", "team": "California", "score": 49}, "b": {"seed": 8, "user": "Justin", "team": "Auburn", "score": 21}, "winner": "a"}, {"a": {"seed": 11, "user": "Tyler M", "team": "Ole Miss", "score": 15}, "b": {"seed": 6, "user": "Adam", "team": "USC", "score": 44}, "winner": "b"}, {"a": {"seed": 10, "user": "Tipton", "team": "LSU", "score": 35}, "b": {"seed": 7, "user": "Logan", "team": "Pittsburgh", "score": 28}, "winner": "a"}], "quarterfinal": [{"a": {"seed": 5, "user": "Dom", "team": "Florida", "score": 24}, "b": {"seed": 4, "user": "Austin", "team": "SMU", "score": 25}, "winner": "b", "bowl": "Peach Bowl"}, {"a": {"seed": 9, "user": "Nick", "team": "California", "score": 0}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 23}, "winner": "b", "bowl": "Capital One Orange Bowl"}, {"a": {"seed": 6, "user": "Adam", "team": "USC", "score": 33}, "b": {"seed": 3, "user": "Jhump", "team": "Clemson", "score": 21}, "winner": "a", "bowl": "Fiesta Bowl"}, {"a": {"seed": 10, "user": "Tipton", "team": "LSU", "score": 21}, "b": {"seed": 2, "user": "Brandon", "team": "Miami", "score": 38}, "winner": "b", "bowl": "Cotton Bowl"}], "semifinal": [{"a": {"seed": 4, "user": "Austin", "team": "SMU", "score": 7}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 17}, "winner": "b", "bowl": "Rose Bowl"}, {"a": {"seed": 6, "user": "Adam", "team": "USC", "score": 17}, "b": {"seed": 2, "user": "Brandon", "team": "Miami", "score": 7}, "winner": "a", "bowl": "Allstate Sugar Bowl"}], "championship": {"a": {"seed": 6, "user": "Adam", "team": "USC", "score": 28}, "b": {"seed": 1, "user": "Jared", "team": "Utah", "score": 25}, "winner": "a", "location": "Glendale, AZ", "stadium": "State Farm Stadium"}}};
 const CFB27_BRACKETS = { "S1": {"firstRound": [{"a": {"seed": 12, "user": "CPU", "team": "Fresno State", "score": 10}, "b": {"seed": 5, "user": "Coltrain", "team": "USC", "score": 48}, "winner": "b"}, {"a": {"seed": 9, "user": "CPU", "team": "UCLA", "score": 17}, "b": {"seed": 8, "user": "CPU", "team": "Ohio State", "score": 48}, "winner": "b"}, {"a": {"seed": 11, "user": "CPU", "team": "Kansas State", "score": 17}, "b": {"seed": 6, "user": "Pat", "team": "Texas", "score": 42}, "winner": "b"}, {"a": {"seed": 10, "user": "Bruce", "team": "South Carolina", "score": 27}, "b": {"seed": 7, "user": "CPU", "team": "Ole Miss", "score": 29}, "winner": "b"}], "quarterfinal": [{"a": {"seed": 5, "user": "Coltrain", "team": "USC", "score": 20}, "b": {"seed": 4, "user": "CPU", "team": "Oregon", "score": 17}, "winner": "a", "bowl": "Rose Bowl"}, {"a": {"seed": 8, "user": "CPU", "team": "Ohio State", "score": 12}, "b": {"seed": 1, "user": "Jay", "team": "LSU", "score": 17}, "winner": "b", "bowl": "Peach Bowl"}, {"a": {"seed": 6, "user": "Pat", "team": "Texas", "score": 21}, "b": {"seed": 3, "user": "Nick", "team": "Arizona State", "score": 38}, "winner": "b", "bowl": "Cotton Bowl"}, {"a": {"seed": 7, "user": "CPU", "team": "Ole Miss", "score": 24}, "b": {"seed": 2, "user": "Tipton", "team": "Penn State", "score": 38}, "winner": "b", "bowl": "Fiesta Bowl"}], "semifinal": [{"a": {"seed": 5, "user": "Coltrain", "team": "USC", "score": 31}, "b": {"seed": 1, "user": "Jay", "team": "LSU", "score": 38}, "winner": "b", "bowl": "Allstate Sugar Bowl"}, {"a": {"seed": 3, "user": "Nick", "team": "Arizona State", "score": 7}, "b": {"seed": 2, "user": "Tipton", "team": "Penn State", "score": 31}, "winner": "b", "bowl": "Capital One Orange Bowl"}], "championship": {"a": {"seed": 1, "user": "Jay", "team": "LSU", "score": 31}, "b": {"seed": 2, "user": "Tipton", "team": "Penn State", "score": 28}, "winner": "a", "location": "Las Vegas, NV", "stadium": "UNLV"}} };
+
+// Season 1's achievements are frozen permanently once earned, derived directly from the real
+// CFB27_BRACKETS.S1 playoff results above rather than a manually-tracked sheet — anyone in the
+// bracket made the playoffs, semifinal participants made the Final Four, the championship game's
+// two sides are the runner-up and champion. Season 2's achievements are tracked live instead,
+// from the Achievements sheet, since nothing has locked in there yet.
+const S1_ACHIEVEMENTS = (function(){
+  const s1 = CFB27_BRACKETS.S1;
+  const out = {};
+  const ensure = u => { if (u!=='CPU' && !out[u]) out[u] = {playoffAppearance:false, finalFour:false, runnerUp:false, champion:false}; };
+  [...s1.firstRound, ...s1.quarterfinal].forEach(m=>{
+    [m.a, m.b].forEach(side=>{ ensure(side.user); if (side.user!=='CPU') out[side.user].playoffAppearance = true; });
+  });
+  s1.semifinal.forEach(m=>{
+    [m.a, m.b].forEach(side=>{ ensure(side.user); if (side.user!=='CPU'){ out[side.user].playoffAppearance = true; out[side.user].finalFour = true; } });
+  });
+  const champSide = s1.championship[s1.championship.winner];
+  const runnerSide = s1.championship[s1.championship.winner==='a'?'b':'a'];
+  ensure(champSide.user); ensure(runnerSide.user);
+  if (champSide.user!=='CPU'){ out[champSide.user].playoffAppearance=true; out[champSide.user].finalFour=true; out[champSide.user].champion=true; }
+  if (runnerSide.user!=='CPU'){ out[runnerSide.user].playoffAppearance=true; out[runnerSide.user].finalFour=true; out[runnerSide.user].runnerUp=true; }
+  return out;
+})();
+
+// Season 1's CPU losses, frozen from the Totals sheet as it stood at the end of Season 1 (Total
+// Losses minus that season's real user-vs-user losses) — the live Totals sheet now tracks only
+// Season 2 going forward, so this snapshot preserves Season 1's number permanently.
+const S1_CPU_LOSSES = {"Adam":4,"Austin":0,"Ben":3,"Bruce":4,"Ceseque":0,"Coltrain":1,"Cory":3,"Derrick":2,"Dom":1,"Harmon":0,"Jared":0,"Jay":0,"Jhump":1,"JoJo":2,"Justin":0,"Kurt":3,"Logan":0,"Nick":1,"Pat":0,"Tim":0,"Tipton":0,"Vince":2,"Wemple":0};
 
 function bracketTeamRow(side, isWinner){
   const c = teamColors(side.team);
@@ -2343,6 +2376,101 @@ function seasonForWeek(week){
   return result;
 }
 
+// Computes one season's FULL sub-score for every roster member, entirely independent of any
+// other season — its own record, its own roster-strength (using that season's overall and that
+// season's league average), its own strength-of-victory pass (ranking opponents using ONLY this
+// season's games), its own CPU-loss penalty, its own achievement bonus. Two of these get computed
+// (Season 1, Season 2) and blended by games-played weight into the final live score, so a coach's
+// Power Poll score reflects a genuine running record across seasons rather than one season's
+// numbers silently overwriting the other.
+function computeSeasonFirstPass(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason){
+  return roster.map(r=>{
+    const team = r.team;
+    const allGames = teamGames[team] || [];
+    const list = allGames.filter(g => seasonForWeek(g.week) === seasonNum);
+    const wins = list.filter(g=>g.result==='W');
+    const losses = list.filter(g=>g.result==='L');
+    const pf = list.reduce((s,g)=>s+g.teamPts,0);
+    const pa = list.reduce((s,g)=>s+g.oppPts,0);
+    const diff = pf-pa;
+
+    const HOME_AWAY_WEIGHT = 1.5;
+    let homeAwayBonus = 0;
+    list.forEach(g=>{
+      if (g.result==='W' && g.site==='Away') homeAwayBonus += HOME_AWAY_WEIGHT;
+      else if (g.result==='L' && g.site==='Home') homeAwayBonus -= HOME_AWAY_WEIGHT;
+    });
+    homeAwayBonus = Math.round(homeAwayBonus*10)/10;
+
+    const coreScore = wins.length*3 - losses.length*1 + diff*0.4 + homeAwayBonus;
+    const coreScorePerGame = list.length>0 ? Math.round((coreScore/list.length)*10)/10 : 0;
+
+    const bySeasonForUser = bySeasonMap ? bySeasonMap[r.user] : null;
+    const seasonOvr = (bySeasonForUser && bySeasonForUser[seasonNum] != null) ? bySeasonForUser[seasonNum] : effectiveOverall[r.user];
+    const deviation = seasonOvr ? Math.round((avgOvrForSeason-seasonOvr)*10)/10 : 0;
+    const rosterBonus = Math.round(deviation*0.5588*10)/10;
+
+    return {team, user:r.user, list, wins, losses, diff, pf, pa, coreScorePerGame, rosterBonus, seasonOvr, deviation, homeAwayBonus};
+  });
+}
+
+// externalPrelimRank, when provided, replaces the season-isolated prelim ranking for the SOV
+// pass — used for Season 2 so "beat the #1 team" reflects the real current blended standing
+// (informed by Season 1 too), not a ranking limited to Season 2's own small sample so far.
+// Season 1 always uses its own internal ranking, since that's frozen/historical.
+function computeSeasonSubScores(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason, cpuLossesForSeason, achievementsForSeason, externalPrelimRank){
+  const firstPass = computeSeasonFirstPass(seasonNum, teamGames, roster, effectiveOverall, bySeasonMap, avgOvrForSeason);
+
+  // Preliminary ranking for judging opponent quality in the SOV pass — either this season's own
+  // (record + roster-strength only), or an externally-supplied one reflecting the real current
+  // blended standing.
+  let prelimRank;
+  if (externalPrelimRank){
+    prelimRank = externalPrelimRank;
+  } else {
+    const prelim = firstPass.map(p=>({team:p.team, prelimScore:p.coreScorePerGame+p.rosterBonus}));
+    prelim.sort((a,b)=> b.prelimScore-a.prelimScore);
+    prelimRank = {}; prelim.forEach((p,i)=> prelimRank[p.team]=i+1);
+  }
+  const N = firstPass.length;
+  const SOV_WIN_WEIGHT = 2.5, SOV_LOSS_WEIGHT = 2.5;
+  const ACH_WEIGHTS = {playoffAppearance:3, finalFour:4, runnerUp:5, champion:7.5};
+
+  const results = {};
+  firstPass.forEach(p=>{
+    let sovBonus = 0;
+    p.list.forEach(g=>{
+      const oppRank = prelimRank[g.opponent];
+      if (!oppRank || N<=1) return;
+      const weakness = (oppRank-1)/(N-1);
+      if (g.result==='W') sovBonus += (1-weakness) * SOV_WIN_WEIGHT;
+      else sovBonus -= weakness * SOV_LOSS_WEIGHT;
+    });
+    sovBonus = Math.round(sovBonus*10)/10;
+
+    const cpuLosses = (cpuLossesForSeason && cpuLossesForSeason[p.user]!=null) ? cpuLossesForSeason[p.user] : 0;
+    const cpuBonus = Math.round((-cpuLosses*0.75)*10)/10;
+
+    let achievementBonus = 0; const achList = [];
+    const ach = achievementsForSeason ? achievementsForSeason[p.user] : null;
+    if (ach){
+      Object.keys(ACH_WEIGHTS).forEach(key=>{
+        if (ach[key]){ achievementBonus += ACH_WEIGHTS[key]; achList.push(key); }
+      });
+      achievementBonus = Math.round(achievementBonus*10)/10;
+    }
+
+    const subScore = Math.round((p.coreScorePerGame + p.rosterBonus + sovBonus + cpuBonus + achievementBonus)*10)/10;
+
+    results[p.user] = {
+      gamesPlayed: p.list.length, wins: p.wins.length, losses: p.losses.length, diff: p.diff, pf: p.pf, pa: p.pa,
+      coreScorePerGame: p.coreScorePerGame, rosterBonus: p.rosterBonus, deviation: p.deviation, seasonOvr: p.seasonOvr,
+      sovBonus, cpuBonus, cpuLosses, achievementBonus, achList, subScore, homeAwayBonus: p.homeAwayBonus, list: p.list,
+    };
+  });
+  return results;
+}
+
 function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   totals = totals || {};
   achievements = achievements || {};
@@ -2410,6 +2538,45 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     AVG_OVR_BY_SEASON[seasonNum] = valsThisSeason.length ? valsThisSeason.reduce((a,b)=>a+b,0)/valsThisSeason.length : AVG_OVR;
   });
 
+  // ---- Season 1 / Season 2 computed independently, then blended by games-played weight ----
+  // Season 1's overall/CPU-losses/achievements are frozen snapshots (S1_CPU_LOSSES, S1_ACHIEVEMENTS
+  // above); Season 2's come from the live sheet data, since Season 2 is still in progress.
+  const s2CpuLosses = {};
+  DATA.roster.forEach(r=>{
+    const tot = totals[r.user];
+    if (tot){
+      const s2Games = (teamGames[r.team]||[]).filter(g=>seasonForWeek(g.week)===2);
+      const s2Losses = s2Games.filter(g=>g.result==='L').length;
+      s2CpuLosses[r.user] = Math.max(0, tot.totalLosses - s2Losses);
+    }
+  });
+
+  const s1Sub = computeSeasonSubScores(1, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[1], S1_CPU_LOSSES, S1_ACHIEVEMENTS);
+
+  // Season 2's strength-of-victory should judge opponents by the REAL current blended standing
+  // (informed by Season 1 too), not a ranking limited to Season 2's small sample so far — beating
+  // the team that's actually #1 on the live Power Poll should count as beating the #1 team, even
+  // early in Season 2 before that team's S2-only record alone would put them at the top.
+  const s2FirstPass = computeSeasonFirstPass(2, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[2]);
+  const blendedPrelim = DATA.roster.map(r=>{
+    const s1p = s1Sub[r.user], s2p = s2FirstPass.find(x=>x.user===r.user);
+    const g1 = s1p ? s1p.gamesPlayed : 0, g2 = s2p ? s2p.list.length : 0;
+    const s1Prelim = s1p ? (s1p.coreScorePerGame + s1p.rosterBonus) : 0;
+    const s2Prelim = s2p ? (s2p.coreScorePerGame + s2p.rosterBonus) : 0;
+    const blended = (g1+g2)>0 ? (s1Prelim*g1 + s2Prelim*g2)/(g1+g2) : 0;
+    return {team: r.team, blended};
+  });
+  blendedPrelim.sort((a,b)=> b.blended-a.blended);
+  const blendedPrelimRank = {}; blendedPrelim.forEach((p,i)=> blendedPrelimRank[p.team]=i+1);
+
+  const s2Sub = computeSeasonSubScores(2, teamGames, DATA.roster, effectiveOverall, (liveOverall&&liveOverall.bySeason)||null, AVG_OVR_BY_SEASON[2], s2CpuLosses, achievements, blendedPrelimRank);
+
+  function blend(field){
+    return (s1,s2,g1,g2)=> (g1+g2)>0 ? Math.round(((s1[field]*g1 + s2[field]*g2)/(g1+g2))*10)/10 : 0;
+  }
+  const blendCoreScore = blend('coreScorePerGame'), blendRoster = blend('rosterBonus'),
+        blendSov = blend('sovBonus'), blendCpu = blend('cpuBonus'), blendAch = blend('achievementBonus');
+
   let power = DATA.roster.map(r=>{
     const team = r.team;
     const list = (teamGames[team]||[]).slice().sort((a,b)=>a.week-b.week);
@@ -2418,22 +2585,6 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     const pf = list.reduce((s,g)=>s+g.teamPts,0);
     const pa = list.reduce((s,g)=>s+g.oppPts,0);
     const diff = pf-pa;
-
-    // Slight bonus for winning on the road, slight penalty for losing at home. Neutral-site
-    // games (or games with no site recorded yet) get no adjustment either way.
-    const HOME_AWAY_WEIGHT = 1.5;
-    let homeAwayBonus = 0;
-    list.forEach(g=>{
-      if (g.result==='W' && g.site==='Away') homeAwayBonus += HOME_AWAY_WEIGHT;
-      else if (g.result==='L' && g.site==='Home') homeAwayBonus -= HOME_AWAY_WEIGHT;
-    });
-    homeAwayBonus = Math.round(homeAwayBonus*10)/10;
-
-    // Core record-based score, then averaged per game played so a 2-0 team isn't penalized
-    // next to a 4-2 team just for having played fewer games.
-    let coreScore = wins.length*3 - losses.length*1 + diff*0.4 + homeAwayBonus;
-    let score = list.length>0 ? Math.round((coreScore/list.length)*10)/10 : 0;
-    const coreScorePerGame = score;
 
     let sig=null;
     const rankedWins = wins.filter(g=> teamStatic[g.opponent] && teamStatic[g.opponent].natlRank);
@@ -2450,33 +2601,19 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
       worst = `${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
     }
 
+    const s1 = s1Sub[r.user], s2 = s2Sub[r.user];
+    const g1 = s1.gamesPlayed, g2 = s2.gamesPlayed;
     const ovr = effectiveOverall[r.user];
-    // Roster-strength is now blended per-game: a game played in Season 1 uses that team's
-    // Season 1 overall, a game played in Season 2 uses Season 2's — since the Power Poll is one
-    // running record across seasons, a team's roster-strength handicap should reflect whatever
-    // it actually was rated at when each individual game was played, not just the current rating
-    // applied retroactively to games played under a different roster.
-    const userBySeason = (liveOverall && liveOverall.bySeason) ? liveOverall.bySeason[r.user] : null;
-    let deviation, rosterBonus;
-    if (userBySeason && list.length > 0){
-      const perGameDeviations = list.map(g=>{
-        const seasonNum = seasonForWeek(g.week);
-        const seasonOvr = userBySeason[seasonNum] != null ? userBySeason[seasonNum] : ovr;
-        const seasonAvg = AVG_OVR_BY_SEASON[seasonNum] != null ? AVG_OVR_BY_SEASON[seasonNum] : AVG_OVR;
-        return seasonOvr ? (seasonAvg - seasonOvr) : 0;
-      });
-      deviation = Math.round((perGameDeviations.reduce((a,b)=>a+b,0) / perGameDeviations.length)*10)/10;
-      rosterBonus = Math.round(deviation*0.5588*10)/10;
-    } else {
-      deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
-      // A fixed handicap for the season based purely on the team overall rating — doesn't grow or
-      // shrink with how many games have been played. A below-average roster earns a flat bonus,
-      // a loaded roster takes a flat discount, same number all season regardless of games played.
-      rosterBonus = Math.round(deviation*0.5588*10)/10;
-    }
-    // Career track record now blends in this season's user-vs-user results as they're played,
-    // instead of freezing at CFB 26 — CFB 27 wins/losses get added straight into the same
-    // weighted pool (at a neutral tier weight, since there's no live opponent-tier system yet).
+    const coreScorePerGame = blendCoreScore(s1,s2,g1,g2);
+    const rosterBonus = blendRoster(s1,s2,g1,g2);
+    const sovBonus = blendSov(s1,s2,g1,g2);
+    const cpuBonus = blendCpu(s1,s2,g1,g2);
+    const achievementBonus = blendAch(s1,s2,g1,g2);
+    const deviation = (g1+g2)>0 ? Math.round(((s1.deviation*g1 + s2.deviation*g2)/(g1+g2))*10)/10 : 0;
+    const achList = g2>0 ? s2.achList.concat(s1.achList.filter(a=>!s2.achList.includes(a))) : s1.achList;
+
+    // Career track record still blends this season's combined (S1+S2) record into the CFB26
+    // weighted pool, same as before — this part isn't season-split, it's a career-long figure.
     const hist = weightedByUser[r.user];
     let histPct = null;
     if (hist){
@@ -2487,69 +2624,21 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     }
     const histBonus = (histPct!=null) ? Math.round((histPct-50)*0.2*10)/10 : 0;
 
-    // CPU record bonus: total record (from the Totals sheet) minus the user-vs-user record gives
-    // the CPU-only record. CPU wins don't count for anything — only CPU losses matter, as a penalty.
-    const CPU_LOSS_WEIGHT = 0.75;
-    let cpuBonus = 0, cpuWins = null, cpuLosses = null;
-    const tot = totals[r.user];
-    if (tot){
-      cpuWins = Math.max(0, tot.totalWins - wins.length);
-      cpuLosses = Math.max(0, tot.totalLosses - losses.length);
-      cpuBonus = Math.round((-cpuLosses*CPU_LOSS_WEIGHT)*10)/10;
-    }
-
-    // Season achievement bonuses (from the Achievements sheet) — not exclusive, a team can rack up
-    // several at once as they progress through the season (e.g. Champion also earned Playoff
-    // Appearance, Final Four, and Champion points along the way).
-    const ACH_WEIGHTS = {playoffAppearance:3, finalFour:4, runnerUp:5, champion:7.5};
-    let achievementBonus = 0;
-    const ach = achievements[r.user];
-    const achList = [];
-    if (ach){
-      Object.keys(ACH_WEIGHTS).forEach(key=>{
-        if (ach[key]){ achievementBonus += ACH_WEIGHTS[key]; achList.push(key); }
-      });
-      achievementBonus = Math.round(achievementBonus*10)/10;
-    }
-
-    score = Math.round((score+rosterBonus+histBonus+cpuBonus+achievementBonus)*10)/10;
+    const score = Math.round((coreScorePerGame+rosterBonus+sovBonus+cpuBonus+achievementBonus+histBonus)*10)/10;
 
     const ts = teamStatic[team] || {};
+    const tot = totals[r.user];
     return {
       team, user:r.user, record:`${wins.length}-${losses.length}`, conf: ts.conf, natlRank: ts.natlRank,
       diff, pf, pa, score, streak: streakFor(list), signatureWin: sig, worstLoss: worst,
-      h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus, homeAwayBonus,
+      h2hGamesPlayed: list.length, teamOverall: ovr, ovrDeviation: deviation, rosterBonus,
       reputationBased: REPUTATION_BASED.has(r.user), historicalWinPct: (histPct!=null?histPct:null), historicalBonus: histBonus,
-      wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScore*10)/10, coreScorePerGame: coreScorePerGame,
-      cpuBonus, cpuWins, cpuLosses, totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null,
-      achievementBonus, achList, retired: retiredSet.has(r.user)
+      wins: wins.length, losses: losses.length, coreScoreRaw: Math.round(coreScorePerGame*list.length*10)/10, coreScorePerGame: coreScorePerGame,
+      cpuBonus, cpuWins: null, cpuLosses: (s1.cpuLosses||0)+(s2.cpuLosses||0), totalRecord: tot ? `${tot.totalWins}-${tot.totalLosses}` : null,
+      achievementBonus, achList, retired: retiredSet.has(r.user), sovBonus,
+      season1: {games:g1, score:s1.subScore, coreScorePerGame:s1.coreScorePerGame, rosterBonus:s1.rosterBonus, sovBonus:s1.sovBonus, cpuBonus:s1.cpuBonus, achievementBonus:s1.achievementBonus, wins:s1.wins, losses:s1.losses, overall:s1.seasonOvr},
+      season2: {games:g2, score:s2.subScore, coreScorePerGame:s2.coreScorePerGame, rosterBonus:s2.rosterBonus, sovBonus:s2.sovBonus, cpuBonus:s2.cpuBonus, achievementBonus:s2.achievementBonus, wins:s2.wins, losses:s2.losses, overall:s2.seasonOvr},
     };
-  });
-
-  // ---- Strength of victory / bad-loss penalty ----
-  // Rankings obviously shift as results come in, so this can't reference "the" ranking directly —
-  // instead it uses a preliminary pass (record + roster-strength only, the official algorithm's
-  // own basis) purely to gauge how good each opponent was at the time this is calculated. Beating
-  // a team ranked near the top is worth more than beating a team near the bottom; losing to a
-  // bottom-ranked team costs more than losing to a top-ranked one.
-  const prelim = power.map(p=>({team:p.team, prelimScore: p.coreScorePerGame + p.rosterBonus}));
-  prelim.sort((a,b)=> b.prelimScore-a.prelimScore);
-  const prelimRank = {}; prelim.forEach((p,i)=> prelimRank[p.team]=i+1);
-  const N = power.length;
-  const SOV_WIN_WEIGHT = 2.5, SOV_LOSS_WEIGHT = 2.5;
-
-  power.forEach(p=>{
-    const list = (teamGames[p.team]||[]);
-    let sovBonus = 0;
-    list.forEach(g=>{
-      const oppRank = prelimRank[g.opponent];
-      if (!oppRank || N<=1) return; // opponent not a ranked current team (e.g. a retired opponent) — no SOV effect
-      const weakness = (oppRank-1)/(N-1); // 0 = opponent ranked #1, 1 = opponent ranked last
-      if (g.result==='W') sovBonus += (1-weakness) * SOV_WIN_WEIGHT;
-      else sovBonus -= weakness * SOV_LOSS_WEIGHT;
-    });
-    p.sovBonus = Math.round(sovBonus*10)/10;
-    p.score = Math.round((p.score + p.sovBonus)*10)/10;
   });
 
   const seen = new Set();
