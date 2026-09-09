@@ -1243,7 +1243,7 @@ function renderRetiredNote(retired){
 // ---------- Next Season projection ----------
 // Purely derived from the current Power Poll ranking — no separate data source. Auto-updates
 // whenever the underlying rankings shift (new results, algorithm toggle, retirements, etc.).
-const NEXT_SEASON_SCHEDULE = {"weeks": [[["Ben", "JoJo", "nonconf"], ["Jay", "Vince", "nonconf"], ["Austin", "Logan", "conf"], ["Adam", "Kurt", "nonconf"], ["Justin", "Wemple", "conf"], ["Derrick", "Pat", "nonconf"], ["Nick", "Coltrain", "conf"], ["Dom", "Cory", "conf"], ["Harmon", "Zay", "conf"], ["Tipton", "Bruce", "conf"], ["Jared", "Tim", "conf"]], [["Nick", "Zay", "nonconf"], ["Justin", "Ceseque", "conf"], ["Kurt", "JoJo", "conf"], ["Austin", "Derrick", "nonconf"], ["Bruce", "Logan", "nonconf"], ["Jared", "Vince", "nonconf"], ["Adam", "Dom", "nonconf"], ["Coltrain", "Tim", "nonconf"], ["Ben", "Cory", "conf"], ["Jay", "Tipton", "conf"], ["Pat", "Harmon", "conf"]], [["Ben", "Dom", "conf"], ["Logan", "Wemple", "nonconf"], ["Jay", "Bruce", "conf"], ["Ceseque", "Tim", "nonconf"], ["Harmon", "Nick", "nonconf"], ["Jared", "Kurt", "conf"], ["Pat", "Zay", "conf"], ["Tipton", "Coltrain", "conf"], ["Cory", "Austin", "conf"], ["Justin", "Derrick", "conf"], ["Vince", "Adam", "conf"]], [["Vince", "Zay", "conf"], ["Coltrain", "Harmon", "nonconf"], ["Adam", "Pat", "conf"], ["Ceseque", "Derrick", "conf"], ["Dom", "Wemple", "nonconf"], ["Cory", "Jay", "nonconf"], ["Austin", "Tim", "nonconf"], ["JoJo", "Justin", "nonconf"], ["Ben", "Logan", "conf"], ["Jared", "Tipton", "nonconf"], ["Nick", "Bruce", "conf"]], [["Adam", "Zay", "conf"], ["Jared", "Pat", "nonconf"], ["Tipton", "Nick", "conf"], ["Dom", "Logan", "conf"], ["Vince", "Harmon", "conf"], ["Ben", "Austin", "conf"], ["Ceseque", "Kurt", "nonconf"], ["JoJo", "Tim", "conf"], ["Derrick", "Wemple", "conf"], ["Jay", "Coltrain", "conf"], ["Bruce", "Cory", "nonconf"]], [["Cory", "Logan", "conf"], ["Jared", "JoJo", "conf"], ["Kurt", "Tim", "conf"], ["Adam", "Harmon", "conf"], ["Vince", "Pat", "conf"], ["Dom", "Austin", "conf"], ["Ben", "Justin", "nonconf"], ["Jay", "Nick", "conf"], ["Tipton", "Zay", "nonconf"], ["Ceseque", "Wemple", "conf"], ["Coltrain", "Bruce", "conf"]]]};
+const NEXT_SEASON_SCHEDULE = {"weeks": [[["Ben", "JoJo", "nonconf"], ["Jay", "Vince", "nonconf"], ["Austin", "Logan", "conf"], ["Adam", "Kurt", "nonconf"], ["Nick", "Coltrain", "conf"], ["Dom", "Cory", "conf"], ["Tipton", "Bruce", "conf"], ["Jared", "Tim", "conf"], ["Justin", "Wemple", "conf"], ["Derrick", "Pat", "nonconf"], ["Harmon", "Zay", "conf"]], [["Kurt", "JoJo", "conf"], ["Austin", "Derrick", "nonconf"], ["Bruce", "Logan", "nonconf"], ["Jared", "Vince", "nonconf"], ["Adam", "Dom", "nonconf"], ["Coltrain", "Tim", "nonconf"], ["Ben", "Cory", "conf"], ["Jay", "Tipton", "conf"], ["Pat", "Zay", "conf"], ["Ceseque", "Wemple", "conf"], ["Harmon", "Justin", "nonconf"]], [["Ben", "Dom", "conf"], ["Jay", "Bruce", "conf"], ["Jared", "Kurt", "conf"], ["Tipton", "Coltrain", "conf"], ["Cory", "Austin", "conf"], ["Vince", "Adam", "conf"], ["Nick", "Zay", "nonconf"], ["Pat", "Harmon", "conf"], ["Logan", "Wemple", "nonconf"], ["Ceseque", "Tim", "nonconf"], ["Justin", "Derrick", "conf"]], [["Coltrain", "Harmon", "nonconf"], ["Adam", "Pat", "conf"], ["Dom", "Wemple", "nonconf"], ["Cory", "Jay", "nonconf"], ["Austin", "Tim", "nonconf"], ["JoJo", "Justin", "nonconf"], ["Ben", "Logan", "conf"], ["Jared", "Tipton", "nonconf"], ["Nick", "Bruce", "conf"], ["Vince", "Zay", "conf"], ["Ceseque", "Kurt", "nonconf"]], [["Adam", "Zay", "conf"], ["Jared", "Pat", "nonconf"], ["Dom", "Logan", "conf"], ["Ben", "Austin", "conf"], ["JoJo", "Tim", "conf"], ["Jay", "Coltrain", "conf"], ["Bruce", "Cory", "nonconf"], ["Justin", "Ceseque", "conf"], ["Tipton", "Nick", "conf"], ["Vince", "Harmon", "conf"], ["Derrick", "Wemple", "conf"]], [["Cory", "Logan", "conf"], ["Jared", "JoJo", "conf"], ["Adam", "Harmon", "conf"], ["Dom", "Austin", "conf"], ["Ben", "Justin", "nonconf"], ["Jay", "Nick", "conf"], ["Coltrain", "Bruce", "conf"], ["Ceseque", "Derrick", "conf"], ["Kurt", "Tim", "conf"], ["Vince", "Pat", "conf"], ["Tipton", "Zay", "nonconf"]]]};
 const NEXT_SEASON_TIERS = [
   {conf:'ACC', tier:1, from:1, to:5},
   {conf:'Big Ten', tier:2, from:6, to:10},
@@ -2329,6 +2329,20 @@ async function fetchTeamOverall(seasonLabel){
   }
 }
 
+// Maps each CFB27 season to the week its games start at, since the Power Poll is now one running
+// cumulative record across all of CFB27's seasons rather than resetting each season — Season 1
+// covered weeks 0-18, Season 2 starts at week 19. Add a new entry here whenever a new season
+// begins, using whatever week its first game actually lands on.
+const SEASON_WEEK_BOUNDARIES = { 1: 0, 2: 19 };
+function seasonForWeek(week){
+  // pick the highest season whose start week is <= this game's week
+  let result = 1;
+  Object.keys(SEASON_WEEK_BOUNDARIES).map(Number).sort((a,b)=>a-b).forEach(s=>{
+    if (week >= SEASON_WEEK_BOUNDARIES[s]) result = s;
+  });
+  return result;
+}
+
 function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   totals = totals || {};
   achievements = achievements || {};
@@ -2380,6 +2394,22 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
   const ovrVals = Object.values(effectiveOverall);
   const AVG_OVR = ovrVals.reduce((a,b)=>a+b,0)/ovrVals.length;
 
+  // A team's roster-strength deviation should be judged against what the LEAGUE average was
+  // during that same season, not this season's average applied retroactively to old games —
+  // if overalls shifted league-wide between seasons, using today's average to grade last
+  // season's games would distort the comparison. Build one average per season using everyone's
+  // overall for that specific season (falling back to their current effective overall for
+  // anyone missing a season-specific figure).
+  const AVG_OVR_BY_SEASON = {};
+  Object.keys(SEASON_WEEK_BOUNDARIES).forEach(seasonNum=>{
+    const valsThisSeason = DATA.roster.map(r=>{
+      const bySeason = (liveOverall && liveOverall.bySeason) ? liveOverall.bySeason[r.user] : null;
+      if (bySeason && bySeason[seasonNum] != null) return bySeason[seasonNum];
+      return effectiveOverall[r.user];
+    }).filter(v=>v!=null);
+    AVG_OVR_BY_SEASON[seasonNum] = valsThisSeason.length ? valsThisSeason.reduce((a,b)=>a+b,0)/valsThisSeason.length : AVG_OVR;
+  });
+
   let power = DATA.roster.map(r=>{
     const team = r.team;
     const list = (teamGames[team]||[]).slice().sort((a,b)=>a.week-b.week);
@@ -2421,11 +2451,29 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     }
 
     const ovr = effectiveOverall[r.user];
-    const deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
-    // A fixed handicap for the season based purely on the team overall rating — doesn't grow or
-    // shrink with how many games have been played. A below-average roster earns a flat bonus,
-    // a loaded roster takes a flat discount, same number all season regardless of games played.
-    const rosterBonus = Math.round(deviation*0.5588*10)/10;
+    // Roster-strength is now blended per-game: a game played in Season 1 uses that team's
+    // Season 1 overall, a game played in Season 2 uses Season 2's — since the Power Poll is one
+    // running record across seasons, a team's roster-strength handicap should reflect whatever
+    // it actually was rated at when each individual game was played, not just the current rating
+    // applied retroactively to games played under a different roster.
+    const userBySeason = (liveOverall && liveOverall.bySeason) ? liveOverall.bySeason[r.user] : null;
+    let deviation, rosterBonus;
+    if (userBySeason && list.length > 0){
+      const perGameDeviations = list.map(g=>{
+        const seasonNum = seasonForWeek(g.week);
+        const seasonOvr = userBySeason[seasonNum] != null ? userBySeason[seasonNum] : ovr;
+        const seasonAvg = AVG_OVR_BY_SEASON[seasonNum] != null ? AVG_OVR_BY_SEASON[seasonNum] : AVG_OVR;
+        return seasonOvr ? (seasonAvg - seasonOvr) : 0;
+      });
+      deviation = Math.round((perGameDeviations.reduce((a,b)=>a+b,0) / perGameDeviations.length)*10)/10;
+      rosterBonus = Math.round(deviation*0.5588*10)/10;
+    } else {
+      deviation = ovr ? Math.round((AVG_OVR-ovr)*10)/10 : 0;
+      // A fixed handicap for the season based purely on the team overall rating — doesn't grow or
+      // shrink with how many games have been played. A below-average roster earns a flat bonus,
+      // a loaded roster takes a flat discount, same number all season regardless of games played.
+      rosterBonus = Math.round(deviation*0.5588*10)/10;
+    }
     // Career track record now blends in this season's user-vs-user results as they're played,
     // instead of freezing at CFB 26 — CFB 27 wins/losses get added straight into the same
     // weighted pool (at a neutral tier weight, since there's no live opponent-tier system yet).
