@@ -592,6 +592,7 @@
       <button data-panel="recruiting">Recruiting</button>
       <button data-panel="playoffs" class="active">CFB 27 Playoffs</button>
       <button data-panel="rosters">Rosters</button>
+      <button data-panel="sos">Strength of Schedule</button>
       <button data-panel="nextseason">Next Season</button>
     </div>
 
@@ -642,6 +643,11 @@
     <div class="cfb27-subpanel" id="panel-rosters" style="display:none;">
       <div id="seasonBanner"></div>
       <div class="roster-grid" id="rosterGrid"></div>
+    </div>
+
+    <div class="cfb27-subpanel" id="panel-sos" style="display:none;">
+      <p class="section-desc" style="margin-bottom:18px;">Every real game played so far this year, Season 1 and Season 2 combined — ranked by the average current Power Poll standing of who each coach has actually faced.</p>
+      <div id="sosLeaderboard"></div>
     </div>
 
     <div class="cfb27-subpanel" id="panel-nextseason" style="display:none;">
@@ -1505,6 +1511,35 @@ const PROJECTED_SCORES = {
   'Zay': { rank: 9, score: 9.0, wtScore: 8.0 },
 };
 
+// Strength of schedule based on REAL games played so far (Season 1 + Season 2 combined, since
+// DATA.gameLog already spans both) — ranks every coach by the average current Power Poll
+// standing of everyone they've actually played, not a projection. Uses the live BLENDED score,
+// so an opponent's full Season 1 + Season 2 body of work counts, same as everywhere else on site.
+function computeActualSOSLeaderboard(){
+  const rankedByPower = rankPower(DATA.power||[], powerAlgoMode==='full').list;
+  const scoreByUser = {}, rankByUser = {};
+  rankedByPower.forEach(p=>{ scoreByUser[p.user]=p.score; rankByUser[p.user]=p.rank; });
+
+  const oppByUser = {};
+  (DATA.gameLog||[]).forEach(g=>{
+    if (!g.isH2H) return;
+    (oppByUser[g.user] = oppByUser[g.user]||[]).push(g.oppUser);
+  });
+
+  const rows = DATA.roster.map(r=>{
+    const opps = oppByUser[r.user] || [];
+    const scores = opps.map(o=>scoreByUser[o]).filter(v=>v!=null);
+    const ranks = opps.map(o=>rankByUser[o]).filter(v=>v!=null);
+    const avgScore = scores.length ? Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*10)/10 : null;
+    const avgRank = ranks.length ? Math.round((ranks.reduce((a,b)=>a+b,0)/ranks.length)*10)/10 : null;
+    return {user:r.user, team:r.team, gamesPlayed:opps.length, avgScore, avgRank};
+  });
+
+  const ranked = rows.filter(r=>r.gamesPlayed>0).sort((a,b)=> b.avgScore-a.avgScore);
+  ranked.forEach((r,i)=> r.sosRank=i+1);
+  return ranked;
+}
+
 function computeStrengthOfSchedule(user){
   const official = rankPower(DATA.power, false).list;
   const weighted = rankPower(DATA.power, true).list;
@@ -1677,6 +1712,32 @@ function overallDisplayHTML(user){
   }
   const fallback = TEAM_OVERALL[user];
   return fallback!=null ? `${fallback}` : '';
+}
+
+function renderSOSLeaderboard(){
+  const el = document.getElementById('sosLeaderboard');
+  if (!el) return;
+  const ranked = computeActualSOSLeaderboard();
+  el.innerHTML = ranked.map(row=>{
+    const c = teamColors(row.team);
+    return `
+    <div class="poll-row" style="border-left-color:${c.bg};">
+      <div class="poll-rank mono">${row.sosRank}</div>
+      <div class="poll-team" style="display:flex; flex-direction:row; gap:12px; align-items:center;">
+        ${teamBadge(row.team, 34)}
+        <div style="min-width:0;">
+          <div class="name">${esc(row.user)}</div>
+          <div class="meta">${esc(row.team)}</div>
+        </div>
+      </div>
+      <div class="poll-record">
+        <div class="rec mono">${row.gamesPlayed} games</div>
+        <div class="diff mono" style="color:var(--chalk-dimmer);">avg rank #${row.avgRank}</div>
+      </div>
+      <div><span class="streak-badge ${row.avgScore>=0?'w':'l'}">${row.avgScore>=0?'+':''}${row.avgScore} avg opp score</span></div>
+      <div class="poll-why"></div>
+    </div>`;
+  }).join('') || '<div class="rb-row">No real games logged yet this year.</div>';
 }
 
 function renderRosters(){
@@ -2629,20 +2690,9 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
     const pa = list.reduce((s,g)=>s+g.oppPts,0);
     const diff = pf-pa;
 
-    let sig=null;
-    const rankedWins = wins.filter(g=> teamStatic[g.opponent] && teamStatic[g.opponent].natlRank);
-    if (rankedWins.length){
-      const bw = rankedWins.reduce((best,g)=> teamStatic[g.opponent].natlRank < teamStatic[best.opponent].natlRank ? g : best);
-      sig = `#${teamStatic[bw.opponent].natlRank} ${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
-    } else if (wins.length){
-      const bw = wins.reduce((best,g)=> (g.teamPts-g.oppPts) > (best.teamPts-best.oppPts) ? g : best);
-      sig = `${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
-    }
-    let worst=null;
-    if (losses.length){
-      const wl = losses.reduce((w,g)=> (g.oppPts-g.teamPts) > (w.oppPts-w.teamPts) ? g : w);
-      worst = `${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
-    }
+    // Best win / worst loss are determined in a post-processing pass below, once every team's
+    // final Power Poll rank is known — see below the power array's construction.
+    let sig=null, worst=null;
 
     const s1 = s1Sub[r.user], s2 = s2Sub[r.user];
     const g1 = s1.gamesPlayed, g2 = s2.gamesPlayed;
@@ -2682,6 +2732,40 @@ function computeLiveState(games, totals, achievements, retiredSet, liveOverall){
       season1: {games:g1, score:s1.subScore, coreScoreRaw:s1.coreScoreRaw, coreScorePerGame:s1.coreScorePerGame, rosterBonus:s1.rosterBonus, sovBonus:s1.sovBonus, cpuBonus:s1.cpuBonus, cpuLosses:s1.cpuLosses, totalRecord:s1.totalRecord, achievementBonus:s1.achievementBonus, achList:s1.achList, wins:s1.wins, losses:s1.losses, overall:s1.seasonOvr},
       season2: {games:g2, score:s2.subScore, coreScoreRaw:s2.coreScoreRaw, coreScorePerGame:s2.coreScorePerGame, rosterBonus:s2.rosterBonus, sovBonus:s2.sovBonus, cpuBonus:s2.cpuBonus, cpuLosses:s2.cpuLosses, totalRecord:s2.totalRecord, achievementBonus:s2.achievementBonus, achList:s2.achList, wins:s2.wins, losses:s2.losses, overall:s2.seasonOvr},
     };
+  });
+
+  // Best win / worst loss, based on the opponent's FINAL Power Poll rank rather than point margin
+  // or the static in-game ranking — a narrow loss to a bottom-ranked team is a worse loss than a
+  // blowout loss to the #1 team, and a win over the #1 team is the best win regardless of margin.
+  const finalRanked = rankPower(power, false).list;
+  const rankByUser = {}; finalRanked.forEach(p=> rankByUser[p.user]=p.rank);
+  power.forEach(p=>{
+    const list = (teamGames[p.team]||[]);
+    const wins = list.filter(g=>g.result==='W');
+    const losses = list.filter(g=>g.result==='L');
+
+    let sig = null;
+    const rankedWins = wins.filter(g=> userForTeam[g.opponent] && rankByUser[userForTeam[g.opponent]]!=null);
+    if (rankedWins.length){
+      const bw = rankedWins.reduce((best,g)=> rankByUser[userForTeam[g.opponent]] < rankByUser[userForTeam[best.opponent]] ? g : best);
+      sig = `#${rankByUser[userForTeam[bw.opponent]]} ${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
+    } else if (wins.length){
+      const bw = wins.reduce((best,g)=> (g.teamPts-g.oppPts) > (best.teamPts-best.oppPts) ? g : best);
+      sig = `${bw.opponent} (${bw.teamPts}-${bw.oppPts})`;
+    }
+
+    let worst = null;
+    const rankedLosses = losses.filter(g=> userForTeam[g.opponent] && rankByUser[userForTeam[g.opponent]]!=null);
+    if (rankedLosses.length){
+      const wl = rankedLosses.reduce((w,g)=> rankByUser[userForTeam[g.opponent]] > rankByUser[userForTeam[w.opponent]] ? g : w);
+      worst = `#${rankByUser[userForTeam[wl.opponent]]} ${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
+    } else if (losses.length){
+      const wl = losses.reduce((w,g)=> (g.oppPts-g.teamPts) > (w.oppPts-w.teamPts) ? g : w);
+      worst = `${wl.opponent} (${wl.teamPts}-${wl.oppPts})`;
+    }
+
+    p.signatureWin = sig;
+    p.worstLoss = worst;
   });
 
   const seen = new Set();
@@ -2734,6 +2818,7 @@ function renderAll(){
   renderCFB26Bracket();
   renderCFB25Bracket();
   renderRosters();
+  renderSOSLeaderboard();
   renderHistory();
 }
 
