@@ -593,6 +593,7 @@
       <button data-panel="playoffs" class="active">CFB 27 Playoffs</button>
       <button data-panel="rosters">Rosters</button>
       <button data-panel="sos">Strength of Schedule</button>
+      <button data-panel="scoring">Scoring</button>
       <button data-panel="nextseason">Next Season</button>
     </div>
 
@@ -648,6 +649,20 @@
     <div class="cfb27-subpanel" id="panel-sos" style="display:none;">
       <p class="section-desc" style="margin-bottom:18px;">Every real game played so far this year, Season 1 and Season 2 combined — ranked by the average current Power Poll standing of who each coach has actually faced.</p>
       <div id="sosLeaderboard"></div>
+    </div>
+
+    <div class="cfb27-subpanel" id="panel-scoring" style="display:none;">
+      <p class="section-desc" style="margin-bottom:18px;">Every real game played so far this year, Season 1 and Season 2 combined — points per game, offense and defense.</p>
+      <div class="rb-grid">
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">Average Points Scored</span></div>
+          <div id="avgPFList"></div>
+        </div>
+        <div class="card">
+          <div class="conf-card-head"><span class="cname" style="font-size:15px;">Average Points Allowed</span></div>
+          <div id="avgPAList"></div>
+        </div>
+      </div>
     </div>
 
     <div class="cfb27-subpanel" id="panel-nextseason" style="display:none;">
@@ -1713,6 +1728,45 @@ function overallDisplayHTML(user){
   }
   const fallback = TEAM_OVERALL[user];
   return fallback!=null ? `${fallback}` : '';
+}
+
+function renderScoringLeaderboards(){
+  const pfEl = document.getElementById('avgPFList');
+  const paEl = document.getElementById('avgPAList');
+  if (!pfEl || !paEl) return;
+
+  // Points for/against on DATA.power are already Season 1 + Season 2 combined totals (built from
+  // each team's full game list before any season-splitting happens), so no extra blending needed
+  // here — just divide by total games played, same combined number used everywhere else.
+  const rows = (DATA.power||[])
+    .filter(p=> p.h2hGamesPlayed>0 && !p.retired)
+    .map(p=> ({
+      user:p.user, team:p.team, games:p.h2hGamesPlayed,
+      avgPF: Math.round((p.pf/p.h2hGamesPlayed)*10)/10,
+      avgPA: Math.round((p.pa/p.h2hGamesPlayed)*10)/10,
+    }));
+
+  function rowHTML(r, val, rank){
+    const c = teamColors(r.team);
+    return `
+    <div class="rb-row">
+      <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+        <span class="mono" style="color:var(--chalk-dimmer); width:20px; flex-shrink:0;">${rank}</span>
+        ${teamBadge(r.team, 26, true)}
+        <div style="min-width:0;">
+          <div style="font-weight:700; color:var(--chalk);">${esc(r.user)}</div>
+          <div style="font-size:11px; color:${c.bg};">${esc(r.team)}</div>
+        </div>
+      </div>
+      <div class="mono" style="font-weight:800; color:var(--chalk); flex-shrink:0;">${val}</div>
+    </div>`;
+  }
+
+  const byPF = rows.slice().sort((a,b)=> b.avgPF-a.avgPF);
+  const byPA = rows.slice().sort((a,b)=> a.avgPA-b.avgPA);
+
+  pfEl.innerHTML = byPF.map((r,i)=> rowHTML(r, r.avgPF, i+1)).join('') || '<div class="rb-row">No real games logged yet this year.</div>';
+  paEl.innerHTML = byPA.map((r,i)=> rowHTML(r, r.avgPA, i+1)).join('') || '<div class="rb-row">No real games logged yet this year.</div>';
 }
 
 function renderSOSLeaderboard(){
@@ -2820,6 +2874,7 @@ function renderAll(){
   renderCFB25Bracket();
   renderRosters();
   renderSOSLeaderboard();
+  renderScoringLeaderboards();
   renderHistory();
 }
 
