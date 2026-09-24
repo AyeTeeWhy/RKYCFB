@@ -131,6 +131,34 @@
   .sched-tag.conf{ background:var(--gold); color:var(--ink); }
   .sched-tag.nonconf{ background:var(--turf-3); color:var(--chalk-dimmer); }
 
+  .score-row{
+    display:flex; align-items:stretch; border-radius:10px; overflow:hidden;
+    border:1px solid var(--line-2); box-shadow:0 4px 12px -8px rgba(0,0,0,0.5); margin-bottom:8px;
+  }
+  .score-side{
+    flex:1; display:flex; align-items:center; gap:9px; padding:10px 12px; min-width:0;
+    filter: saturate(68%) brightness(0.9);
+  }
+  .score-side.loser{ opacity:0.62; }
+  .score-side .bkt-name{ font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .score-side .bkt-school{ font-size:10px; font-weight:600; opacity:0.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .score-num{
+    font-family:'JetBrains Mono',monospace; font-weight:800; font-size:20px; flex-shrink:0; margin-left:auto;
+  }
+  .score-tag{
+    display:flex; align-items:center; justify-content:center; width:56px; flex-shrink:0;
+    background:var(--turf-2); font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:800;
+    color:var(--chalk-dimmer); text-align:center; line-height:1.3; padding:4px;
+  }
+
+  .streak-row-colored{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:8px;
+    border:1px solid var(--line-2); filter: saturate(68%) brightness(0.9);
+  }
+  .streak-row-colored .bkt-name{ font-size:13px; font-weight:700; }
+  .streak-row-colored .bkt-school{ font-size:10px; font-weight:600; opacity:0.85; }
+  .streak-row-colored .streak-badge{ margin-left:auto; flex-shrink:0; }
+
   .sos-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
   .sos-box{
     background:var(--turf-2); border:1px solid var(--line-2); border-radius:10px; padding:14px 16px;
@@ -588,12 +616,11 @@
       <p class="section-desc">Season stats, recruiting, the playoff bracket, and the rosters — all in one place.</p>
     </div>
     <div class="season-tabs" id="cfb27SubTabs">
-      <button data-panel="blowouts">Blowouts, Nail-Biters &amp; Streaks</button>
-      <button data-panel="recruiting">Recruiting</button>
       <button data-panel="playoffs" class="active">CFB 27 Playoffs</button>
+      <button data-panel="blowouts">Blowouts, Nail-Biters &amp; Streaks</button>
       <button data-panel="rosters">Rosters</button>
       <button data-panel="sos">Strength of Schedule</button>
-      <button data-panel="scoring">Scoring</button>
+      <button data-panel="scoring">PPG &amp; PPGA</button>
       <button data-panel="nextseason">Next Season</button>
     </div>
 
@@ -617,6 +644,10 @@
           <div class="conf-card-head"><span class="cname" style="font-size:15px;">In a Skid</span></div>
           <div class="rb-list streak-list" id="coldList"></div>
         </div>
+      </div>
+      <div class="card">
+        <div class="conf-card-head"><span class="cname" style="font-size:15px;">Biggest Upsets</span></div>
+        <div class="rb-list" id="upsetList"></div>
       </div>
     </div>
 
@@ -1650,6 +1681,53 @@ function setupScheduleUserSelect(){
 }
 
 // ---------- Record book ----------
+// Scorebug-style row for a single game — team-colored halves, badges, and the actual score,
+// modeled on real broadcast scorebugs rather than a plain text line.
+function scoreRowHTML(g, tagText){
+  const winnerIsSelf = g.result==='W';
+  const wUser = winnerIsSelf ? g.user : g.oppUser;
+  const wTeam = winnerIsSelf ? g.team : g.opponent;
+  const wScore = winnerIsSelf ? g.teamPts : g.oppPts;
+  const lUser = winnerIsSelf ? g.oppUser : g.user;
+  const lTeam = winnerIsSelf ? g.opponent : g.team;
+  const lScore = winnerIsSelf ? g.oppPts : g.teamPts;
+  const wc = teamColors(wTeam), lc = teamColors(lTeam);
+  return `
+  <div class="score-row">
+    <div class="score-side" style="background:${wc.bg};">
+      ${teamBadge(wTeam, 30, true)}
+      <div style="min-width:0;">
+        <div class="bkt-name" style="color:${wc.text};">${esc(wUser)}</div>
+        <div class="bkt-school" style="color:${wc.text};">${esc(wTeam)}</div>
+      </div>
+      <div class="score-num" style="color:${wc.text};">${wScore}</div>
+    </div>
+    ${tagText ? `<div class="score-tag">${tagText}</div>` : ''}
+    <div class="score-side loser" style="background:${lc.bg};">
+      <div class="score-num" style="color:${lc.text};">${lScore}</div>
+      <div style="min-width:0;">
+        <div class="bkt-name" style="color:${lc.text};">${esc(lUser)}</div>
+        <div class="bkt-school" style="color:${lc.text};">${esc(lTeam)}</div>
+      </div>
+      ${teamBadge(lTeam, 30, true)}
+    </div>
+  </div>`;
+}
+
+// Single-team colored row for a streak — badge, name/team, streak pill.
+function streakRowHTML(p, kind){
+  const c = teamColors(p.team);
+  return `
+  <div class="streak-row-colored" style="background:${c.bg};">
+    ${teamBadge(p.team, 30, true)}
+    <div style="min-width:0;">
+      <div class="bkt-name" style="color:${c.text};">${esc(p.user)}</div>
+      <div class="bkt-school" style="color:${c.text};">${esc(p.team)}</div>
+    </div>
+    <span class="streak-badge ${kind}">${esc(p.streak)}</span>
+  </div>`;
+}
+
 function gameLine(g, showMargin){
   const winner = g.result==='W' ? g.user : g.oppUser;
   const loser = g.result==='W' ? g.oppUser : g.user;
@@ -1661,15 +1739,61 @@ function gameLine(g, showMargin){
   </div>`;
 }
 function renderRecordBook(){
-  document.getElementById('blowoutList').innerHTML = DATA.blowouts.map(g=>gameLine(g,true)).join('');
-  document.getElementById('closeList').innerHTML = DATA.closestGames.map(g=>gameLine(g,true)).join('');
+  document.getElementById('blowoutList').innerHTML = DATA.blowouts.slice(0,6).map(g=>scoreRowHTML(g, `+${g.margin}`)).join('') || '<div class="rb-row">No games yet.</div>';
+  document.getElementById('closeList').innerHTML = DATA.closestGames.slice(0,6).map(g=>scoreRowHTML(g, `+${g.margin}`)).join('') || '<div class="rb-row">No games yet.</div>';
 
-  document.getElementById('hotList').innerHTML = DATA.hotStreaks.map(p=>`
-    <div class="rb-row"><div><span style="font-weight:700;">${esc(p.user)}</span> <span style="color:var(--chalk-dimmer);">— ${esc(p.team)}</span></div>
-    <div class="m"><span class="streak-badge w">${esc(p.streak)}</span></div></div>`).join('') || '<div class="rb-row">No streaks of 3+ yet.</div>';
-  document.getElementById('coldList').innerHTML = DATA.coldStreaks.map(p=>`
-    <div class="rb-row"><div><span style="font-weight:700;">${esc(p.user)}</span> <span style="color:var(--chalk-dimmer);">— ${esc(p.team)}</span></div>
-    <div class="m"><span class="streak-badge l">${esc(p.streak)}</span></div></div>`).join('') || '<div class="rb-row">Nobody\'s in a real skid. Yet.</div>';
+  document.getElementById('hotList').innerHTML = DATA.hotStreaks.slice(0,6).map(p=>streakRowHTML(p,'w')).join('') || '<div class="rb-row">No streaks of 3+ yet.</div>';
+  document.getElementById('coldList').innerHTML = DATA.coldStreaks.slice(0,6).map(p=>streakRowHTML(p,'l')).join('') || '<div class="rb-row">Nobody\'s in a real skid. Yet.</div>';
+
+  renderBiggestUpsets();
+}
+
+// Live "ever-changing" upsets list — recomputed from the current Power Poll ranking every time
+// the page loads or refreshes, unlike Blowouts/Nail-Biters which are a fixed historical snapshot.
+// An upset is a win over someone currently ranked better than you; "biggest" = the widest rank gap.
+function renderBiggestUpsets(){
+  const el = document.getElementById('upsetList');
+  if (!el) return;
+  const ranked = rankPower(DATA.power||[], powerAlgoMode==='full').list;
+  const rankByUser = {}; ranked.forEach(p=> rankByUser[p.user]=p.rank);
+
+  const seen = new Set();
+  const upsets = [];
+  (DATA.gameLog||[]).forEach(g=>{
+    if (!g.isH2H || g.result!=='W') return;
+    const key = [g.user, g.oppUser].sort().join('_') + '_w' + g.week;
+    if (seen.has(key)) return; seen.add(key);
+    const winnerRank = rankByUser[g.user], loserRank = rankByUser[g.oppUser];
+    if (winnerRank==null || loserRank==null) return;
+    const gap = winnerRank - loserRank; // positive = winner was ranked worse than the team they beat
+    if (gap <= 0) return; // not an upset — winner was already ranked better
+    upsets.push({winner:g.user, loser:g.oppUser, winnerTeam:g.team, loserTeam:g.opponent, winnerRank, loserRank, gap, teamPts:g.teamPts, oppPts:g.oppPts, week:g.week});
+  });
+  upsets.sort((a,b)=> b.gap-a.gap);
+
+  el.innerHTML = upsets.slice(0,6).map(u=>{
+    const wc = teamColors(u.winnerTeam), lc = teamColors(u.loserTeam);
+    return `
+    <div class="score-row">
+      <div class="score-side" style="background:${wc.bg};">
+        ${teamBadge(u.winnerTeam, 30, true)}
+        <div style="min-width:0;">
+          <div class="bkt-name" style="color:${wc.text};">#${u.winnerRank} ${esc(u.winner)}</div>
+          <div class="bkt-school" style="color:${wc.text};">${esc(u.winnerTeam)}</div>
+        </div>
+        <div class="score-num" style="color:${wc.text};">${u.teamPts}</div>
+      </div>
+      <div class="score-tag">${u.gap}-spot<br>upset</div>
+      <div class="score-side loser" style="background:${lc.bg};">
+        <div class="score-num" style="color:${lc.text};">${u.oppPts}</div>
+        <div style="min-width:0;">
+          <div class="bkt-name" style="color:${lc.text};">#${u.loserRank} ${esc(u.loser)}</div>
+          <div class="bkt-school" style="color:${lc.text};">${esc(u.loserTeam)}</div>
+        </div>
+        ${teamBadge(u.loserTeam, 30, true)}
+      </div>
+    </div>`;
+  }).join('') || '<div class="rb-row">No upsets yet this year.</div>';
 }
 
 // ---------- Recruiting ----------
