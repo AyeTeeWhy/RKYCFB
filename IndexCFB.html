@@ -699,6 +699,10 @@
 
     <div class="cfb27-subpanel" id="panel-nextseason" style="display:none;">
       <p class="section-desc" style="margin-bottom:18px;">A live projection of next season's conference realignment, based purely on where everyone sits in the current Power Poll — the better you're ranked now, the tougher the conference you're projected into.</p>
+      <div class="season-tabs" id="nextSeasonRankToggle" style="margin-bottom:18px;">
+        <button data-mode="blended" class="active">Full Power Poll (Season 1 + 2)</button>
+        <button data-mode="season2">Season 2 Only</button>
+      </div>
       <div class="conf-grid" id="nextSeasonGrid"></div>
 
       <div class="section-head" style="margin-top:44px;">
@@ -1220,6 +1224,7 @@ function rankPower(baseList, includeHistorical){
 }
 
 let powerAlgoMode = 'nohist'; // 'full' or 'nohist' — nohist (no weighted win% history) is now the default
+let nextSeasonRankMode = 'blended'; // 'blended' (full S1+S2 Power Poll) or 'season2' (this season's score alone)
 
 function renderPower(){
   const el = document.getElementById('powerList');
@@ -1447,6 +1452,18 @@ function setupCFB27SeasonTabs(){
   });
 }
 
+function setupNextSeasonRankToggle(){
+  const wrap = document.getElementById('nextSeasonRankToggle');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      nextSeasonRankMode = btn.dataset.mode;
+      wrap.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      renderNextSeason();
+    });
+  });
+}
+
 function setupCFB27SubTabs(){
   const wrap = document.getElementById('cfb27SubTabs');
   if (!wrap) return;
@@ -1512,7 +1529,17 @@ function setupCFB25SeasonTabs(){
 function renderNextSeason(){
   const el = document.getElementById('nextSeasonGrid');
   if (!el) return;
-  const ranked = rankPower(DATA.power, powerAlgoMode==='full').list;
+
+  let ranked;
+  if (nextSeasonRankMode === 'season2'){
+    // Ranked purely by this season's own score — nobody's Season 1 history carries over here,
+    // including anyone with zero Season 2 games yet (they just sit at the bottom at 0).
+    const pool = (DATA.power||[]).filter(p=> !p.retired && p.season2);
+    const sorted = pool.slice().sort((a,b)=> b.season2.score - a.season2.score);
+    ranked = sorted.map((p,i)=> Object.assign({}, p, {rank:i+1, score:p.season2.score}));
+  } else {
+    ranked = rankPower(DATA.power, powerAlgoMode==='full').list;
+  }
 
   el.innerHTML = NEXT_SEASON_TIERS.map(t=>{
     const slice = ranked.filter(p=>p.rank>=t.from && p.rank<=t.to);
@@ -3100,6 +3127,7 @@ async function boot(){
   setupAlgoToggle();
   setupCFB27SeasonTabs();
   setupCFB27SubTabs();
+  setupNextSeasonRankToggle();
   setupScheduleUserSelect();
   setupHistorySubTabs();
   setupCFB26SeasonTabs();
